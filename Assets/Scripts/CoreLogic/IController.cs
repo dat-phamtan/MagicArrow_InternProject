@@ -12,7 +12,8 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnGridInit;
 
         public List<int> GetArrowMatrix();
-        public PartType GetArrowTypeAtPosition(int x, int y);
+        public PartType GetArrowTypeAtPosition(Position pos);
         public ConfigData GetConfigData();
+        public Direction GetDirectionAtPosition(Position pos);
     }
 }

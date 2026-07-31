@@ -8,7 +8,7 @@ namespace Assets.Scripts.UI
 {
     public class UIManager
     {
-        public float spacing = 0.5f;
+        //public float spacing = 0.5f;
         private IController _controller;
         private List<int> _arrowMatrix;
         private List<Verticle> _verticles;
@@ -20,9 +20,10 @@ namespace Assets.Scripts.UI
         {
             _controller = controller;
             _arrowMatrix = _controller.GetArrowMatrix();
+            _verticles = new List<Verticle>();
         }
 
-        public List<Verticle> InitBoard()
+        public List<Verticle> InitBoard(float spacing)
         {
             int width = _controller.GetConfigData().BoardWidth;
             int height = _controller.GetConfigData().BoardHeight;
@@ -34,7 +35,7 @@ namespace Assets.Scripts.UI
             {
                 for (int j = 0; j < width; j++)
                 {
-                    var type = _controller.GetArrowTypeAtPosition(i, j);
+                    var type = _controller.GetArrowTypeAtPosition(new Position(i, i));
 
                     if (type == PartType.HEAD)
                     {

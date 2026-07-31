@@ -9,7 +9,8 @@ using UnityEngine;
 
 namespace Assets.Scripts.CoreLogic
 {
-    public enum PartType { HEAD, BODY, TAIL}
+    public enum PartType { HEAD, BODY, TAIL }
+    public enum Direction { LEFT, RIGHT, UP, DOWN, LEFTUP, LEFTDOWN, RIGHTUP, RIGHTDOWN }
     public class ArrowController : IController
     {
         private ConfigData _configData;
@@ -17,6 +18,7 @@ namespace Assets.Scripts.CoreLogic
 
         private List<int> _boardMatrix;
         private List<bool> _boardMatrixCheck; //<-- stupid name
+        private List<Direction> _directions;
 
         public event Action OnGridInit;
 
@@ -36,43 +38,150 @@ namespace Assets.Scripts.CoreLogic
             return _configData;
         }
 
+        public PartType GetArrowTypeAtPosition(Position pos)
+        {
+            int boardIndex = IntPositionToIndex(pos);
+            var arrow = _configData.Arrows[_boardMatrix[boardIndex]];
+            if (pos.X == arrow.XArrowHead && pos.Y == arrow.YArrowHead)
+                return PartType.HEAD;
+
+            var tailPosition = IndexToPosition(arrow.ArrowIndices[^1]);
+            if ((pos.X == tailPosition.X) && (pos.Y == tailPosition.Y))
+                return PartType.TAIL;
+
+            return PartType.BODY;
+        }
+
+        public Direction GetDirectionAtPosition(Position pos)
+        {
+            var index = IntPositionToIndex(pos);
+            return _directions[index];
+        }
+
+
+
+
+
         public void LoadData()
         {
             _configData = _config.Load();
-            BoardMatrixsInit();
+            DataInit();
         }
 
-        public PartType GetArrowTypeAtPosition(int x, int y)
+        private void DataInit()
         {
-            var arrow = _configData.Arrows[_boardMatrix[x + y * _configData.BoardWidth]];
-            if (x == arrow.XArrowHead && y == arrow.YArrowHead)
-                return PartType.HEAD;
-            else if ((x, y) == IndexToPosition(arrow.ArrowIndices[^1]))
-                return PartType.TAIL;
-            else
-                return PartType.BODY;
+            MatrixesInit();
+            LoadMatrixes();
+            CurveCorrection();
         }
 
-        private void BoardMatrixsInit()
+        
+
+        private void LoadMatrixes()
         {
-            _boardMatrix = Enumerable.Repeat(-1, _configData.BoardWidth * _configData.BoardHeight).ToList();
-            _boardMatrixCheck = Enumerable.Repeat(false, _configData.BoardWidth * _configData.BoardHeight).ToList();
-            for (int i = 0; i < _configData.Arrows.Length; i++)
+            for (int arrowIndex = 0; arrowIndex < _configData.Arrows.Length; arrowIndex++)
             {
-                var arrow = _configData.Arrows[i];
+                var arrow = _configData.Arrows[arrowIndex];
                 for (int j = 0; j < arrow.ArrowIndices.Length; j++)
                 {
-                    _boardMatrix[j] = i;
-                    _boardMatrixCheck[j] = true;
+                    int cellIndex = arrow.ArrowIndices[j];
+                    AddMatrixes(arrowIndex, cellIndex);
+                    DirectionInit(arrow.ArrowIndices);
                 }
             }
         }
 
-        private bool IsInsidePlayZone(int x, int y)
+        private void CurveCorrection()
+        {
+            for (int i = 0; i < _configData.Arrows.Length; i++)
+            {
+                var arrow = _configData.Arrows[i];
+                if (arrow.ArrowIndices.Length < 3)
+                    return;
+
+                var arrowIndices = arrow.ArrowIndices;
+                for (int j = 0; j < arrowIndices.Length; j++)
+                    if (IsCurveExist(arrowIndices[j - 1], arrowIndices[j + 1]))
+                        AssignCurve(arrowIndices[j], _directions[arrowIndices[j - 1]], _directions[arrowIndices[j + 1]]);
+            }
+        }
+
+        private bool IsCurveExist(int preIndex, int posIndex)
+        {
+
+            if ((int)_directions[preIndex] > 3 || (int)_directions[posIndex] > 3)
+                return true;
+            return _directions[preIndex] != _directions[posIndex];
+        }
+
+        private void AssignCurve(int index, Direction pre, Direction pos)
+        {
+            if (pre == Direction.RIGHT)
+            {
+                if (pos == Direction.UP)
+                    _directions[index] = Direction.RIGHTUP; // _|
+                else
+                    _directions[index] = Direction.RIGHTDOWN;//  -|
+            }
+            else if (pre == Direction.LEFT)
+            {
+                if (pos == Direction.UP)
+                    _directions[index] = Direction.LEFTUP;//  |_
+                else
+                    _directions[index] = Direction.LEFTDOWN;//  
+
+            }
+            else if (pre == Direction.UP)
+            {
+                if (pos == Direction.LEFT)
+                    _directions[index] = Direction.LEFTUP;
+                else
+                    _directions[index] = Direction.RIGHTUP;
+            }
+            else
+            {
+                if (pos == Direction.LEFT)
+                    _directions[index] = Direction.LEFTDOWN;
+                else
+                    _directions[index] = Direction.RIGHTDOWN;
+            }
+        }
+
+        private void MatrixesInit()
+        {
+            int boardSize = _configData.BoardWidth + _configData.BoardHeight;
+            _boardMatrix = Enumerable.Repeat(-1, boardSize).ToList();
+            _boardMatrixCheck = Enumerable.Repeat(false, boardSize).ToList();
+        }
+
+        private void AddMatrixes(int configIndex, int cellIndex)
+        {
+            _boardMatrix[cellIndex] = configIndex;
+            _boardMatrixCheck[cellIndex] = true;
+        }
+
+        private void DirectionInit(int[] indices)
+        {
+            var headPos = IndexToPosition(indices[0]);
+            var neckPos = IndexToPosition(indices[1]);
+            var headDirection = GetDirection(headPos, neckPos);
+            _directions[indices[0]] = headDirection;
+            _directions[indices[1]] = headDirection;
+            
+            for (int i = 2; i < indices.Length; i++)
+            {
+                var prePos = IndexToPosition(indices[i - 1]);
+                var currentPos = IndexToPosition(indices[i]);
+                var directon = GetDirection(prePos, currentPos);
+                _directions[indices[0]] = directon;
+            }
+        }
+
+        private bool IsInsidePlayZone(Position pos)
         {
             if (_configData == null) return false;
-            if (x < 0 || y < 0) return false;
-            if (x >= _configData.BoardWidth || y >= _configData.BoardHeight) return false;
+            if (pos.X < 0 || pos.Y < 0) return false;
+            if (pos.X >= _configData.BoardWidth || pos.Y >= _configData.BoardHeight) return false;
             return true;
         }
 
@@ -82,43 +191,45 @@ namespace Assets.Scripts.CoreLogic
         }
 
 
-        private int IntPositionToIndex(int x, int y)
+        private int IntPositionToIndex(Position pos)
         {
-            return x + y * _configData.BoardWidth;
+            return pos.X + pos.Y * _configData.BoardWidth;
         }
 
-        private (int, int) IndexToPosition(int index)
+        private Position IndexToPosition(int index)
         {
             int boardWidth = _configData.BoardWidth;
-            return (index % boardWidth, index / boardWidth);
+            return new Position(index % boardWidth, index / boardWidth);
         }
 
         private void MoveArrowAtIndex(int index)
         {
             var movedArrow = _configData.Arrows[_boardMatrix[index]];
-            var direction = GetArrowDirection(movedArrow);
+            var headPos = new Position(movedArrow.XArrowHead, movedArrow.YArrowHead);
+            var neckPos = IndexToPosition(movedArrow.ArrowIndices[1]);
+            var direction = GetDirection(headPos, neckPos);
             int from, to, delta;
             switch (direction)
             {
-                case (1, 0): //right
+                case Direction.RIGHT: //right
                     from = _configData.BoardWidth * movedArrow.YArrowHead;
                     to = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
                     delta = 1;
                     HandleMove(_boardMatrix[index], index, from, to, delta);
                     break;
-                case (0, 1): //up
+                case Direction.UP: //up
                     from = movedArrow.XArrowHead;
                     to = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
                     delta = _configData.BoardWidth;
                     HandleMove(_boardMatrix[index], index, from, to, delta);
                     break;
-                case (-1, 0): //left
+                case Direction.LEFT: //left
                     from = _configData.BoardWidth * movedArrow.YArrowHead;
                     to = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
                     delta = -1;
                     HandleMove(_boardMatrix[index], index, from, to, delta);
                     break;
-                case (0, -1): //down
+                case Direction.DOWN: //down
                     from = movedArrow.XArrowHead;
                     to = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
                     delta = -_configData.BoardWidth;
@@ -157,17 +268,30 @@ namespace Assets.Scripts.CoreLogic
             }
         }
 
-        private (int, int) GetArrowDirection(Arrow arrow)
+        private Direction GetDirection(Position prePos, Position currentPos)
         {
-            var (xArrowNeck, yArrowNeck) = IndexToPosition(arrow.ArrowIndices[1]);
-            return (arrow.XArrowHead - xArrowNeck, arrow.YArrowHead - yArrowNeck);
-        } 
-        
+            var direction = (prePos.X - currentPos.X, prePos.Y - currentPos.Y);
+            switch (direction)
+            {
+                case (1, 0): //right
+                    return Direction.RIGHT;
+                case (0, 1): //up
+                    return Direction.UP;
+                case (-1, 0): //left
+                    return Direction.LEFT;
+                case (0, -1): //down
+                    return Direction.DOWN;
+                default:
+                    break;
+            }
+            return Direction.RIGHT;
+        }
+
 
         //Input handler
         private void HandleUserInput(int x, int y)
         {
-            if (!IsInsidePlayZone(x, y))
+            if (!IsInsidePlayZone(new Position(x, y)))
                 return;
 
             int index = x + y * _configData.BoardWidth;

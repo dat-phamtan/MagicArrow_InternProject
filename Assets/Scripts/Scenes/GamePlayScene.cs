@@ -19,11 +19,15 @@ public class GamePlayScene : MonoBehaviour, IUIGameScene
 
     public CameraModifier cameraModifier;
     private InputSystem_Actions _inputs;
+    private float _spacing = 0.5f;
+    private Dictionary<Direction, GameObject> _arrowPrefab;
 
 
     private void Awake()
     {
         _inputs = new InputSystem_Actions();
+        _arrowPrefab = new Dictionary<Direction, GameObject>();
+        //_spacing = bodyPrefab.GetComponent<Renderer>().bounds.size.x / 2f;
     }
 
     private void OnEnable()
@@ -68,8 +72,8 @@ public class GamePlayScene : MonoBehaviour, IUIGameScene
         var controller = new ArrowController(config);
         controller.LoadData();
         var uiManager = new UIManager(controller);
-        DrawGridInit(uiManager.InitBoard());
-        cameraModifier.FitCamera(controller.GetConfigData().BoardWidth, controller.GetConfigData().BoardHeight, 0.5f);
+        DrawGridInit(uiManager.InitBoard(_spacing));
+        cameraModifier.FitCamera(controller.GetConfigData().BoardWidth, controller.GetConfigData().BoardHeight, _spacing);
     }
 
     void Update()
