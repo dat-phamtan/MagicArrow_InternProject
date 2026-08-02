@@ -2,7 +2,12 @@
 using Assets.Scripts.Data;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
+using UnityEngine;
+using static UnityEditor.Searcher.SearcherWindow.Alignment;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 namespace Assets.Scripts.UI
 {
@@ -35,7 +40,7 @@ namespace Assets.Scripts.UI
             {
                 for (int j = 0; j < width; j++)
                 {
-                    var type = _controller.GetArrowTypeAtPosition(new Position(i, i));
+                    var type = _controller.GetArrowTypeAtPosition(new Position(j, i));
 
                     if (type == PartType.HEAD)
                     {
@@ -61,5 +66,7 @@ namespace Assets.Scripts.UI
 
             return _verticles;
         }
+
+        
     }
 }

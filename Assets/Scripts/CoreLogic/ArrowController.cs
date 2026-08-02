@@ -149,7 +149,7 @@ namespace Assets.Scripts.CoreLogic
 
         private void MatrixesInit()
         {
-            int boardSize = _configData.BoardWidth + _configData.BoardHeight;
+            int boardSize = _configData.BoardWidth * _configData.BoardHeight;
             _boardMatrix = Enumerable.Repeat(-1, boardSize).ToList();
             _boardMatrixCheck = Enumerable.Repeat(false, boardSize).ToList();
         }

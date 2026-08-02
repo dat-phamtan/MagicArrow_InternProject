@@ -17,6 +17,8 @@ public class GamePlayScene : MonoBehaviour, IUIGameScene
     public GameObject bodyPrefab;
     public GameObject tailPrefab;
 
+    public Material arrowMaterial;
+
     public CameraModifier cameraModifier;
     private InputSystem_Actions _inputs;
     private float _spacing = 0.5f;
@@ -74,6 +76,19 @@ public class GamePlayScene : MonoBehaviour, IUIGameScene
         var uiManager = new UIManager(controller);
         DrawGridInit(uiManager.InitBoard(_spacing));
         cameraModifier.FitCamera(controller.GetConfigData().BoardWidth, controller.GetConfigData().BoardHeight, _spacing);
+
+        var configData = controller.GetConfigData();
+
+        foreach (var arrow in configData.Arrows)
+        {
+            var go = new GameObject("Arrow");
+            var builder = go.AddComponent<ArrowMeshBuilder>();
+            builder.width = 0.3f;
+            builder.arrowMaterial = arrowMaterial;
+
+            var points = builder.BuildPathPoints(arrow.ArrowIndices, configData.BoardWidth, _spacing);
+            builder.BuildArrowMesh(points, builder.width);
+        }
     }
 
     void Update()
