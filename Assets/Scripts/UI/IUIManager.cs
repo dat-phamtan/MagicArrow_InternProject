@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Assets.Scripts.UI
 {
-    public interface IUIGameScene
+    public interface IUIManager
     {
-        public void DrawGridInit(List<Verticle> grid);
+        public List<Verticle> InitBoard(float spacing);
     }
 }

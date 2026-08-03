@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Config;
 using Assets.Scripts.Data;
+using Assets.Scripts.Input;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +11,9 @@ namespace Assets.Scripts.CoreLogic
     public interface IController
     {
         public event Action OnGridInit;
+        public event Action<int> OnMoveArrowAway;
 
+        public void Init();
         public List<int> GetArrowMatrix();
         public PartType GetArrowTypeAtPosition(Position pos);
         public ConfigData GetConfigData();

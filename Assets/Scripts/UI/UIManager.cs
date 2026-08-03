@@ -11,20 +11,15 @@ using Vector3 = UnityEngine.Vector3;
 
 namespace Assets.Scripts.UI
 {
-    public class UIManager
+    public class UIManager : IUIManager
     {
-        //public float spacing = 0.5f;
         private IController _controller;
-        private List<int> _arrowMatrix;
         private List<Verticle> _verticles;
-        private ConfigData _config;
-
 
 
         public UIManager(IController controller)
         {
             _controller = controller;
-            _arrowMatrix = _controller.GetArrowMatrix();
             _verticles = new List<Verticle>();
         }
 
@@ -56,17 +51,12 @@ namespace Assets.Scripts.UI
                     {
                         _verticles.Add(new Verticle(xPos, yPos, VerticleType.BODY));
                     }
-                        
-
                     xPos += spacing;
                 }
                 yPos += spacing;
                 xPos = - (width - 1) * spacing / 2f;
             }
-
             return _verticles;
-        }
-
-        
+        }     
     }
 }

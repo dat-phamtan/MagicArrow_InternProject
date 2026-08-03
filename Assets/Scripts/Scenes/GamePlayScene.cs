@@ -1,100 +1,110 @@
 using Assets.Scripts.Config;
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
+using Assets.Scripts.Input;
 using Assets.Scripts.IO;
 using Assets.Scripts.UI;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using Unity.Mathematics.Geometry;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using PlayerInput = Assets.Scripts.Input.PlayerInput;
 
-public class GamePlayScene : MonoBehaviour, IUIGameScene
+public class GamePlayScene : MonoBehaviour
 {
     public new Camera camera;
     //public GameObject dotPrefab;
     public GameObject headPrefab;
     public GameObject bodyPrefab;
     public GameObject tailPrefab;
+    public ArrowAssembler arrowAssembler;
 
     public Material arrowMaterial;
-
     public CameraModifier cameraModifier;
-    private InputSystem_Actions _inputs;
-    private float _spacing = 0.5f;
-    private Dictionary<Direction, GameObject> _arrowPrefab;
+    public float spacing = 1f;
+
+
+    private IConfig _config;
+    private IStorage _storage;
+    private IInput _input;
+    private IController _controller;
+    private IUIManager _uiManager;
+    private InputSystem_Actions _inputActions;
+    private ConfigData _configData;
+    private List<GameObject> _partsList;
+
 
 
     private void Awake()
     {
-        _inputs = new InputSystem_Actions();
-        _arrowPrefab = new Dictionary<Direction, GameObject>();
-        //_spacing = bodyPrefab.GetComponent<Renderer>().bounds.size.x / 2f;
+        _storage = new LocalStorage();
+        _config = new ConfigManager(_storage);
+        _input = new PlayerInput(spacing);
+        _controller = new ArrowController(_config, _input);
+        _inputActions = new InputSystem_Actions();
+        _uiManager = new UIManager(_controller);
+
+    }
+
+    void Start()
+    {
+        _controller.Init();
+        _configData = _controller.GetConfigData();
+
+        DrawGridInit(_uiManager.InitBoard(spacing));
+        cameraModifier.FitCamera(_configData.BoardWidth, _configData.BoardHeight, spacing);
+
+        //foreach (var arrow in configData.Arrows)
+        //{
+        //    arrowAssembler.Build(arrow, configData.BoardWidth, configData.BoardHeight, _spacing);
+        //}
     }
 
     private void OnEnable()
     {
-        _inputs.Enable();
-        _inputs.UI.ClickAtPos.performed += HandleInput;
+        _inputActions.Enable();
+        _inputActions.UI.ClickAtPos.performed += HandleInput;
+        _controller.OnMoveArrowAway += MoveArrowAway;
+
     }
 
     private void OnDisable()
     {
-        _inputs.UI.ClickAtPos.performed -= HandleInput;
-        _inputs.Disable();
+        _inputActions.UI.ClickAtPos.performed -= HandleInput;
+        _controller.OnMoveArrowAway -= MoveArrowAway;
+        _inputActions.Disable();
     }
 
     private void HandleInput(InputAction.CallbackContext context)
     {
         var screenPos = context.ReadValue<Vector2>();
-
-        Debug.Log($"Screen Pos: {screenPos}");
-        Debug.Log($"World Pos: {camera.ScreenToWorldPoint(screenPos)}");
+        _input.HandleInput(camera.ScreenToWorldPoint(screenPos));
     }
 
     public void DrawGridInit(List<Verticle> grid)
     {
+        _partsList = new List<GameObject>();
         for (int i = 0; i < grid.Count; i++)
         {
             Vector3 spawnPosition = new(grid[i].XVerticle, grid[i].YVerticle, 0);
+            //Debug.Log($"{grid[i].XVerticle }/{ grid[i].YVerticle}");
             if (grid[i].Type == VerticleType.HEAD)
-                Instantiate(headPrefab, spawnPosition, Quaternion.identity);
+                _partsList.Add(Instantiate(headPrefab, spawnPosition, Quaternion.identity));
             else if (grid[i].Type == VerticleType.TAIL)
-                Instantiate(tailPrefab, spawnPosition, Quaternion.identity);
+                _partsList.Add(Instantiate(tailPrefab, spawnPosition, Quaternion.identity));
             else if (grid[i].Type == VerticleType.BODY)
-                Instantiate(bodyPrefab, spawnPosition, Quaternion.identity);
+                _partsList.Add(Instantiate(bodyPrefab, spawnPosition, Quaternion.identity));
         }
     }
 
-    void Start()
+    private void MoveArrowAway(int boardIndex)
     {
-        IStorage storage = new LocalStorage();
-        IConfig config = new ConfigManager(storage);
-        //temp for test
-        var controller = new ArrowController(config);
-        controller.LoadData();
-        var uiManager = new UIManager(controller);
-        DrawGridInit(uiManager.InitBoard(_spacing));
-        cameraModifier.FitCamera(controller.GetConfigData().BoardWidth, controller.GetConfigData().BoardHeight, _spacing);
-
-        var configData = controller.GetConfigData();
-
-        foreach (var arrow in configData.Arrows)
+        var arrowIndices = _configData.Arrows[boardIndex].ArrowIndices;
+        for (int i = 0; i < arrowIndices.Length; i++)
         {
-            var go = new GameObject("Arrow");
-            var builder = go.AddComponent<ArrowMeshBuilder>();
-            builder.width = 0.3f;
-            builder.arrowMaterial = arrowMaterial;
-
-            var points = builder.BuildPathPoints(arrow.ArrowIndices, configData.BoardWidth, _spacing);
-            builder.BuildArrowMesh(points, builder.width);
+            Destroy(_partsList[arrowIndices[i]]);
         }
     }
-
-    void Update()
-    {
-        
-    }
-
-
 }

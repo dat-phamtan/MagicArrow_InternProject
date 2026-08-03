@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Config;
 using Assets.Scripts.Data;
+using Assets.Scripts.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,17 +16,20 @@ namespace Assets.Scripts.CoreLogic
     {
         private ConfigData _configData;
         private IConfig _config;
+        private IInput _input;
 
         private List<int> _boardMatrix;
         private List<bool> _boardMatrixCheck; //<-- stupid name
         private List<Direction> _directions;
 
         public event Action OnGridInit;
+        public event Action<int> OnMoveArrowAway;
 
 
-        public ArrowController(IConfig config)
+        public ArrowController(IConfig config, IInput input)
         {
             _config = config;
+            _input = input;
         }
 
         public List<int> GetArrowMatrix()
@@ -58,24 +62,31 @@ namespace Assets.Scripts.CoreLogic
             return _directions[index];
         }
 
-
-
-
-
-        public void LoadData()
+        public void Init()
         {
-            _configData = _config.Load();
-            DataInit();
-        }
-
-        private void DataInit()
-        {
+            LoadConfig();
+            InputInit();
             MatrixesInit();
             LoadMatrixes();
             CurveCorrection();
+            RegisterAction();
         }
 
+        private void LoadConfig()
+        {
+            _configData = _config.Load();
+        }
         
+        private void InputInit()
+        {
+            _input.InitInput(_configData.BoardWidth, _configData.BoardHeight);
+        }
+
+        private void RegisterAction()
+        {
+            _input.OnInteractAtPosition += HandleUserInput;
+            //tobecontinued
+        }
 
         private void LoadMatrixes()
         {
@@ -95,12 +106,12 @@ namespace Assets.Scripts.CoreLogic
         {
             for (int i = 0; i < _configData.Arrows.Length; i++)
             {
-                var arrow = _configData.Arrows[i];
-                if (arrow.ArrowIndices.Length < 3)
+                var arrowIndices = _configData.Arrows[i].ArrowIndices;
+                if (arrowIndices.Length < 3)
                     return;
 
-                var arrowIndices = arrow.ArrowIndices;
-                for (int j = 0; j < arrowIndices.Length; j++)
+               //if (IsCurveExist())
+                for (int j = 1; j < arrowIndices.Length - 1; j++)
                     if (IsCurveExist(arrowIndices[j - 1], arrowIndices[j + 1]))
                         AssignCurve(arrowIndices[j], _directions[arrowIndices[j - 1]], _directions[arrowIndices[j + 1]]);
             }
@@ -152,6 +163,7 @@ namespace Assets.Scripts.CoreLogic
             int boardSize = _configData.BoardWidth * _configData.BoardHeight;
             _boardMatrix = Enumerable.Repeat(-1, boardSize).ToList();
             _boardMatrixCheck = Enumerable.Repeat(false, boardSize).ToList();
+            _directions = Enumerable.Repeat(Direction.LEFT, boardSize).ToList();
         }
 
         private void AddMatrixes(int configIndex, int cellIndex)
@@ -247,6 +259,7 @@ namespace Assets.Scripts.CoreLogic
                 if (_boardMatrix[tempIndex] != -1 && _boardMatrixCheck[tempIndex])
                 {
                     //collision detected --> invoke animaton
+                    Debug.LogWarning("Can not move awway!!!");
                     IsCollided = true;
                     break;
                 }
@@ -256,6 +269,7 @@ namespace Assets.Scripts.CoreLogic
             {
                 //no collision --> invoke animation
                 DiableArrow(indexInConfig);
+                OnMoveArrowAway?.Invoke(indexInConfig);
             }
         }
 
@@ -289,20 +303,13 @@ namespace Assets.Scripts.CoreLogic
 
 
         //Input handler
-        private void HandleUserInput(int x, int y)
+        private void HandleUserInput(Position pos)
         {
-            if (!IsInsidePlayZone(new Position(x, y)))
-                return;
-
-            int index = x + y * _configData.BoardWidth;
+            int index = IntPositionToIndex(pos);
             if (!IsPartOfExistArrow(index))
                 return;
 
             MoveArrowAtIndex(index);
-
-
-
-
         }
     }
 }

@@ -9,7 +9,7 @@ public class LoadingScene : MonoBehaviour
     {
         IStorage storage = new LocalStorage();
         IConfig config = new ConfigManager(storage);
-        var manager = new ArrowController(config);
+        //var manager = new ArrowController(config);
 
     }
 
