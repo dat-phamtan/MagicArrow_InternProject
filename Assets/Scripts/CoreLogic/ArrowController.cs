@@ -15,8 +15,8 @@ namespace Assets.Scripts.CoreLogic
     public class ArrowController : IController
     {
         private ConfigData _configData;
-        private IConfig _config;
-        private IInput _input;
+        private readonly IConfig _config;
+        private readonly IInput _input;
 
         private List<int> _boardMatrix;
         private List<bool> _boardMatrixCheck; //<-- stupid name
@@ -217,8 +217,10 @@ namespace Assets.Scripts.CoreLogic
         private void MoveArrowAtIndex(int index)
         {
             var movedArrow = _configData.Arrows[_boardMatrix[index]];
+
             var headPos = new Position(movedArrow.XArrowHead, movedArrow.YArrowHead);
             var neckPos = IndexToPosition(movedArrow.ArrowIndices[1]);
+
             var direction = GetDirection(headPos, neckPos);
             int from, to, delta;
             switch (direction)
@@ -256,7 +258,7 @@ namespace Assets.Scripts.CoreLogic
             var IsCollided = false;
             while (tempIndex >= from && tempIndex <= to)
             {
-                if (_boardMatrix[tempIndex] != -1 && _boardMatrixCheck[tempIndex])
+                if (_boardMatrix[tempIndex] != -1 && _boardMatrix[tempIndex] != indexInConfig && _boardMatrixCheck[tempIndex])
                 {
                     //collision detected --> invoke animaton
                     Debug.LogWarning("Can not move awway!!!");

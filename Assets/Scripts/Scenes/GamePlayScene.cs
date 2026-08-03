@@ -53,13 +53,13 @@ public class GamePlayScene : MonoBehaviour
         _controller.Init();
         _configData = _controller.GetConfigData();
 
-        DrawGridInit(_uiManager.InitBoard(spacing));
+        //DrawGridInit(_uiManager.InitBoard(spacing));
         cameraModifier.FitCamera(_configData.BoardWidth, _configData.BoardHeight, spacing);
 
-        //foreach (var arrow in configData.Arrows)
-        //{
-        //    arrowAssembler.Build(arrow, configData.BoardWidth, configData.BoardHeight, _spacing);
-        //}
+        foreach (var arrow in _configData.Arrows)
+        {
+            arrowAssembler.Build(arrow, _configData.BoardWidth, _configData.BoardHeight, spacing);
+        }
     }
 
     private void OnEnable()

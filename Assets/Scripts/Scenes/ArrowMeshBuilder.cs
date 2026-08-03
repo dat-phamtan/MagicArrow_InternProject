@@ -5,10 +5,11 @@ using UnityEngine;
 public class ArrowMeshBuilder : MonoBehaviour
 {
     public Material arrowMaterial;
-    public float bodyTileLength = 0.5f;
+    public float bodyTileLength = 0.24f;
 
     private Mesh _mesh;
     private MeshFilter _meshFilter;
+    private const float CORNER_MULTIPLIER = 1.41421356f;
 
     private void Awake()
     {
@@ -57,13 +58,13 @@ public class ArrowMeshBuilder : MonoBehaviour
             Vector3 dirPrev = (i > 0) ? (path[i] - path[i - 1]).normalized : (path[1] - path[0]).normalized;
             Vector3 dirNext = (i < n - 1) ? (path[i + 1] - path[i]).normalized : dirPrev;
 
+            bool isCorner = Vector3.Dot(dirPrev, dirNext) < 0.99f;
             Vector3 dirAvg = (dirPrev + dirNext).normalized;
             if (dirAvg == Vector3.zero) dirAvg = dirPrev;
 
             Vector3 normal = new Vector3(-dirAvg.y, dirAvg.x, 0f);
 
-            float miterCos = Vector3.Dot(normal, new Vector3(-dirNext.y, dirNext.x, 0f));
-            float miterLength = halfWidth / Mathf.Max(miterCos, 0.5f);
+            float miterLength = isCorner ? halfWidth * CORNER_MULTIPLIER : halfWidth;
 
             vertices[i * 2] = path[i] + normal * miterLength;
             vertices[i * 2 + 1] = path[i] - normal * miterLength;

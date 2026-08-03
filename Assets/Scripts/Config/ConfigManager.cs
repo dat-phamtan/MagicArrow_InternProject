@@ -35,10 +35,10 @@ namespace Assets.Scripts.Config
                 var indices = new int[width - 1];
                 for (int j = 0; j < width - 1; j++)
                 {
-                    indices[j] = j + width * i;
+                    indices[width - 2 - j] = j + width * i;
                 }
 
-                arrows[i] = new Arrow(0, i, indices);
+                arrows[i] = new Arrow(width - 2, i, indices);
             }
 
             var longIndices = new int[height + width - 1];
