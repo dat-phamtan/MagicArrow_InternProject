@@ -67,9 +67,10 @@ public class ArrowMeshBuilder : MonoBehaviour
 
         for (int i = 0; i < n; i++)
         {
-            Vector3 dirPrev = (i > 0) ? (path[i] - path[i - 1]).normalized : (path[1] - path[0]).normalized;
-            Vector3 dirNext = (i < n - 1) ? (path[i + 1] - path[i]).normalized : dirPrev;
-            bool isCorner = Vector3.Dot(dirPrev, dirNext) < 0.99f;
+            Vector3 dirPrev = SnapToAxis((i > 0) ? (path[i] - path[i - 1]) : (path[1] - path[0]));
+            Vector3 dirNext = SnapToAxis((i < n - 1) ? (path[i + 1] - path[i]) : dirPrev);
+            bool isCorner = dirPrev != dirNext;
+
             Vector3 dirAvg = (dirPrev + dirNext).normalized;
             if (dirAvg == Vector3.zero) dirAvg = dirPrev;
             Vector3 normal = new(-dirAvg.y, dirAvg.x, 0f);
@@ -134,5 +135,12 @@ public class ArrowMeshBuilder : MonoBehaviour
         tris.Add(b); 
         tris.Add(b + 3); 
         tris.Add(b + 2);
+    }
+
+    Vector3 SnapToAxis(Vector3 dir)
+    {
+        if (Mathf.Abs(dir.x) >= Mathf.Abs(dir.y))
+            return new Vector3(Mathf.Sign(dir.x), 0, 0);
+        return new Vector3(0, Mathf.Sign(dir.y), 0);
     }
 }

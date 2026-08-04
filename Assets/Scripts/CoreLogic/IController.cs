@@ -11,7 +11,8 @@ namespace Assets.Scripts.CoreLogic
     public interface IController
     {
         public event Action OnGridInit;
-        public event Action<int> OnMoveArrowAway;
+        public event Action<int> OnMoveArrowSuccess;
+        public event Action<int, int> OnMoveArrowFail;
 
         public void Init();
         public List<int> GetArrowMatrix();

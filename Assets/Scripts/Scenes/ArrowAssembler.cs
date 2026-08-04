@@ -11,15 +11,6 @@ public class ArrowAssembler : MonoBehaviour
     public Sprite body;
     public Sprite tail;
 
-    //public 
-
-    //private float bodyWidth = 0.3f;
-    //private float bodyTileLength = 0.5f;
-    //private float headWidth = 0.5f;
-    //private float headLength = 0.5f;
-    //private float tailWidth = 0.5f;
-    //private float tailLength = 0.3f;
-
     public GameObject Build(Arrow arrow, int boardWidth, int boardHeight, float spacing, out Vector3[] points, out ArrowMeshBuilder builder)
     {
         var root = new GameObject("Arrow");
@@ -65,9 +56,4 @@ public class ArrowAssembler : MonoBehaviour
             points[i] = IndexToWorldPos(arrowIndices[i], boardWidth, boardHeight, spacing);
         return points;
     }
-
-    //private void DrawGrid()
-    //{
-
-    //}
 }

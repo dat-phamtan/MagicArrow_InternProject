@@ -62,18 +62,13 @@ public class GamePlayScene : MonoBehaviour
         _controller.Init();
         _configData = _controller.GetConfigData();
 
-        //DrawBoardTest(_uiManager.InitBoard(spacing));
-
-
         for (int i = 0; i < _configData.Arrows.Length; i++)
         {
             var root = arrowAssembler.Build(_configData.Arrows[i], _configData.BoardWidth, _configData.BoardHeight, spacing, out var points, out var builder);
             _arrowRoots[i] = root;
             _arrowBuilders[i] = builder;
-            _arrowPaths[i] = points;
-            
+            _arrowPaths[i] = points;  
         }
-
         cameraModifier.FitCamera(_configData.BoardWidth, _configData.BoardHeight, spacing);
     }
 
@@ -81,14 +76,16 @@ public class GamePlayScene : MonoBehaviour
     {
         _inputActions.Enable();
         _inputActions.UI.ClickAtPos.performed += HandleInput;
-        _controller.OnMoveArrowAway += MoveArrowAway;
+        _controller.OnMoveArrowSuccess += HandleMoveSuccess;
+        _controller.OnMoveArrowFail += HandleMoveFail;
 
     }
 
     private void OnDisable()
     {
         _inputActions.UI.ClickAtPos.performed -= HandleInput;
-        _controller.OnMoveArrowAway -= MoveArrowAway;
+        _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
+        _controller.OnMoveArrowFail -= HandleMoveFail;
         _inputActions.Disable();
     }
 
@@ -98,21 +95,21 @@ public class GamePlayScene : MonoBehaviour
         _input.HandleInput(camera.ScreenToWorldPoint(screenPos));
     }
 
-    public void DrawBoardTest(List<Verticle> grid)
-    {
-        _partsList = new List<GameObject>();
-        for (int i = 0; i < grid.Count; i++)
-        {
-            Vector3 spawnPosition = new(grid[i].XVerticle, grid[i].YVerticle, 0);
-            //Debug.Log($"{grid[i].XVerticle }/{ grid[i].YVerticle}");
-            if (grid[i].Type == VerticleType.HEAD)
-                _partsList.Add(Instantiate(headPrefab, spawnPosition, Quaternion.identity));
-            else if (grid[i].Type == VerticleType.TAIL)
-                _partsList.Add(Instantiate(tailPrefab, spawnPosition, Quaternion.identity));
-            else if (grid[i].Type == VerticleType.BODY)
-                _partsList.Add(Instantiate(bodyPrefab, spawnPosition, Quaternion.identity));
-        }
-    }
+    //public void DrawBoardTest(List<Verticle> grid)
+    //{
+    //    _partsList = new List<GameObject>();
+    //    for (int i = 0; i < grid.Count; i++)
+    //    {
+    //        Vector3 spawnPosition = new(grid[i].XVerticle, grid[i].YVerticle, 0);
+    //        //Debug.Log($"{grid[i].XVerticle }/{ grid[i].YVerticle}");
+    //        if (grid[i].Type == VerticleType.HEAD)
+    //            _partsList.Add(Instantiate(headPrefab, spawnPosition, Quaternion.identity));
+    //        else if (grid[i].Type == VerticleType.TAIL)
+    //            _partsList.Add(Instantiate(tailPrefab, spawnPosition, Quaternion.identity));
+    //        else if (grid[i].Type == VerticleType.BODY)
+    //            _partsList.Add(Instantiate(bodyPrefab, spawnPosition, Quaternion.identity));
+    //    }
+    //}
 
     //private void MoveArrowAway(int boardIndex)
     //{
@@ -123,10 +120,8 @@ public class GamePlayScene : MonoBehaviour
     //    }
     //}
 
-    private void MoveArrowAway(int boardIndex)
+    private void HandleMoveSuccess(int boardIndex)
     {
-        //if (!_arrowRoots.TryGetValue(boardIndex, out var arrowRoot) || arrowRoot == null)
-        //    return;
         var arrowRoot = _arrowRoots[boardIndex];
         var builder = _arrowBuilders[boardIndex];
         var path = _arrowPaths[boardIndex];
@@ -134,14 +129,25 @@ public class GamePlayScene : MonoBehaviour
         var arrow = _configData.Arrows[boardIndex];
         var headPos = new Position(arrow.XArrowHead, arrow.YArrowHead);
         var direction = DirectionToVector(_controller.GetDirectionAtPosition(headPos));
-        //Debug.Log($"{headPos.X}/ {headPos.Y}");
-        //Debug.Log(_controller.GetDirectionAtPosition(headPos).ToString());
 
         _arrowRoots.Remove(boardIndex);
         _arrowBuilders.Remove(boardIndex);
         _arrowPaths.Remove(boardIndex);
 
-        StartCoroutine(AnimateExit(arrowRoot, builder, path, direction));
+        StartCoroutine(AnimateMoveSuccess(arrowRoot, builder, path, direction));
+    }
+
+    private void HandleMoveFail(int boardIndex, int deltaIndex)
+    {
+        var arrowRoot = _arrowRoots[boardIndex];
+        var builder = _arrowBuilders[boardIndex];
+        var path = _arrowPaths[boardIndex];
+
+        var arrow = _configData.Arrows[boardIndex];
+        var headPos = new Position(arrow.XArrowHead, arrow.YArrowHead);
+        var direction = DirectionToVector(_controller.GetDirectionAtPosition(headPos));
+
+        StartCoroutine(AnimateMoveFail(arrowRoot, builder, path, direction, deltaIndex));
     }
 
     private Vector3 DirectionToVector(Direction dir)
@@ -161,7 +167,44 @@ public class GamePlayScene : MonoBehaviour
         }
     }
 
-    private IEnumerator AnimateExit(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir)
+    private IEnumerator AnimateMoveFail(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir, int deltaIndex)
+    {
+        int n = originalPath.Length;
+        float targetTravel = (deltaIndex - 1) * spacing;
+        float travelled = 0f;
+        var originPath = originalPath;
+        var newPath = new Vector3[n];
+        while (travelled < targetTravel)
+        {
+            travelled += speed * Time.deltaTime;
+            for (int i = 0; i < n; i++)
+            {
+                float behind = i * spacing - travelled;
+                newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
+            }
+            builder.BuildArrow(newPath);
+            yield return null;
+        }
+        //need fix
+
+        //builder.BuildArrow(originPath);
+        Array.Reverse(originPath);
+        travelled = 0;
+        while (travelled < targetTravel)
+        {
+            travelled += speed * Time.deltaTime;
+            for (int i = 0; i < n; i++)
+            {
+                float behind = i * spacing - travelled;
+                newPath[i] = PositionBehindHead(originPath, -exitDir, behind);
+            }
+            builder.BuildArrow(newPath);
+            yield return null;
+        }
+
+    }
+
+    private IEnumerator AnimateMoveSuccess(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir)
     {
         float exitDistance = camera.orthographicSize * 2f * camera.aspect + exitPadding;
 
@@ -176,8 +219,8 @@ public class GamePlayScene : MonoBehaviour
             travelled += speed * Time.deltaTime;
             for (int i = 0;  i < n; i++)
             {
-                float behind = i * spacing - travelled;
-                newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
+                float distanceFromInitHead = i * spacing - travelled; 
+                newPath[i] = PositionBehindHead(originalPath, exitDir, distanceFromInitHead);
             }
             builder.BuildArrow(newPath);
             yield return null;
@@ -185,13 +228,15 @@ public class GamePlayScene : MonoBehaviour
         Destroy(arrowRoot);
     }
 
-    private Vector3 PositionBehindHead(Vector3[] path, Vector3 exitDir, float d)
+    private Vector3 PositionBehindHead(Vector3[] path, Vector3 exitDir, float distanceFromInitHead)
     {
-        if (d <= 0f)
-            return path[0] - exitDir * d;
+        //out of gameplay
+        if (distanceFromInitHead <= 0f)
+            return path[0] - exitDir * distanceFromInitHead;
 
-        int loIndex = Mathf.Min((int)(d / spacing), path.Length - 2);
-        float t = (d - loIndex * spacing) / spacing;
+        int loIndex = Mathf.Min((int)(distanceFromInitHead / spacing), path.Length - 2);
+        //Debug.Log(loIndex);
+        float t = (distanceFromInitHead - loIndex * spacing) / spacing;
         return Vector3.Lerp(path[loIndex], path[loIndex + 1], t);
     }
 }

@@ -23,7 +23,8 @@ namespace Assets.Scripts.CoreLogic
         private List<Direction> _directions;
 
         public event Action OnGridInit;
-        public event Action<int> OnMoveArrowAway;
+        public event Action<int> OnMoveArrowSuccess;
+        public event Action<int, int> OnMoveArrowFail;
 
 
         // implement interface
@@ -100,8 +101,8 @@ namespace Assets.Scripts.CoreLogic
                 {
                     int cellIndex = arrow.ArrowIndices[j];
                     AddMatrixes(arrowIndex, cellIndex);
-                    DirectionInit(arrow.ArrowIndices);
                 }
+                DirectionInit(arrow.ArrowIndices);
             }
         }
 
@@ -188,7 +189,7 @@ namespace Assets.Scripts.CoreLogic
                 var prePos = IndexToPosition(indices[i - 1]);
                 var currentPos = IndexToPosition(indices[i]);
                 var directon = GetDirection(prePos, currentPos);
-                _directions[indices[0]] = directon;
+                _directions[indices[i]] = directon;
             }
         }
 
@@ -262,7 +263,7 @@ namespace Assets.Scripts.CoreLogic
             if (tempIndex < from || tempIndex > to)
             {
                 DiableArrow(indexInConfig);
-                OnMoveArrowAway?.Invoke(indexInConfig);
+                OnMoveArrowSuccess?.Invoke(indexInConfig);
                 return;
             }
 
@@ -278,6 +279,8 @@ namespace Assets.Scripts.CoreLogic
                     //Debug.Log(_boardMatrixCheck[tempIndex]);
                     //collision detected --> invoke animaton
                     Debug.LogWarning("Can not move awway!!!");
+                    var deltaIndex = (tempIndex - headIndexInMatrix) / delta;
+                    OnMoveArrowFail?.Invoke(indexInConfig, deltaIndex);
                     IsCollided = true;
                     break;
                 }
@@ -287,7 +290,7 @@ namespace Assets.Scripts.CoreLogic
             {
                 //no collision --> invoke animation
                 DiableArrow(indexInConfig);
-                OnMoveArrowAway?.Invoke(indexInConfig);
+                OnMoveArrowSuccess?.Invoke(indexInConfig);
             }
         }
 
