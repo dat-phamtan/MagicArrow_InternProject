@@ -3,17 +3,22 @@ using UnityEngine;
 
 public class ArrowAssembler : MonoBehaviour
 {
-    [Header("Prefabs (sprite quad hoặc GameObject có SpriteRenderer)")]
-    public GameObject headPrefab;
-    public GameObject bodyAnchorPrefab; 
-    public GameObject tailPrefab;
-
-    [Header("Material & kích thước")]
+    public Material headMaterial;
     public Material bodyMaterial;
-    public float width = 0.3f;
-    public float bodyTileLength = 0.5f;
+    public Material tailMaterial;
 
-    public Vector3 baseFacing = Vector3.left;
+    public Sprite head;
+    public Sprite body;
+    public Sprite tail;
+
+    //public 
+
+    //private float bodyWidth = 0.3f;
+    //private float bodyTileLength = 0.5f;
+    //private float headWidth = 0.5f;
+    //private float headLength = 0.5f;
+    //private float tailWidth = 0.5f;
+    //private float tailLength = 0.3f;
 
     public GameObject Build(Arrow arrow, int boardWidth, int boardHeight, float spacing)
     {
@@ -24,29 +29,20 @@ public class ArrowAssembler : MonoBehaviour
         if (points.Length < 2)
             return root;
 
-        Vector3 headPos = points[0];
-        Vector3 headDir = (points[0] - points[1]).normalized;
-        var headGo = Instantiate(headPrefab, headPos, Quaternion.identity, root.transform);
-        headGo.transform.rotation = Quaternion.FromToRotation(baseFacing, headDir);
+        var builder = root.AddComponent<ArrowMeshBuilder>();
+        builder.headMaterial = headMaterial;
+        builder.bodyMaterial = bodyMaterial;
+        builder.tailMaterial = tailMaterial;
 
-        int last = points.Length - 1;
-        Vector3 tailPos = points[last];
-        Vector3 tailDir = (points[last] - points[last - 1]).normalized;
-        var tailGo = Instantiate(tailPrefab, tailPos, Quaternion.identity, root.transform);
-        tailGo.transform.rotation = Quaternion.FromToRotation(baseFacing, tailDir);
+        builder.bodyWidth = body.rect.height / body.pixelsPerUnit;
+        builder.bodyTileLength = body.rect.width / body.pixelsPerUnit;
 
-        GameObject bodyGo = (bodyAnchorPrefab != null) ? Instantiate(bodyAnchorPrefab, root.transform) : new GameObject("ArrowBody");
+        builder.headWidth = head.rect.height / head.pixelsPerUnit;
+        builder.headLength = head.rect.width / head.pixelsPerUnit;
 
-        if (bodyAnchorPrefab == null)
-            bodyGo.transform.SetParent(root.transform, false);
-
-        var builder = bodyGo.GetComponent<ArrowMeshBuilder>();
-        if (builder == null)
-            builder = bodyGo.AddComponent<ArrowMeshBuilder>();
-
-        builder.arrowMaterial = bodyMaterial;
-        builder.bodyTileLength = bodyTileLength;
-        builder.BuildBodyMesh(points, width);
+        builder.tailWidth = tail.rect.height / tail.pixelsPerUnit;
+        builder.tailLength = tail.rect.width / tail.pixelsPerUnit;
+        builder.BuildArrow(points);
 
         return root;
     }
@@ -67,4 +63,9 @@ public class ArrowAssembler : MonoBehaviour
             points[i] = IndexToWorldPos(arrowIndices[i], boardWidth, boardHeight, spacing);
         return points;
     }
+
+    //private void DrawGrid()
+    //{
+
+    //}
 }

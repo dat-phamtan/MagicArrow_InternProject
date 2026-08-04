@@ -21,7 +21,7 @@ public class GamePlayScene : MonoBehaviour
     public GameObject tailPrefab;
     public ArrowAssembler arrowAssembler;
 
-    public Material arrowMaterial;
+    //public Material arrowMaterial;
     public CameraModifier cameraModifier;
     public float spacing = 1f;
 
@@ -34,6 +34,7 @@ public class GamePlayScene : MonoBehaviour
     private InputSystem_Actions _inputActions;
     private ConfigData _configData;
     private List<GameObject> _partsList;
+    private Dictionary<int, GameObject> _arrowRoots = new();
 
 
 
@@ -53,13 +54,16 @@ public class GamePlayScene : MonoBehaviour
         _controller.Init();
         _configData = _controller.GetConfigData();
 
-        //DrawGridInit(_uiManager.InitBoard(spacing));
-        cameraModifier.FitCamera(_configData.BoardWidth, _configData.BoardHeight, spacing);
+        //DrawBoardTest(_uiManager.InitBoard(spacing));
 
-        foreach (var arrow in _configData.Arrows)
+
+        for (int i = 0; i < _configData.Arrows.Length; i++)
         {
-            arrowAssembler.Build(arrow, _configData.BoardWidth, _configData.BoardHeight, spacing);
+            var root = arrowAssembler.Build(_configData.Arrows[i], _configData.BoardWidth, _configData.BoardHeight, spacing);
+            _arrowRoots[i] = root;
         }
+
+        cameraModifier.FitCamera(_configData.BoardWidth, _configData.BoardHeight, spacing);
     }
 
     private void OnEnable()
@@ -83,7 +87,7 @@ public class GamePlayScene : MonoBehaviour
         _input.HandleInput(camera.ScreenToWorldPoint(screenPos));
     }
 
-    public void DrawGridInit(List<Verticle> grid)
+    public void DrawBoardTest(List<Verticle> grid)
     {
         _partsList = new List<GameObject>();
         for (int i = 0; i < grid.Count; i++)
@@ -99,12 +103,59 @@ public class GamePlayScene : MonoBehaviour
         }
     }
 
+    //private void MoveArrowAway(int boardIndex)
+    //{
+    //    var arrowIndices = _configData.Arrows[boardIndex].ArrowIndices;
+    //    for (int i = 0; i < arrowIndices.Length; i++)
+    //    {
+    //        Destroy(_partsList[arrowIndices[i]]);
+    //    }
+    //}
+
     private void MoveArrowAway(int boardIndex)
     {
-        var arrowIndices = _configData.Arrows[boardIndex].ArrowIndices;
-        for (int i = 0; i < arrowIndices.Length; i++)
+        //if (!_arrowRoots.TryGetValue(boardIndex, out var arrowRoot) || arrowRoot == null)
+        //    return;
+        var arrowRoot = _arrowRoots[boardIndex];
+
+        var arrow = _configData.Arrows[boardIndex];
+        var headPos = new Position(arrow.XArrowHead, arrow.YArrowHead);
+        var direction = DirectionToVector(_controller.GetDirectionAtPosition(headPos));
+
+        _arrowRoots.Remove(boardIndex);
+        StartCoroutine(AnimateExit(arrowRoot, direction));
+    }
+
+    private Vector3 DirectionToVector(Direction dir)
+    {
+        switch (dir)
         {
-            Destroy(_partsList[arrowIndices[i]]);
+            case Direction.RIGHT:
+                return Vector3.right;
+            case Direction.LEFT:
+                return Vector3.left;
+            case Direction.UP:
+                return Vector3.up;
+            case Direction.DOWN:
+                return Vector3.down;
+            default:
+                return Vector3.left;
         }
+    }
+
+    private System.Collections.IEnumerator AnimateExit(GameObject arrowRoot, Vector3 direction)
+    {
+        float speed = 10f;
+        float exitDistance = camera.orthographicSize * 2f * camera.aspect + 5f;
+        float travelled = 0f;
+
+        while (travelled < exitDistance)
+        {
+            float step = speed * Time.deltaTime;
+            arrowRoot.transform.position += direction * step;
+            travelled += step;
+            yield return null;
+        }
+        Destroy(arrowRoot);
     }
 }

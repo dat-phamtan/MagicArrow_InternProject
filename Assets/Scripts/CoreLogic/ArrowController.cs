@@ -26,6 +26,7 @@ namespace Assets.Scripts.CoreLogic
         public event Action<int> OnMoveArrowAway;
 
 
+        // implement interface
         public ArrowController(IConfig config, IInput input)
         {
             _config = config;
@@ -62,6 +63,8 @@ namespace Assets.Scripts.CoreLogic
             return _directions[index];
         }
 
+
+        // logic
         public void Init()
         {
             LoadConfig();
@@ -217,7 +220,7 @@ namespace Assets.Scripts.CoreLogic
         private void MoveArrowAtIndex(int index)
         {
             var movedArrow = _configData.Arrows[_boardMatrix[index]];
-
+            var headIndexInMatrix = movedArrow.ArrowIndices[0];
             var headPos = new Position(movedArrow.XArrowHead, movedArrow.YArrowHead);
             var neckPos = IndexToPosition(movedArrow.ArrowIndices[1]);
 
@@ -229,25 +232,25 @@ namespace Assets.Scripts.CoreLogic
                     from = _configData.BoardWidth * movedArrow.YArrowHead;
                     to = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
                     delta = 1;
-                    HandleMove(_boardMatrix[index], index, from, to, delta);
+                    HandleMove(_boardMatrix[index], headIndexInMatrix, from, to, delta);
                     break;
                 case Direction.UP: //up
                     from = movedArrow.XArrowHead;
                     to = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
                     delta = _configData.BoardWidth;
-                    HandleMove(_boardMatrix[index], index, from, to, delta);
+                    HandleMove(_boardMatrix[index], headIndexInMatrix, from, to, delta);
                     break;
                 case Direction.LEFT: //left
                     from = _configData.BoardWidth * movedArrow.YArrowHead;
                     to = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
                     delta = -1;
-                    HandleMove(_boardMatrix[index], index, from, to, delta);
+                    HandleMove(_boardMatrix[index], headIndexInMatrix, from, to, delta);
                     break;
                 case Direction.DOWN: //down
                     from = movedArrow.XArrowHead;
                     to = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
                     delta = -_configData.BoardWidth;
-                    HandleMove(_boardMatrix[index], index, from, to, delta);
+                    HandleMove(_boardMatrix[index], headIndexInMatrix, from, to, delta);
                     break;
             }
         }
@@ -255,11 +258,23 @@ namespace Assets.Scripts.CoreLogic
         private void HandleMove(int indexInConfig, int headIndexInMatrix, int from, int to, int delta) //need to be renamed --> stupid name
         {
             int tempIndex = headIndexInMatrix + delta;
+            if (tempIndex < from || tempIndex > to)
+            {
+                DiableArrow(indexInConfig);
+                OnMoveArrowAway?.Invoke(indexInConfig);
+                return;
+            }
+
             var IsCollided = false;
             while (tempIndex >= from && tempIndex <= to)
             {
+                
                 if (_boardMatrix[tempIndex] != -1 && _boardMatrix[tempIndex] != indexInConfig && _boardMatrixCheck[tempIndex])
                 {
+                    //Debug.Log(indexInConfig);
+                    //Debug.Log(headIndexInMatrix);
+                    //Debug.Log(_boardMatrix[tempIndex]);
+                    //Debug.Log(_boardMatrixCheck[tempIndex]);
                     //collision detected --> invoke animaton
                     Debug.LogWarning("Can not move awway!!!");
                     IsCollided = true;
@@ -308,6 +323,7 @@ namespace Assets.Scripts.CoreLogic
         private void HandleUserInput(Position pos)
         {
             int index = IntPositionToIndex(pos);
+            //Debug.Log(index);
             if (!IsPartOfExistArrow(index))
                 return;
 
