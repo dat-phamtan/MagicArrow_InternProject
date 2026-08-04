@@ -20,16 +20,18 @@ public class ArrowAssembler : MonoBehaviour
     //private float tailWidth = 0.5f;
     //private float tailLength = 0.3f;
 
-    public GameObject Build(Arrow arrow, int boardWidth, int boardHeight, float spacing)
+    public GameObject Build(Arrow arrow, int boardWidth, int boardHeight, float spacing, out Vector3[] points, out ArrowMeshBuilder builder)
     {
         var root = new GameObject("Arrow");
         root.transform.SetParent(transform, false);
 
-        var points = BuildPathPoints(arrow.ArrowIndices, boardWidth, boardHeight, spacing);
+        points = BuildPathPoints(arrow.ArrowIndices, boardWidth, boardHeight, spacing);
+        builder = null;
+
         if (points.Length < 2)
             return root;
 
-        var builder = root.AddComponent<ArrowMeshBuilder>();
+        builder = root.AddComponent<ArrowMeshBuilder>();
         builder.headMaterial = headMaterial;
         builder.bodyMaterial = bodyMaterial;
         builder.tailMaterial = tailMaterial;

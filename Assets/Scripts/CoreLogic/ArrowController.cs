@@ -257,6 +257,7 @@ namespace Assets.Scripts.CoreLogic
 
         private void HandleMove(int indexInConfig, int headIndexInMatrix, int from, int to, int delta) //need to be renamed --> stupid name
         {
+            //Debug.Log(_directions[headIndexInMatrix]);
             int tempIndex = headIndexInMatrix + delta;
             if (tempIndex < from || tempIndex > to)
             {

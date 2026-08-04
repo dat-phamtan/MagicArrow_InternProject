@@ -6,6 +6,7 @@ using Assets.Scripts.IO;
 using Assets.Scripts.UI;
 using NUnit.Framework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics.Geometry;
 using UnityEngine;
@@ -24,6 +25,8 @@ public class GamePlayScene : MonoBehaviour
     //public Material arrowMaterial;
     public CameraModifier cameraModifier;
     public float spacing = 1f;
+    public float speed = 10f;
+    public float exitPadding = 10f;
 
 
     private IConfig _config;
@@ -34,7 +37,9 @@ public class GamePlayScene : MonoBehaviour
     private InputSystem_Actions _inputActions;
     private ConfigData _configData;
     private List<GameObject> _partsList;
-    private Dictionary<int, GameObject> _arrowRoots = new();
+    private Dictionary<int, GameObject> _arrowRoots;
+    private Dictionary<int, ArrowMeshBuilder> _arrowBuilders;
+    private Dictionary<int, Vector3[]> _arrowPaths;
 
 
 
@@ -47,6 +52,9 @@ public class GamePlayScene : MonoBehaviour
         _inputActions = new InputSystem_Actions();
         _uiManager = new UIManager(_controller);
 
+        _arrowRoots = new Dictionary<int, GameObject>();
+        _arrowBuilders = new Dictionary<int, ArrowMeshBuilder>();
+        _arrowPaths = new Dictionary<int, Vector3[]>();
     }
 
     void Start()
@@ -59,8 +67,11 @@ public class GamePlayScene : MonoBehaviour
 
         for (int i = 0; i < _configData.Arrows.Length; i++)
         {
-            var root = arrowAssembler.Build(_configData.Arrows[i], _configData.BoardWidth, _configData.BoardHeight, spacing);
+            var root = arrowAssembler.Build(_configData.Arrows[i], _configData.BoardWidth, _configData.BoardHeight, spacing, out var points, out var builder);
             _arrowRoots[i] = root;
+            _arrowBuilders[i] = builder;
+            _arrowPaths[i] = points;
+            
         }
 
         cameraModifier.FitCamera(_configData.BoardWidth, _configData.BoardHeight, spacing);
@@ -117,13 +128,20 @@ public class GamePlayScene : MonoBehaviour
         //if (!_arrowRoots.TryGetValue(boardIndex, out var arrowRoot) || arrowRoot == null)
         //    return;
         var arrowRoot = _arrowRoots[boardIndex];
+        var builder = _arrowBuilders[boardIndex];
+        var path = _arrowPaths[boardIndex];
 
         var arrow = _configData.Arrows[boardIndex];
         var headPos = new Position(arrow.XArrowHead, arrow.YArrowHead);
         var direction = DirectionToVector(_controller.GetDirectionAtPosition(headPos));
+        //Debug.Log($"{headPos.X}/ {headPos.Y}");
+        //Debug.Log(_controller.GetDirectionAtPosition(headPos).ToString());
 
         _arrowRoots.Remove(boardIndex);
-        StartCoroutine(AnimateExit(arrowRoot, direction));
+        _arrowBuilders.Remove(boardIndex);
+        _arrowPaths.Remove(boardIndex);
+
+        StartCoroutine(AnimateExit(arrowRoot, builder, path, direction));
     }
 
     private Vector3 DirectionToVector(Direction dir)
@@ -143,19 +161,37 @@ public class GamePlayScene : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator AnimateExit(GameObject arrowRoot, Vector3 direction)
+    private IEnumerator AnimateExit(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir)
     {
-        float speed = 10f;
-        float exitDistance = camera.orthographicSize * 2f * camera.aspect + 5f;
+        float exitDistance = camera.orthographicSize * 2f * camera.aspect + exitPadding;
+
+        int n = originalPath.Length;
+        float totalLength = (n - 1) * spacing;
+        float targetTravel = totalLength + exitDistance;
         float travelled = 0f;
 
-        while (travelled < exitDistance)
+        var newPath = new Vector3[n];
+        while (travelled < targetTravel)
         {
-            float step = speed * Time.deltaTime;
-            arrowRoot.transform.position += direction * step;
-            travelled += step;
+            travelled += speed * Time.deltaTime;
+            for (int i = 0;  i < n; i++)
+            {
+                float behind = i * spacing - travelled;
+                newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
+            }
+            builder.BuildArrow(newPath);
             yield return null;
         }
         Destroy(arrowRoot);
+    }
+
+    private Vector3 PositionBehindHead(Vector3[] path, Vector3 exitDir, float d)
+    {
+        if (d <= 0f)
+            return path[0] - exitDir * d;
+
+        int loIndex = Mathf.Min((int)(d / spacing), path.Length - 2);
+        float t = (d - loIndex * spacing) / spacing;
+        return Vector3.Lerp(path[loIndex], path[loIndex + 1], t);
     }
 }
