@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Config;
 using Assets.Scripts.Data;
 using Assets.Scripts.Input;
+using Assets.Scripts.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,15 +18,17 @@ namespace Assets.Scripts.CoreLogic
         private ConfigData _configData;
         private readonly IConfig _config;
         private readonly IInput _input;
+        private readonly IUIManager _uiManager;
+        private IEventHandler _eventHandler;
 
         private List<int> _boardMatrix;
         private List<bool> _boardMatrixCheck; //<-- stupid name
         private List<Direction> _directions;
+        private List<bool> _isAnimated;
+        
 
-        public event Action OnGridInit;
         public event Action<int> OnMoveArrowSuccess;
         public event Action<int, int> OnMoveArrowFail;
-
 
         // implement interface
         public ArrowController(IConfig config, IInput input)
@@ -66,14 +69,20 @@ namespace Assets.Scripts.CoreLogic
 
 
         // logic
-        public void Init()
+        public void Init(IEventHandler eventHandler)
         {
             LoadConfig();
             InputInit();
+            EventHandlerInit(eventHandler);
             MatrixesInit();
             LoadMatrixes();
             CurveCorrection();
             RegisterAction();
+        }
+
+        private void EventHandlerInit(IEventHandler eventHandler)
+        {
+            _eventHandler = eventHandler;
         }
 
         private void LoadConfig()
@@ -89,6 +98,7 @@ namespace Assets.Scripts.CoreLogic
         private void RegisterAction()
         {
             _input.OnInteractAtPosition += HandleUserInput;
+            _eventHandler.OnUnblockInteractWidthArrow += UnblockInteractWithArrow;
             //tobecontinued
         }
 
@@ -168,6 +178,32 @@ namespace Assets.Scripts.CoreLogic
             _boardMatrix = Enumerable.Repeat(-1, boardSize).ToList();
             _boardMatrixCheck = Enumerable.Repeat(false, boardSize).ToList();
             _directions = Enumerable.Repeat(Direction.LEFT, boardSize).ToList();
+            _isAnimated = Enumerable.Repeat(false, boardSize).ToList();
+        }
+
+        private void BlockInteractWithArrow(int matrixIndex)
+        {
+            var indices = _configData.Arrows[_boardMatrix[matrixIndex]].ArrowIndices;
+            for (int i = 0; i < indices.Length; i++)
+            {
+                _isAnimated[indices[i]] = true;
+            }
+        }
+
+        public void UnblockInteractWithArrow(int matrixIndex)
+        {
+            Debug.Log("+++++++++++++");
+            var indices = _configData.Arrows[_boardMatrix[matrixIndex]].ArrowIndices;
+            for (int i = 0; i < indices.Length; i++)
+            {
+                _isAnimated[indices[i]] = false;
+            }
+        }
+
+        private bool IsInteractBlocked(int matrixIndex)
+        {
+            Debug.Log(_isAnimated[matrixIndex]);
+            return _isAnimated[matrixIndex];
         }
 
         private void AddMatrixes(int configIndex, int cellIndex)
@@ -258,7 +294,6 @@ namespace Assets.Scripts.CoreLogic
 
         private void HandleMove(int indexInConfig, int headIndexInMatrix, int from, int to, int delta) //need to be renamed --> stupid name
         {
-            //Debug.Log(_directions[headIndexInMatrix]);
             int tempIndex = headIndexInMatrix + delta;
             if (tempIndex < from || tempIndex > to)
             {
@@ -273,13 +308,9 @@ namespace Assets.Scripts.CoreLogic
                 
                 if (_boardMatrix[tempIndex] != -1 && _boardMatrix[tempIndex] != indexInConfig && _boardMatrixCheck[tempIndex])
                 {
-                    //Debug.Log(indexInConfig);
-                    //Debug.Log(headIndexInMatrix);
-                    //Debug.Log(_boardMatrix[tempIndex]);
-                    //Debug.Log(_boardMatrixCheck[tempIndex]);
-                    //collision detected --> invoke animaton
-                    Debug.LogWarning("Can not move awway!!!");
+                    Debug.LogWarning("Fail");
                     var deltaIndex = (tempIndex - headIndexInMatrix) / delta;
+                    BlockInteractWithArrow(headIndexInMatrix);
                     OnMoveArrowFail?.Invoke(indexInConfig, deltaIndex);
                     IsCollided = true;
                     break;
@@ -288,9 +319,13 @@ namespace Assets.Scripts.CoreLogic
             }
             if (!IsCollided)
             {
-                //no collision --> invoke animation
+                Debug.LogWarning("Correct");
                 DiableArrow(indexInConfig);
                 OnMoveArrowSuccess?.Invoke(indexInConfig);
+                if (AllArrowsAreCleared())
+                {
+                    HandleWin();
+                }
             }
         }
 
@@ -301,6 +336,19 @@ namespace Assets.Scripts.CoreLogic
             {
                 _boardMatrixCheck[arrowIndices[i]] = false;
             }
+        }
+
+        private bool AllArrowsAreCleared()
+        {
+            for (int i = 0; i < _boardMatrixCheck.Count(); i++)
+                if (_boardMatrixCheck[i])
+                    return false;
+            return true;
+        }
+
+        private void HandleWin()
+        {
+            Debug.Log("VICTORY!");
         }
 
         private Direction GetDirection(Position prePos, Position currentPos)
@@ -329,6 +377,9 @@ namespace Assets.Scripts.CoreLogic
             int index = IntPositionToIndex(pos);
             //Debug.Log(index);
             if (!IsPartOfExistArrow(index))
+                return;
+
+            if (IsInteractBlocked(index))
                 return;
 
             MoveArrowAtIndex(index);

@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using PlayerInput = Assets.Scripts.Input.PlayerInput;
 
-public class GamePlayScene : MonoBehaviour
+public class GamePlayScene : MonoBehaviour, IEventHandler
 {
     public new Camera camera;
     //public GameObject dotPrefab;
@@ -27,6 +27,7 @@ public class GamePlayScene : MonoBehaviour
     public float spacing = 1f;
     public float speed = 10f;
     public float exitPadding = 10f;
+    public int heart = 3;
 
 
     private IConfig _config;
@@ -36,11 +37,12 @@ public class GamePlayScene : MonoBehaviour
     private IUIManager _uiManager;
     private InputSystem_Actions _inputActions;
     private ConfigData _configData;
-    private List<GameObject> _partsList;
     private Dictionary<int, GameObject> _arrowRoots;
     private Dictionary<int, ArrowMeshBuilder> _arrowBuilders;
     private Dictionary<int, Vector3[]> _arrowPaths;
 
+    public event Action<Vector3> OnInteractAt;
+    public event Action<int> OnUnblockInteractWidthArrow;
 
 
     private void Awake()
@@ -50,7 +52,7 @@ public class GamePlayScene : MonoBehaviour
         _input = new PlayerInput(spacing);
         _controller = new ArrowController(_config, _input);
         _inputActions = new InputSystem_Actions();
-        _uiManager = new UIManager(_controller);
+        _uiManager = new UIManager(_controller, _input, spacing);
 
         _arrowRoots = new Dictionary<int, GameObject>();
         _arrowBuilders = new Dictionary<int, ArrowMeshBuilder>();
@@ -59,8 +61,9 @@ public class GamePlayScene : MonoBehaviour
 
     void Start()
     {
-        _controller.Init();
+        _controller.Init(this);
         _configData = _controller.GetConfigData();
+        _uiManager.Init(this);
 
         for (int i = 0; i < _configData.Arrows.Length; i++)
         {
@@ -92,7 +95,7 @@ public class GamePlayScene : MonoBehaviour
     private void HandleInput(InputAction.CallbackContext context)
     {
         var screenPos = context.ReadValue<Vector2>();
-        _input.HandleInput(camera.ScreenToWorldPoint(screenPos));
+        OnInteractAt?.Invoke(camera.ScreenToWorldPoint(screenPos));
     }
 
     //public void DrawBoardTest(List<Verticle> grid)
@@ -147,7 +150,8 @@ public class GamePlayScene : MonoBehaviour
         var headPos = new Position(arrow.XArrowHead, arrow.YArrowHead);
         var direction = DirectionToVector(_controller.GetDirectionAtPosition(headPos));
 
-        StartCoroutine(AnimateMoveFail(arrowRoot, builder, path, direction, deltaIndex));
+        StartCoroutine(AnimateMoveFail(arrowRoot, builder, path, direction, deltaIndex, boardIndex));
+        
     }
 
     private Vector3 DirectionToVector(Direction dir)
@@ -167,12 +171,12 @@ public class GamePlayScene : MonoBehaviour
         }
     }
 
-    private IEnumerator AnimateMoveFail(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir, int deltaIndex)
+    private IEnumerator AnimateMoveFail(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir, int deltaIndex, int boardIndex)
     {
         int n = originalPath.Length;
         float targetTravel = (deltaIndex - 1) * spacing;
         float travelled = 0f;
-        var originPath = originalPath;
+        //var originPath = originalPath;
         var newPath = new Vector3[n];
         while (travelled < targetTravel)
         {
@@ -185,23 +189,20 @@ public class GamePlayScene : MonoBehaviour
             builder.BuildArrow(newPath);
             yield return null;
         }
-        //need fix
 
-        //builder.BuildArrow(originPath);
-        Array.Reverse(originPath);
-        travelled = 0;
-        while (travelled < targetTravel)
+        while (travelled > 0)
         {
-            travelled += speed * Time.deltaTime;
+            travelled -= speed * Time.deltaTime;
             for (int i = 0; i < n; i++)
             {
                 float behind = i * spacing - travelled;
-                newPath[i] = PositionBehindHead(originPath, -exitDir, behind);
+                newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
             }
             builder.BuildArrow(newPath);
             yield return null;
         }
-
+        builder.BuildArrow(originalPath);
+        OnUnblockInteractWidthArrow?.Invoke(boardIndex);
     }
 
     private IEnumerator AnimateMoveSuccess(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir)
