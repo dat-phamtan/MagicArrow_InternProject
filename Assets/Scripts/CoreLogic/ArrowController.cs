@@ -70,6 +70,11 @@ namespace Assets.Scripts.CoreLogic
             return _directions[boardIndex];
         }
 
+        public Direction GetDirectionAtBoardIndex(int boardIndex)
+        {
+            return _directions[boardIndex];
+        }
+
         public void ChangeEraserUsedMode()
         {
             IsWaitingForEraserBooster = !IsWaitingForEraserBooster;

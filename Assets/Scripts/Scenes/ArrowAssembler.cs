@@ -1,4 +1,6 @@
+using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,9 +14,9 @@ public class ArrowAssembler : MonoBehaviour
     public Sprite body;
     public Sprite tail;
 
-    public Image image;
+    public GameObject arrowRayHint;
 
-    public GameObject Build(Arrow arrow, int boardWidth, int boardHeight, float spacing, out Vector3[] points, out ArrowMeshBuilder builder)
+    public GameObject Build(IController controller, Arrow arrow, int boardWidth, int boardHeight, float spacing, out Vector3[] points, out ArrowMeshBuilder builder)
     {
         var root = new GameObject("Arrow");
         root.transform.SetParent(transform, false);
@@ -38,11 +40,22 @@ public class ArrowAssembler : MonoBehaviour
 
         builder.tailWidth = tail.rect.height / tail.pixelsPerUnit;
         builder.tailLength = tail.rect.width / tail.pixelsPerUnit;
-        builder.BuildArrow(points);
 
+        var arrowIndices = arrow.ArrowIndices;
+        builder.BuildArrow(controller, arrowIndices, points, spacing);
+
+
+        //boosters 
+        //var rayHintInstance = Instantiate(arrowRayHint, root.transform);
+        //var rect = rayHintInstance.GetComponent<RectTransform>();
+        //rect.sizeDelta = new Vector2(body.rect.width, Mathf.Max(boardWidth, boardHeight));
+        //rayHintInstance.transform.position = IndexToWorldPos(arrow.ArrowIndices[0], boardWidth, boardHeight, spacing);
+        ////rayHintInstance.transform.
+        //rayHintInstance.SetActive(false);
 
         return root;
     }
+
 
     private Vector3 IndexToWorldPos(int index, int boardWidth, int boardHeight, float spacing)
     {

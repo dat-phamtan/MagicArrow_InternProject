@@ -20,6 +20,7 @@ namespace Assets.Scripts.CoreLogic
         public PartType GetArrowTypeAtPosition(Position pos);
         public ConfigData GetConfigData();
         public Direction GetDirectionAtPosition(Position pos);
+        public Direction GetDirectionAtBoardIndex(int boardIndex);
         public void ChangeEraserUsedMode();
         public void DiableArrow(int configIndex);
 

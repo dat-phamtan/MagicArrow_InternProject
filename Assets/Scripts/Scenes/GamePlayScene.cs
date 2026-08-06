@@ -54,13 +54,12 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     void Start()
     {
-        
         _controller.Init(this);
         _uiManager.Init(this);
         _configData = _controller.GetConfigData();
         for (int i = 0; i < _configData.Arrows.Length; i++)
         {
-            var root = arrowAssembler.Build(_configData.Arrows[i], _configData.BoardWidth, _configData.BoardHeight, spacing, out var points, out var builder);
+            var root = arrowAssembler.Build(_controller, _configData.Arrows[i], _configData.BoardWidth, _configData.BoardHeight, spacing, out var points, out var builder);
             _arrowRoots[i] = root;
             _arrowBuilders[i] = builder;
             _arrowPaths[i] = points;  
@@ -107,7 +106,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _arrowBuilders.Remove(boardIndex);
         _arrowPaths.Remove(boardIndex);
 
-        StartCoroutine(AnimateMoveSuccess(arrowRoot, builder, path, direction));
+        StartCoroutine(AnimateMoveSuccess(arrowRoot, builder, path, direction, boardIndex));
     }
 
     private void HandleMoveFail(int boardIndex, int deltaIndex)
@@ -165,7 +164,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
                 float behind = i * spacing - travelled;
                 newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
             }
-            builder.BuildArrow(newPath);
+            builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPath, spacing);
             yield return null;
         }
 
@@ -177,14 +176,14 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
                 float behind = i * spacing - travelled;
                 newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
             }
-            builder.BuildArrow(newPath);
+            builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPath, spacing);
             yield return null;
         }
-        builder.BuildArrow(originalPath);
+        builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, originalPath, spacing);
         OnUnblockInteractWidthArrow?.Invoke(boardIndex);
     }
 
-    private IEnumerator AnimateMoveSuccess(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir)
+    private IEnumerator AnimateMoveSuccess(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir, int boardIndex)
     {
         float exitDistance = camera.orthographicSize * 2f * camera.aspect + exitPadding;
 
@@ -202,7 +201,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
                 float distanceFromInitHead = i * spacing - travelled; 
                 newPath[i] = PositionBehindHead(originalPath, exitDir, distanceFromInitHead);
             }
-            builder.BuildArrow(newPath);
+            builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPath, spacing);
             yield return null;
         }
         Destroy(arrowRoot);
