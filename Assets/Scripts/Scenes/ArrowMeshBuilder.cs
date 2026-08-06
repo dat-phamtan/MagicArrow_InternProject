@@ -80,6 +80,8 @@ public class ArrowMeshBuilder : MonoBehaviour
             Vector3 dirNext = ((i < n - 1) ? (path[i + 1] - path[i]) : dirPrev).normalized;
             bool isCorner = dirPrev != dirNext;
 
+            //above is correct
+            Debug.Log(isCorner);
             if (isCorner)
             {
                 var cornerCenter = GetCornerCenter(path[i - 1], path[i], path[i + 1], spacing);
@@ -94,13 +96,18 @@ public class ArrowMeshBuilder : MonoBehaviour
 
                 for (int j = 0; j < cornerVerticles.Count; j += 2)
                 {
+                    int idx = vertices.Count;
                     vertices.Add(cornerVerticles[j + 1]);
                     vertices.Add(cornerVerticles[j]);
-                    int idx = vertices.Count;
                     rows.Add((idx, idx + 1));
+
+                    Debug.Log($"{cornerVerticles[j + 1].x} / {cornerVerticles[j + 1].y}");
+                    Debug.Log($"{cornerVerticles[j].x} / {cornerVerticles[j].y}");
 
                     int rowIndex = j / 2 + 1;
                     float u = (lengthBeforeCorner + segmentLength * rowIndex / rowCount) / bodyLength;
+                    //Debug.Log(u);
+                    Debug.Log("================");
                     uvs.Add(new Vector2(u, 1f));
                     uvs.Add(new Vector2(u, 0f));
                 }
@@ -112,15 +119,22 @@ public class ArrowMeshBuilder : MonoBehaviour
                 Vector3 dirAvg = (dirPrev + dirNext).normalized;
                 Vector3 normal = new(-dirAvg.y, dirAvg.x, 0f);
 
+                int idx = vertices.Count;
                 vertices.Add(path[i] + normal * halfThickness);
                 vertices.Add(path[i] - normal * halfThickness);
-                int idx = vertices.Count;
+
+                Debug.Log(path[i] + normal * halfThickness);
+                Debug.Log(path[i] - normal * halfThickness);
+
+
                 rows.Add((idx, idx + 1));
 
                 if (i > 0) 
                     accumulatedLength += Vector3.Distance(path[i], path[i - 1]);
 
                 float u = accumulatedLength / bodyLength;
+                //Debug.Log(u);
+                Debug.Log("================");
                 uvs.Add(new Vector2(u, 1f));
                 uvs.Add(new Vector2(u, 0f));
             }
@@ -160,13 +174,13 @@ public class ArrowMeshBuilder : MonoBehaviour
         switch (direction)
         {
             case Direction.LEFTDOWN:
-                return 270;
+                return 90;
             case Direction.RIGHTDOWN:
                 return 180;
             case Direction.LEFTUP:
                 return 0;
             case Direction.RIGHTUP:
-                return 90;
+                return 270;
             default:
                 return 0;
         }
@@ -234,6 +248,7 @@ public class ArrowMeshBuilder : MonoBehaviour
             float outerY = cornerCenter.y + outerRadius * sin;
             result.Add(new Vector3(outerX, outerY, 0f));
         }
+        result.Reverse();
         return result;
     }
 }

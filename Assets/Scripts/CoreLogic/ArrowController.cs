@@ -222,7 +222,7 @@ namespace Assets.Scripts.CoreLogic
 
         private bool IsInteractBlocked(int matrixIndex)
         {
-            Debug.Log(_isAnimated[matrixIndex]);
+            //Debug.Log(_isAnimated[matrixIndex]);
             return _isAnimated[matrixIndex];
         }
 

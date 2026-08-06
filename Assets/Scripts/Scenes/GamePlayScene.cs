@@ -28,6 +28,9 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public float exitPadding = 10f;
     public int heart = 3;
 
+    private bool _isHolded = false;
+    private Vector2 currentPos;
+
     private IController _controller;
     private IUIManager _uiManager;
     private InputSystem_Actions _inputActions;
@@ -70,24 +73,61 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private void OnEnable()
     {
         _inputActions.Enable();
-        _inputActions.UI.ClickAtPos.performed += HandleInput;
+        _inputActions.UI.Clicked.started += HandlePressedStart;
+        _inputActions.UI.Clicked.canceled += HandlePressedEnd;
+        _inputActions.UI.InteractAtPos.performed += HandleSufInput;
+        _inputActions.UI.ClickAtPos.canceled += HandlePlayZoneClicked;
+        
+
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
         _controller.OnMoveArrowFail += HandleMoveFail;
         _controller.OnEraseArrowAt += HandleEraseArrowAt;
 
     }
 
+    private void HandlePressedEnd(InputAction.CallbackContext context)
+    {
+            
+        _isHolded = false;  
+    }
+
+    private void HandlePressedStart(InputAction.CallbackContext context)
+    {
+        _isHolded = true;
+    }
+
+    private void HandleSufInput(InputAction.CallbackContext context)
+    {
+        if (_isHolded)
+        {
+            if (currentPos == null)
+            {
+                currentPos = context.ReadValue<Vector2>();
+                return;
+            }
+            var movedPosition = (context.ReadValue<Vector2>() - currentPos).normalized;
+            //cameraModifier.transform.position = movedPosition * 4f;
+            Debug.Log($"{movedPosition}");
+        }
+    }
+
     private void OnDisable()
     {
-        _inputActions.UI.ClickAtPos.performed -= HandleInput;
+        _inputActions.UI.Clicked.started -= HandlePressedStart;
+        _inputActions.UI.Clicked.canceled -= HandlePressedEnd;
+        _inputActions.UI.InteractAtPos.performed -= HandleSufInput;
+        _inputActions.UI.ClickAtPos.canceled -= HandlePlayZoneClicked;
+
         _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
         _controller.OnMoveArrowFail -= HandleMoveFail;
         _controller.OnEraseArrowAt -= HandleEraseArrowAt;
         _inputActions.Disable();
     }
 
-    private void HandleInput(InputAction.CallbackContext context)
+    private void HandlePlayZoneClicked(InputAction.CallbackContext context)
     {
+        if (_isHolded)
+            return;
         var screenPos = context.ReadValue<Vector2>();
         OnInteractAt?.Invoke(camera.ScreenToWorldPoint(screenPos));
     }

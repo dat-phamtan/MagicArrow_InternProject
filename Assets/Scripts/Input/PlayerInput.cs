@@ -35,7 +35,7 @@ namespace Assets.Scripts.Input
                 return;
 
             var boardPos = ConvertWorldPointToPosition(pos);
-            Debug.Log($"{boardPos.X}/{boardPos.Y}");
+            //Debug.Log($"{boardPos.X}/{boardPos.Y}");
             OnInteractAtPosition?.Invoke(boardPos);
 
         }
