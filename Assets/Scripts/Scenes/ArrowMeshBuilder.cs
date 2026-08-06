@@ -13,11 +13,11 @@ public class ArrowMeshBuilder : MonoBehaviour
     public Material tailMaterial;
     public Image arrowRayHint;
 
-    public float bodyWidth = 0.3f;
-    public float bodyTileLength = 0.24f;
-    public float headWidth = 0.5f;
+    public float bodyThickness = 0.3f;
+    public float bodyLength = 0.24f;
+    public float headThickness = 0.5f;
     public float headLength = 0.5f;
-    public float tailWidth = 0.5f;
+    public float tailThickness = 0.5f;
     public float tailLength = 0.3f;
 
     private Mesh _mesh;
@@ -51,79 +51,86 @@ public class ArrowMeshBuilder : MonoBehaviour
         var tailTris = new List<int>();
         var rows = new List<(int a, int b)>();
 
-        // head 
+        //head mesh
         Vector3 headDir = (path[1] - path[0]).normalized;
         Vector3 headNormal = new(-headDir.y, headDir.x, 0f);
         AddQuad(vertices, uvs, headTris,
             back: path[0] - 0.5f * headLength * headDir,
             front: path[0] + 0.5f * headLength * headDir,
-            normal: headNormal, halfWidth: headWidth * 0.5f);
+            normal: headNormal, 
+            halfWidth: headThickness * 0.5f);
 
-        // tail
+        //tail mesh
         int last = n - 1;
         Vector3 tailDir = (path[last] - path[last - 1]).normalized;
         Vector3 tailNormal = new(-tailDir.y, tailDir.x, 0f);
         AddQuad(vertices, uvs, tailTris,
             back: path[last] - 0.5f * tailLength * tailDir,
             front: path[last] + 0.5f * tailLength * tailDir,
-            normal: tailNormal, halfWidth: tailWidth * 0.5f);
+            normal: tailNormal, 
+            halfWidth: tailThickness * 0.5f);
 
-        // body
-        int bodyBase = vertices.Count;
-        float halfWidth = bodyWidth / 2f;
+        //body mesh
+        float halfThickness = bodyThickness / 2f;
         float accumulatedLength = 0f;
 
         for (int i = 0; i < n; i++)
         {
-            Vector3 dirPrev = SnapToAxis((i > 0) ? (path[i] - path[i - 1]) : (path[1] - path[0]));
-            Vector3 dirNext = SnapToAxis((i < n - 1) ? (path[i + 1] - path[i]) : dirPrev);
+            Vector3 dirPrev = ((i > 0) ? (path[i] - path[i - 1]) : (path[1] - path[0])).normalized;
+            Vector3 dirNext = ((i < n - 1) ? (path[i + 1] - path[i]) : dirPrev).normalized;
             bool isCorner = dirPrev != dirNext;
 
             if (isCorner)
             {
                 var cornerCenter = GetCornerCenter(path[i - 1], path[i], path[i + 1], spacing);
-                float innerRadius = spacing - bodyWidth / 2f;
-                float startAngle = GetStartAngle(controller.GetDirectionAtBoardIndex(arrowIndices[i]));
-                
-                var cornerVerticles = GenerateCornerVerticle(cornerCenter, innerRadius, bodyWidth, startAngle, 10);
+                float innerRadius = spacing - bodyThickness / 2f;
+                float startAngle = GetStartAngle(controller.GetDirectionAtBoardIndex(arrowIndices[i])); 
+
+                var cornerVerticles = GenerateCornerVerticle(cornerCenter, innerRadius, bodyThickness, startAngle, 10);
+
+                float segmentLength = (i > 0) ? Vector3.Distance(path[i], path[i - 1]) : 0f;
+                float lengthBeforeCorner = accumulatedLength;
+                int rowCount = cornerVerticles.Count / 2;
+
                 for (int j = 0; j < cornerVerticles.Count; j += 2)
                 {
-                    int idx = vertices.Count;
-                    vertices.Add(cornerVerticles[j]);
                     vertices.Add(cornerVerticles[j + 1]);
+                    vertices.Add(cornerVerticles[j]);
+                    int idx = vertices.Count;
                     rows.Add((idx, idx + 1));
 
-                    if (i > 0) accumulatedLength += Vector3.Distance(path[i], path[i - 1]);
-
-                    float u = accumulatedLength / Mathf.Max(bodyTileLength, 0.001f);
+                    int rowIndex = j / 2 + 1;
+                    float u = (lengthBeforeCorner + segmentLength * rowIndex / rowCount) / bodyLength;
                     uvs.Add(new Vector2(u, 1f));
                     uvs.Add(new Vector2(u, 0f));
                 }
+
+                accumulatedLength = lengthBeforeCorner + segmentLength;
             }
             else
             {
                 Vector3 dirAvg = (dirPrev + dirNext).normalized;
-                if (dirAvg == Vector3.zero) dirAvg = dirPrev;
                 Vector3 normal = new(-dirAvg.y, dirAvg.x, 0f);
 
+                vertices.Add(path[i] + normal * halfThickness);
+                vertices.Add(path[i] - normal * halfThickness);
                 int idx = vertices.Count;
-                vertices.Add(path[i] + normal * halfWidth);
-                vertices.Add(path[i] - normal * halfWidth);
                 rows.Add((idx, idx + 1));
 
-                if (i > 0) accumulatedLength += Vector3.Distance(path[i], path[i - 1]);
+                if (i > 0) 
+                    accumulatedLength += Vector3.Distance(path[i], path[i - 1]);
 
-                float u = accumulatedLength / Mathf.Max(bodyTileLength, 0.001f);
+                float u = accumulatedLength / bodyLength;
                 uvs.Add(new Vector2(u, 1f));
                 uvs.Add(new Vector2(u, 0f));
             }
         }
 
 
-        for (int r = 0; r < rows.Count - 1; r++)
+        for (int i = 0; i < rows.Count - 1; i++)
         {
-            var (topLeft, topRight) = rows[r];
-            var (bottomLeft, bottomRight) = rows[r + 1];
+            var (topLeft, topRight) = rows[i];
+            var (bottomLeft, bottomRight) = rows[i + 1];
 
             bodyTris.Add(topLeft);
             bodyTris.Add(bottomLeft);

@@ -144,7 +144,7 @@ namespace Assets.Scripts.CoreLogic
             {
                 var arrowIndices = _configData.Arrows[i].ArrowIndices;
                 if (arrowIndices.Length < 3)
-                    return;
+                    continue;
 
                 for (int j = 1; j < arrowIndices.Length - 1; j++)
                     if (IsCurveExist(arrowIndices[j - 1], arrowIndices[j + 1]))

@@ -32,13 +32,13 @@ public class ArrowAssembler : MonoBehaviour
         builder.bodyMaterial = bodyMaterial;
         builder.tailMaterial = tailMaterial;
 
-        builder.bodyWidth = body.rect.height / body.pixelsPerUnit;
-        builder.bodyTileLength = body.rect.width / body.pixelsPerUnit;
+        builder.bodyThickness = body.rect.height / body.pixelsPerUnit;
+        builder.bodyLength = body.rect.width / body.pixelsPerUnit;
 
-        builder.headWidth = head.rect.height / head.pixelsPerUnit;
+        builder.headThickness = head.rect.height / head.pixelsPerUnit;
         builder.headLength = head.rect.width / head.pixelsPerUnit;
 
-        builder.tailWidth = tail.rect.height / tail.pixelsPerUnit;
+        builder.tailThickness = tail.rect.height / tail.pixelsPerUnit;
         builder.tailLength = tail.rect.width / tail.pixelsPerUnit;
 
         var arrowIndices = arrow.ArrowIndices;
