@@ -2,6 +2,7 @@ using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Utility;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem.XR;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -48,6 +49,7 @@ public class ArrowMeshBuilder : MonoBehaviour
         var headTris = new List<int>();
         var bodyTris = new List<int>();
         var tailTris = new List<int>();
+        var rows = new List<(int a, int b)>();
 
         // head 
         Vector3 headDir = (path[1] - path[0]).normalized;
@@ -81,27 +83,15 @@ public class ArrowMeshBuilder : MonoBehaviour
             {
                 var cornerCenter = GetCornerCenter(path[i - 1], path[i], path[i + 1], spacing);
                 float innerRadius = spacing - bodyWidth / 2f;
-                float startAngle = 0;
-                switch (controller.GetDirectionAtBoardIndex(arrowIndices[i]))
-                {
-                    case Direction.LEFTDOWN:
-                        startAngle = 90;
-                        break;
-                    case Direction.RIGHTDOWN:
-                        startAngle = 0;
-                        break;
-                    case Direction.LEFTUP:
-                        startAngle = 180;
-                        break;
-                    case Direction.RIGHTUP:
-                        startAngle = 270;
-                        break;
-                }
+                float startAngle = GetStartAngle(controller.GetDirectionAtBoardIndex(arrowIndices[i]));
+                
                 var cornerVerticles = GenerateCornerVerticle(cornerCenter, innerRadius, bodyWidth, startAngle, 10);
                 for (int j = 0; j < cornerVerticles.Count; j += 2)
                 {
+                    int idx = vertices.Count;
                     vertices.Add(cornerVerticles[j]);
                     vertices.Add(cornerVerticles[j + 1]);
+                    rows.Add((idx, idx + 1));
 
                     if (i > 0) accumulatedLength += Vector3.Distance(path[i], path[i - 1]);
 
@@ -116,8 +106,10 @@ public class ArrowMeshBuilder : MonoBehaviour
                 if (dirAvg == Vector3.zero) dirAvg = dirPrev;
                 Vector3 normal = new(-dirAvg.y, dirAvg.x, 0f);
 
+                int idx = vertices.Count;
                 vertices.Add(path[i] + normal * halfWidth);
                 vertices.Add(path[i] - normal * halfWidth);
+                rows.Add((idx, idx + 1));
 
                 if (i > 0) accumulatedLength += Vector3.Distance(path[i], path[i - 1]);
 
@@ -125,35 +117,19 @@ public class ArrowMeshBuilder : MonoBehaviour
                 uvs.Add(new Vector2(u, 1f));
                 uvs.Add(new Vector2(u, 0f));
             }
-
-            //Vector3 dirAvg = (dirPrev + dirNext).normalized;
-            //if (dirAvg == Vector3.zero) dirAvg = dirPrev;
-            //Vector3 normal = new(-dirAvg.y, dirAvg.x, 0f);
-            //float miterLength = isCorner ? halfWidth * CORNER_MULTIPLIER : halfWidth;
-
-            //vertices.Add(path[i] + normal * miterLength);
-            //vertices.Add(path[i] - normal * miterLength);
-
-            //if (i > 0) accumulatedLength += Vector3.Distance(path[i], path[i - 1]);
-
-            //float u = accumulatedLength / Mathf.Max(bodyTileLength, 0.001f);
-            //uvs.Add(new Vector2(u, 1f));
-            //uvs.Add(new Vector2(u, 0f));
         }
 
 
-        for (int i = 0; i < n - 1; i++)
+        for (int r = 0; r < rows.Count - 1; r++)
         {
-            int topLeft = bodyBase + i * 2;
-            int topRight = bodyBase + i * 2 + 1;
-            int bottomLeft = bodyBase + (i + 1) * 2;
-            int bottomRight = bodyBase + (i + 1) * 2 + 1;
+            var (topLeft, topRight) = rows[r];
+            var (bottomLeft, bottomRight) = rows[r + 1];
 
-            bodyTris.Add(topLeft); 
-            bodyTris.Add(bottomLeft); 
+            bodyTris.Add(topLeft);
+            bodyTris.Add(bottomLeft);
             bodyTris.Add(topRight);
-            bodyTris.Add(topRight); 
-            bodyTris.Add(bottomLeft); 
+            bodyTris.Add(topRight);
+            bodyTris.Add(bottomLeft);
             bodyTris.Add(bottomRight);
         }
 
@@ -170,6 +146,23 @@ public class ArrowMeshBuilder : MonoBehaviour
         _mesh.RecalculateBounds();
 
         _meshRenderer.materials = new[] { headMaterial, bodyMaterial, tailMaterial };
+    }
+
+    private float GetStartAngle(Direction direction)
+    {
+        switch (direction)
+        {
+            case Direction.LEFTDOWN:
+                return 270;
+            case Direction.RIGHTDOWN:
+                return 180;
+            case Direction.LEFTUP:
+                return 0;
+            case Direction.RIGHTUP:
+                return 90;
+            default:
+                return 0;
+        }
     }
 
     private void AddQuad(List<Vector3> vertices, List<Vector2> uvs, List<int> tris, Vector3 back, Vector3 front, Vector3 normal, float halfWidth)
