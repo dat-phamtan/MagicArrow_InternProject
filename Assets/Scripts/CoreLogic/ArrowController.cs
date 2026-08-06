@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Unity.VisualScripting;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
@@ -19,16 +20,18 @@ namespace Assets.Scripts.CoreLogic
         private readonly IConfig _config;
         private readonly IInput _input;
         private readonly IUIManager _uiManager;
-        private IEventHandler _eventHandler;
+        private IEventHandler _eventHandler;    
 
-        private List<int> _boardMatrix;
-        private List<bool> _boardMatrixCheck; //<-- stupid name
+        private List<int> _boardMatrix; //index: boardIndex, value: configIndex
+        private List<bool> _boardMatrixCheck; //index: boardIndex, value: true/false   <-- stupid name
         private List<Direction> _directions;
         private List<bool> _isAnimated;
+        private bool IsWaitingForEraserBooster = false;
         
 
         public event Action<int> OnMoveArrowSuccess;
         public event Action<int, int> OnMoveArrowFail;
+        public event Action<int> OnEraseArrowAt;
 
         // implement interface
         public ArrowController(IConfig config, IInput input)
@@ -63,8 +66,22 @@ namespace Assets.Scripts.CoreLogic
 
         public Direction GetDirectionAtPosition(Position pos)
         {
-            var index = IntPositionToIndex(pos);
-            return _directions[index];
+            var boardIndex = IntPositionToIndex(pos);
+            return _directions[boardIndex];
+        }
+
+        public void ChangeEraserUsedMode()
+        {
+            IsWaitingForEraserBooster = !IsWaitingForEraserBooster;
+        }
+
+        public void DiableArrow(int configIndex)
+        {
+            var arrowIndices = _configData.Arrows[configIndex].ArrowIndices;
+            for (int i = 0; i < arrowIndices.Length; i++)
+            {
+                _boardMatrixCheck[arrowIndices[i]] = false;
+            }
         }
 
 
@@ -104,13 +121,13 @@ namespace Assets.Scripts.CoreLogic
 
         private void LoadMatrixes()
         {
-            for (int arrowIndex = 0; arrowIndex < _configData.Arrows.Length; arrowIndex++)
+            for (int configIndex = 0; configIndex < _configData.Arrows.Length; configIndex++)
             {
-                var arrow = _configData.Arrows[arrowIndex];
-                for (int j = 0; j < arrow.ArrowIndices.Length; j++)
+                var arrow = _configData.Arrows[configIndex];
+                for (int i = 0; i < arrow.ArrowIndices.Length; i++)
                 {
-                    int cellIndex = arrow.ArrowIndices[j];
-                    AddMatrixes(arrowIndex, cellIndex);
+                    int boardIndex = arrow.ArrowIndices[i];
+                    AddMatrixes(configIndex, boardIndex);
                 }
                 DirectionInit(arrow.ArrowIndices);
             }
@@ -124,7 +141,6 @@ namespace Assets.Scripts.CoreLogic
                 if (arrowIndices.Length < 3)
                     return;
 
-               //if (IsCurveExist())
                 for (int j = 1; j < arrowIndices.Length - 1; j++)
                     if (IsCurveExist(arrowIndices[j - 1], arrowIndices[j + 1]))
                         AssignCurve(arrowIndices[j], _directions[arrowIndices[j - 1]], _directions[arrowIndices[j + 1]]);
@@ -139,36 +155,36 @@ namespace Assets.Scripts.CoreLogic
             return _directions[preIndex] != _directions[posIndex];
         }
 
-        private void AssignCurve(int index, Direction pre, Direction pos)
+        private void AssignCurve(int boardIndex, Direction pre, Direction pos)
         {
             if (pre == Direction.RIGHT)
             {
                 if (pos == Direction.UP)
-                    _directions[index] = Direction.RIGHTUP; // _|
+                    _directions[boardIndex] = Direction.RIGHTUP; // _|
                 else
-                    _directions[index] = Direction.RIGHTDOWN;//  -|
+                    _directions[boardIndex] = Direction.RIGHTDOWN;//  -|
             }
             else if (pre == Direction.LEFT)
             {
                 if (pos == Direction.UP)
-                    _directions[index] = Direction.LEFTUP;//  |_
+                    _directions[boardIndex] = Direction.LEFTUP;//  |_
                 else
-                    _directions[index] = Direction.LEFTDOWN;//  
+                    _directions[boardIndex] = Direction.LEFTDOWN;//  
 
             }
             else if (pre == Direction.UP)
             {
                 if (pos == Direction.LEFT)
-                    _directions[index] = Direction.LEFTUP;
+                    _directions[boardIndex] = Direction.LEFTUP;
                 else
-                    _directions[index] = Direction.RIGHTUP;
+                    _directions[boardIndex] = Direction.RIGHTUP;
             }
             else
             {
                 if (pos == Direction.LEFT)
-                    _directions[index] = Direction.LEFTDOWN;
+                    _directions[boardIndex] = Direction.LEFTDOWN;
                 else
-                    _directions[index] = Direction.RIGHTDOWN;
+                    _directions[boardIndex] = Direction.RIGHTDOWN;
             }
         }
 
@@ -181,19 +197,18 @@ namespace Assets.Scripts.CoreLogic
             _isAnimated = Enumerable.Repeat(false, boardSize).ToList();
         }
 
-        private void BlockInteractWithArrow(int matrixIndex)
+        private void BlockInteractWithArrow(int configIndex)
         {
-            var indices = _configData.Arrows[_boardMatrix[matrixIndex]].ArrowIndices;
+            var indices = _configData.Arrows[configIndex].ArrowIndices;
             for (int i = 0; i < indices.Length; i++)
             {
                 _isAnimated[indices[i]] = true;
             }
         }
 
-        public void UnblockInteractWithArrow(int matrixIndex)
+        private void UnblockInteractWithArrow(int configIndex)
         {
-            Debug.Log("+++++++++++++");
-            var indices = _configData.Arrows[_boardMatrix[matrixIndex]].ArrowIndices;
+            var indices = _configData.Arrows[configIndex].ArrowIndices;
             for (int i = 0; i < indices.Length; i++)
             {
                 _isAnimated[indices[i]] = false;
@@ -237,9 +252,9 @@ namespace Assets.Scripts.CoreLogic
             return true;
         }
 
-        private bool IsPartOfExistArrow(int index)
+        private bool IsPartOfExistArrow(int boardIndex)
         {
-            return _boardMatrix[index] != -1 && _boardMatrixCheck[index];
+            return _boardMatrix[boardIndex] != -1 && _boardMatrixCheck[boardIndex];
         }
 
 
@@ -248,10 +263,10 @@ namespace Assets.Scripts.CoreLogic
             return pos.X + pos.Y * _configData.BoardWidth;
         }
 
-        private Position IndexToPosition(int index)
+        private Position IndexToPosition(int boardIndex)
         {
             int boardWidth = _configData.BoardWidth;
-            return new Position(index % boardWidth, index / boardWidth);
+            return new Position(boardIndex % boardWidth, boardIndex / boardWidth);
         }
 
         private void MoveArrowAtIndex(int index)
@@ -262,66 +277,66 @@ namespace Assets.Scripts.CoreLogic
             var neckPos = IndexToPosition(movedArrow.ArrowIndices[1]);
 
             var direction = GetDirection(headPos, neckPos);
-            int from, to, delta;
+            int minBoardIndex, maxBoardIndex, step;
             switch (direction)
             {
                 case Direction.RIGHT: //right
-                    from = _configData.BoardWidth * movedArrow.YArrowHead;
-                    to = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
-                    delta = 1;
-                    HandleMove(_boardMatrix[index], headIndexInMatrix, from, to, delta);
+                    minBoardIndex = _configData.BoardWidth * movedArrow.YArrowHead;
+                    maxBoardIndex = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
+                    step = 1;
+                    HandleMove(_boardMatrix[index], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
                 case Direction.UP: //up
-                    from = movedArrow.XArrowHead;
-                    to = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
-                    delta = _configData.BoardWidth;
-                    HandleMove(_boardMatrix[index], headIndexInMatrix, from, to, delta);
+                    minBoardIndex = movedArrow.XArrowHead;
+                    maxBoardIndex = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
+                    step = _configData.BoardWidth;
+                    HandleMove(_boardMatrix[index], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
                 case Direction.LEFT: //left
-                    from = _configData.BoardWidth * movedArrow.YArrowHead;
-                    to = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
-                    delta = -1;
-                    HandleMove(_boardMatrix[index], headIndexInMatrix, from, to, delta);
+                    minBoardIndex = _configData.BoardWidth * movedArrow.YArrowHead;
+                    maxBoardIndex = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
+                    step = -1;
+                    HandleMove(_boardMatrix[index], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
                 case Direction.DOWN: //down
-                    from = movedArrow.XArrowHead;
-                    to = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
-                    delta = -_configData.BoardWidth;
-                    HandleMove(_boardMatrix[index], headIndexInMatrix, from, to, delta);
+                    minBoardIndex = movedArrow.XArrowHead;
+                    maxBoardIndex = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
+                    step = -_configData.BoardWidth;
+                    HandleMove(_boardMatrix[index], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
             }
         }
 
-        private void HandleMove(int indexInConfig, int headIndexInMatrix, int from, int to, int delta) //need to be renamed --> stupid name
+        private void HandleMove(int configIndex, int headBoardIndex, int minBoardIndex, int maxBoardIndex, int step) //need to be renamed --> stupid name
         {
-            int tempIndex = headIndexInMatrix + delta;
-            if (tempIndex < from || tempIndex > to)
+            int currentBoardIndex = headBoardIndex + step;
+            if (currentBoardIndex < minBoardIndex || currentBoardIndex > maxBoardIndex)
             {
-                DiableArrow(indexInConfig);
-                OnMoveArrowSuccess?.Invoke(indexInConfig);
+                DiableArrow(configIndex);
+                OnMoveArrowSuccess?.Invoke(configIndex);
                 return;
             }
 
             var IsCollided = false;
-            while (tempIndex >= from && tempIndex <= to)
+            while (currentBoardIndex >= minBoardIndex && currentBoardIndex <= maxBoardIndex)
             {
                 
-                if (_boardMatrix[tempIndex] != -1 && _boardMatrix[tempIndex] != indexInConfig && _boardMatrixCheck[tempIndex])
+                if (IsBlockedPath(currentBoardIndex, configIndex))
                 {
                     Debug.LogWarning("Fail");
-                    var deltaIndex = (tempIndex - headIndexInMatrix) / delta;
-                    BlockInteractWithArrow(headIndexInMatrix);
-                    OnMoveArrowFail?.Invoke(indexInConfig, deltaIndex);
+                    var deltaIndex = (currentBoardIndex - headBoardIndex) / step;
+                    BlockInteractWithArrow(configIndex);
+                    OnMoveArrowFail?.Invoke(configIndex, deltaIndex);
                     IsCollided = true;
                     break;
                 }
-                tempIndex += delta;
+                currentBoardIndex += step;
             }
             if (!IsCollided)
             {
                 Debug.LogWarning("Correct");
-                DiableArrow(indexInConfig);
-                OnMoveArrowSuccess?.Invoke(indexInConfig);
+                DiableArrow(configIndex);
+                OnMoveArrowSuccess?.Invoke(configIndex);
                 if (AllArrowsAreCleared())
                 {
                     HandleWin();
@@ -329,13 +344,11 @@ namespace Assets.Scripts.CoreLogic
             }
         }
 
-        private void DiableArrow(int index)
+        private bool IsBlockedPath(int currentBoardIndex, int configIndex)
         {
-            var arrowIndices = _configData.Arrows[index].ArrowIndices;
-            for (int i = 0; i < arrowIndices.Length; i++)
-            {
-                _boardMatrixCheck[arrowIndices[i]] = false;
-            }
+            return _boardMatrix[currentBoardIndex] != -1 
+                && _boardMatrix[currentBoardIndex] != configIndex 
+                && _boardMatrixCheck[currentBoardIndex];
         }
 
         private bool AllArrowsAreCleared()
@@ -370,19 +383,38 @@ namespace Assets.Scripts.CoreLogic
             return Direction.RIGHT;
         }
 
+        private void EraseArrowAtPosition(int boardIndex)
+        {
+            DiableArrow(_boardMatrix[boardIndex]);
+            OnEraseArrowAt?.Invoke(_boardMatrix[boardIndex]);
+            ChangeEraserUsedMode();
+        }
+
+        private void FindMoveableArrow()
+        {
+            //for (int i = 0; i < _boardMatrix)
+            //find a movable arrow
+        }
+
 
         //Input handler
         private void HandleUserInput(Position pos)
         {
-            int index = IntPositionToIndex(pos);
+            int boardIndex = IntPositionToIndex(pos);
             //Debug.Log(index);
-            if (!IsPartOfExistArrow(index))
+            if (!IsPartOfExistArrow(boardIndex))
                 return;
 
-            if (IsInteractBlocked(index))
+            if (IsInteractBlocked(boardIndex))
                 return;
 
-            MoveArrowAtIndex(index);
+            if (IsWaitingForEraserBooster)
+            {
+                EraseArrowAtPosition(boardIndex);
+                return;
+            }
+               
+            MoveArrowAtIndex(boardIndex);
         }
     }
 }

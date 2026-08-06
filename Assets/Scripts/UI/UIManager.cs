@@ -32,7 +32,6 @@ namespace Assets.Scripts.UI
         public void Init(IEventHandler eventHandler)
         {
             _eventHandler = eventHandler;
-
             _eventHandler.OnInteractAt += HandleInteractAt;
         }
 

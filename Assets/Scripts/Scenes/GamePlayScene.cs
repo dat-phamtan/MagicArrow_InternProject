@@ -1,9 +1,11 @@
+using Assets.Scripts.Boosters;
 using Assets.Scripts.Config;
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
 using Assets.Scripts.Input;
 using Assets.Scripts.IO;
 using Assets.Scripts.UI;
+using Assets.Scripts.Utility;
 using NUnit.Framework;
 using System;
 using System.Collections;
@@ -16,23 +18,16 @@ using PlayerInput = Assets.Scripts.Input.PlayerInput;
 public class GamePlayScene : MonoBehaviour, IEventHandler
 {
     public new Camera camera;
-    //public GameObject dotPrefab;
     public GameObject headPrefab;
     public GameObject bodyPrefab;
     public GameObject tailPrefab;
     public ArrowAssembler arrowAssembler;
-
-    //public Material arrowMaterial;
     public CameraModifier cameraModifier;
     public float spacing = 1f;
     public float speed = 10f;
     public float exitPadding = 10f;
     public int heart = 3;
 
-
-    private IConfig _config;
-    private IStorage _storage;
-    private IInput _input;
     private IController _controller;
     private IUIManager _uiManager;
     private InputSystem_Actions _inputActions;
@@ -43,17 +38,15 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     public event Action<Vector3> OnInteractAt;
     public event Action<int> OnUnblockInteractWidthArrow;
+    
 
 
     private void Awake()
     {
-        _storage = new LocalStorage();
-        _config = new ConfigManager(_storage);
-        _input = new PlayerInput(spacing);
-        _controller = new ArrowController(_config, _input);
-        _inputActions = new InputSystem_Actions();
-        _uiManager = new UIManager(_controller, _input, spacing);
+        _controller = Locator.Get<IController>();
+        _uiManager = Locator.Get<IUIManager>();
 
+        _inputActions = new InputSystem_Actions();
         _arrowRoots = new Dictionary<int, GameObject>();
         _arrowBuilders = new Dictionary<int, ArrowMeshBuilder>();
         _arrowPaths = new Dictionary<int, Vector3[]>();
@@ -61,10 +54,10 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     void Start()
     {
+        
         _controller.Init(this);
-        _configData = _controller.GetConfigData();
         _uiManager.Init(this);
-
+        _configData = _controller.GetConfigData();
         for (int i = 0; i < _configData.Arrows.Length; i++)
         {
             var root = arrowAssembler.Build(_configData.Arrows[i], _configData.BoardWidth, _configData.BoardHeight, spacing, out var points, out var builder);
@@ -81,6 +74,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _inputActions.UI.ClickAtPos.performed += HandleInput;
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
         _controller.OnMoveArrowFail += HandleMoveFail;
+        _controller.OnEraseArrowAt += HandleEraseArrowAt;
 
     }
 
@@ -89,6 +83,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _inputActions.UI.ClickAtPos.performed -= HandleInput;
         _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
         _controller.OnMoveArrowFail -= HandleMoveFail;
+        _controller.OnEraseArrowAt -= HandleEraseArrowAt;
         _inputActions.Disable();
     }
 
@@ -97,31 +92,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         var screenPos = context.ReadValue<Vector2>();
         OnInteractAt?.Invoke(camera.ScreenToWorldPoint(screenPos));
     }
-
-    //public void DrawBoardTest(List<Verticle> grid)
-    //{
-    //    _partsList = new List<GameObject>();
-    //    for (int i = 0; i < grid.Count; i++)
-    //    {
-    //        Vector3 spawnPosition = new(grid[i].XVerticle, grid[i].YVerticle, 0);
-    //        //Debug.Log($"{grid[i].XVerticle }/{ grid[i].YVerticle}");
-    //        if (grid[i].Type == VerticleType.HEAD)
-    //            _partsList.Add(Instantiate(headPrefab, spawnPosition, Quaternion.identity));
-    //        else if (grid[i].Type == VerticleType.TAIL)
-    //            _partsList.Add(Instantiate(tailPrefab, spawnPosition, Quaternion.identity));
-    //        else if (grid[i].Type == VerticleType.BODY)
-    //            _partsList.Add(Instantiate(bodyPrefab, spawnPosition, Quaternion.identity));
-    //    }
-    //}
-
-    //private void MoveArrowAway(int boardIndex)
-    //{
-    //    var arrowIndices = _configData.Arrows[boardIndex].ArrowIndices;
-    //    for (int i = 0; i < arrowIndices.Length; i++)
-    //    {
-    //        Destroy(_partsList[arrowIndices[i]]);
-    //    }
-    //}
 
     private void HandleMoveSuccess(int boardIndex)
     {
@@ -152,6 +122,15 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
         StartCoroutine(AnimateMoveFail(arrowRoot, builder, path, direction, deltaIndex, boardIndex));
         
+    }
+
+    private void HandleEraseArrowAt(int boardIndex)
+    {
+        var arrowRoot = _arrowRoots[boardIndex];
+        _arrowRoots.Remove(boardIndex);
+        _arrowBuilders.Remove(boardIndex);
+        _arrowPaths.Remove(boardIndex);
+        Destroy(arrowRoot);
     }
 
     private Vector3 DirectionToVector(Direction dir)

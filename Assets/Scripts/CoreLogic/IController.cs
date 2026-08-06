@@ -11,18 +11,17 @@ namespace Assets.Scripts.CoreLogic
 {
     public interface IController
     {
-        //public event Action OnGridInit;
         public event Action<int> OnMoveArrowSuccess;
         public event Action<int, int> OnMoveArrowFail;
+        public event Action<int> OnEraseArrowAt;
 
         public void Init(IEventHandler eventHandler);
         public List<int> GetArrowMatrix();
         public PartType GetArrowTypeAtPosition(Position pos);
         public ConfigData GetConfigData();
         public Direction GetDirectionAtPosition(Position pos);
+        public void ChangeEraserUsedMode();
+        public void DiableArrow(int configIndex);
 
-
-        //temp for test
-        public void UnblockInteractWithArrow(int matrixIndex);
     }
 }

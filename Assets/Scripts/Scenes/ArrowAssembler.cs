@@ -1,5 +1,6 @@
 using Assets.Scripts.Data;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ArrowAssembler : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class ArrowAssembler : MonoBehaviour
     public Sprite head;
     public Sprite body;
     public Sprite tail;
+
+    public Image image;
 
     public GameObject Build(Arrow arrow, int boardWidth, int boardHeight, float spacing, out Vector3[] points, out ArrowMeshBuilder builder)
     {
@@ -36,6 +39,7 @@ public class ArrowAssembler : MonoBehaviour
         builder.tailWidth = tail.rect.height / tail.pixelsPerUnit;
         builder.tailLength = tail.rect.width / tail.pixelsPerUnit;
         builder.BuildArrow(points);
+
 
         return root;
     }
