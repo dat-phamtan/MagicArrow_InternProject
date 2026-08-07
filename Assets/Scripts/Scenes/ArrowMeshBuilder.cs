@@ -84,7 +84,12 @@ public class ArrowMeshBuilder : MonoBehaviour
 
             if (isCorner)
             {
-                float innerRadius = Mathf.Clamp(cornerRadius, 0.01f, spacing / 2f - halfThickness);
+                float distPrev = Vector3.Distance(path[i], path[i - 1]);
+                float distNext = Vector3.Distance(path[i], path[i + 1]);
+                float maxRadius = Mathf.Min(distPrev, distNext) / 2f - halfThickness;
+                maxRadius = Mathf.Max(maxRadius, 0.01f);
+
+                float innerRadius = Mathf.Clamp(cornerRadius, 0.01f, maxRadius);
                 float centerDistance = innerRadius + halfThickness; 
                 var cornerCenter = GetCornerCenter(path[i - 1], path[i], path[i + 1], centerDistance);
                 Vector3 toCorner = (path[i] - cornerCenter).normalized;
