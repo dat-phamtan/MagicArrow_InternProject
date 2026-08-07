@@ -1,22 +1,34 @@
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
-using UnityEditor.Rendering;
+using Assets.Scripts.UI;
+using JetBrains.Annotations;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ArrowAssembler : MonoBehaviour
 {
-    public Material headMaterial;
-    public Material bodyMaterial;
-    public Material tailMaterial;
+    public Material redHeadMaterial;
+    public Material redBodyMaterial;
+    public Material redTailMaterial;
+    public Material blackHeadMaterial;
+    public Material blackBodyMaterial;
+    public Material blackTailMaterial;
 
     public Sprite head;
     public Sprite body;
     public Sprite tail;
 
     public GameObject arrowRayHint;
+    private IEventHandler _eventHandler;
 
-    public GameObject Build(IController controller, Arrow arrow, int boardWidth, int boardHeight, float spacing, out Vector3[] points, out ArrowMeshBuilder builder)
+
+    public void Init(IEventHandler eventHandler)
+    {
+        _eventHandler = eventHandler;
+    }
+
+    public GameObject Build(Arrow arrow, int boardWidth, int boardHeight, float spacing, out Vector3[] points, out ArrowMeshBuilder builder)
     {
         var root = new GameObject("Arrow");
         root.transform.SetParent(transform, false);
@@ -28,9 +40,7 @@ public class ArrowAssembler : MonoBehaviour
             return root;
 
         builder = root.AddComponent<ArrowMeshBuilder>();
-        builder.headMaterial = headMaterial;
-        builder.bodyMaterial = bodyMaterial;
-        builder.tailMaterial = tailMaterial;
+        ChangeArrowColor(0, builder);
 
         builder.bodyThickness = body.rect.height / body.pixelsPerUnit;
         builder.bodyLength = body.rect.width / body.pixelsPerUnit;
@@ -42,7 +52,7 @@ public class ArrowAssembler : MonoBehaviour
         builder.tailLength = tail.rect.width / tail.pixelsPerUnit;
 
         var arrowIndices = arrow.ArrowIndices;
-        builder.BuildArrow(controller, arrowIndices, points, spacing);
+        builder.BuildArrow(points, spacing);
 
 
         //boosters 
@@ -56,6 +66,21 @@ public class ArrowAssembler : MonoBehaviour
         return root;
     }
 
+    public void ChangeArrowColor(int colorIndex, ArrowMeshBuilder builder)
+    {
+        if (colorIndex == 0)
+        {
+            builder.bodyMaterial = redBodyMaterial;
+            builder.headMaterial = redHeadMaterial;
+            builder.tailMaterial = redTailMaterial;
+        }
+        else if (colorIndex == 1)
+        {
+            builder.bodyMaterial = blackBodyMaterial;
+            builder.headMaterial = blackHeadMaterial;
+            builder.tailMaterial = blackTailMaterial;
+        }
+    }
 
     private Vector3 IndexToWorldPos(int index, int boardWidth, int boardHeight, float spacing)
     {

@@ -1,5 +1,7 @@
 using Assets.Scripts.CoreLogic;
+using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
@@ -27,6 +29,7 @@ public class ArrowMeshBuilder : MonoBehaviour
     private MeshRenderer _meshRenderer;
     private const float CORNER_MULTIPLIER = 1.41421356f;
     private IController _controller;
+   
 
     private void Awake()
     { 
@@ -36,8 +39,8 @@ public class ArrowMeshBuilder : MonoBehaviour
         _meshFilter.mesh = _mesh;
         
     }
-
-    public void BuildArrow(IController controller, int[] arrowIndices, Vector3[] path, float spacing)
+    //NEED REFACTOR NOWWW
+    public void BuildArrow(Vector3[] path, float spacing)
     {
         int n = path.Length;
         if (n < 2) 
@@ -86,6 +89,8 @@ public class ArrowMeshBuilder : MonoBehaviour
             {
                 float distPrev = Vector3.Distance(path[i], path[i - 1]);
                 float distNext = Vector3.Distance(path[i], path[i + 1]);
+                //Debug.Log(distPrev);
+                //Debug.Log(distNext);
                 float maxRadius = Mathf.Min(distPrev, distNext) / 2f - halfThickness;
                 maxRadius = Mathf.Max(maxRadius, 0.01f);
 
@@ -127,7 +132,7 @@ public class ArrowMeshBuilder : MonoBehaviour
                     int rowIndex = j / 2;
                     float u = (lengthBeforeCorner + segmentLength * rowIndex / rowCount) / bodyLength;
                     //Debug.Log(u);
-                    //Debug.Log("================");
+                    //Debug1.Log("================");
                     uvs.Add(new Vector2(u, 1f));
                     uvs.Add(new Vector2(u, 0f));
                 }
@@ -154,7 +159,7 @@ public class ArrowMeshBuilder : MonoBehaviour
 
                 float u = accumulatedLength / bodyLength;
                 //Debug.Log(u);
-                //Debug.Log("================");
+                //Debug.Log("============== ==");
                 uvs.Add(new Vector2(u, 1f));
                 uvs.Add(new Vector2(u, 0f));
             }
@@ -189,23 +194,6 @@ public class ArrowMeshBuilder : MonoBehaviour
         _meshRenderer.materials = new[] { headMaterial, bodyMaterial, tailMaterial };
     }
 
-    private float GetStartAngle(Direction direction)
-    {
-        switch (direction)
-        {
-            case Direction.LEFTDOWN:
-                return 90;
-            case Direction.RIGHTDOWN:
-                return 180;
-            case Direction.LEFTUP:
-                return 0;
-            case Direction.RIGHTUP:
-                return 270;
-            default:
-                return 0;
-        }
-    }
-
     private void AddQuad(List<Vector3> vertices, List<Vector2> uvs, List<int> tris, Vector3 back, Vector3 front, Vector3 normal, float halfWidth)
     {
         int b = vertices.Count;
@@ -225,13 +213,6 @@ public class ArrowMeshBuilder : MonoBehaviour
         tris.Add(b); 
         tris.Add(b + 3); 
         tris.Add(b + 2);
-    }
-
-    private Vector3 SnapToAxis(Vector3 dir)
-    {
-        if (Mathf.Abs(dir.x) >= Mathf.Abs(dir.y))
-            return new Vector3(Mathf.Sign(dir.x), 0, 0);
-        return new Vector3(0, Mathf.Sign(dir.y), 0);
     }
 
     private Vector3 GetCornerCenter(Vector3 prePos, Vector3 cornerPos, Vector3 postPos, float radius)

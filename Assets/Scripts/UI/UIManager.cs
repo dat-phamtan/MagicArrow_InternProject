@@ -2,10 +2,10 @@
 using Assets.Scripts.Data;
 using Assets.Scripts.Input;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using static UnityEditor.Searcher.SearcherWindow.Alignment;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
@@ -18,6 +18,7 @@ namespace Assets.Scripts.UI
         private IEventHandler _eventHandler;
         private ConfigData _configData;
         private float _spacing;
+        private float _arrowAnimationTime;
         private Dictionary<int, GameObject> _arrowRoots;
         private Dictionary<int, ArrowMeshBuilder> _arrowBuilders;
         private Dictionary<int, Vector3[]> _arrowPaths;
@@ -27,12 +28,39 @@ namespace Assets.Scripts.UI
             _input = input;
             _controller = controller;
             _spacing = spacing;
+            //_arrowAnimationTime = arrowAnimationTime;
         }
 
         public void Init(IEventHandler eventHandler)
         {
             _eventHandler = eventHandler;
             _eventHandler.OnInteractAt += HandleInteractAt;
+            //_eventHandler.OnCollidedAnimation += HandleCollidedArrowAnimation;
+        }
+
+        //private void HandleCollidedArrowAnimation(GameObject @object)
+        //{
+        //    StartC
+        //}
+
+        private IEnumerator PlayCollidedAnimation(GameObject collidedArrow)
+        {
+            float time = 0f;
+            Vector3 initScale = collidedArrow.transform.localScale;
+            while (time < _arrowAnimationTime)
+            {
+                time += Time.deltaTime;
+                collidedArrow.transform.localScale = Vector3.one * 1.05f;
+                yield return null;
+            }
+
+            while (time > 0)
+            {
+                time += Time.deltaTime;
+                collidedArrow.transform.localScale = Vector3.one * 1.05f;
+                yield return null;
+            }
+            collidedArrow.transform.localScale = initScale;
         }
 
         private void HandleInteractAt(Vector3 pos)

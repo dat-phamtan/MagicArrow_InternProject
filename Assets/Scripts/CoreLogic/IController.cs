@@ -12,7 +12,7 @@ namespace Assets.Scripts.CoreLogic
     public interface IController
     {
         public event Action<int> OnMoveArrowSuccess;
-        public event Action<int, int> OnMoveArrowFail;
+        public event Action<int, int, int> OnMoveArrowFail;
         public event Action<int> OnEraseArrowAt;
 
         public void Init(IEventHandler eventHandler);
@@ -23,6 +23,8 @@ namespace Assets.Scripts.CoreLogic
         public Direction GetDirectionAtBoardIndex(int boardIndex);
         public void ChangeEraserUsedMode();
         public void DiableArrow(int configIndex);
+        public bool IsFirstMoveFail(int configIndex);
+        public int GetConfigIndexAt(int boardIndex);
 
     }
 }

@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Unity.VisualScripting;
-using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
 namespace Assets.Scripts.CoreLogic
@@ -26,11 +24,12 @@ namespace Assets.Scripts.CoreLogic
         private List<bool> _boardMatrixCheck; //index: boardIndex, value: true/false   <-- stupid name
         private List<Direction> _directions;
         private List<bool> _isAnimated;
+        private List<bool> _isFirstMoveFail;
         private bool IsWaitingForEraserBooster = false;
         
 
         public event Action<int> OnMoveArrowSuccess;
-        public event Action<int, int> OnMoveArrowFail;
+        public event Action<int, int, int> OnMoveArrowFail;
         public event Action<int> OnEraseArrowAt;
 
         // implement interface
@@ -87,6 +86,23 @@ namespace Assets.Scripts.CoreLogic
             {
                 _boardMatrixCheck[arrowIndices[i]] = false;
             }
+        }
+
+        public bool IsFirstMoveFail(int configIndex)
+        {
+            //Debug.Log(configIndex);
+            if (_isFirstMoveFail[configIndex])
+            {
+                _isFirstMoveFail[configIndex] = false;
+                return true;
+            }
+            return false;
+        }
+
+        public int GetConfigIndexAt(int boardIndex)
+        {
+            //Debug.Log(_boardMatrix[boardIndex]);
+            return _boardMatrix[boardIndex];
         }
 
 
@@ -200,6 +216,7 @@ namespace Assets.Scripts.CoreLogic
             _boardMatrixCheck = Enumerable.Repeat(false, boardSize).ToList();
             _directions = Enumerable.Repeat(Direction.LEFT, boardSize).ToList();
             _isAnimated = Enumerable.Repeat(false, boardSize).ToList();
+            _isFirstMoveFail = Enumerable.Repeat(true, _configData.Arrows.Length).ToList();
         }
 
         private void BlockInteractWithArrow(int configIndex)
@@ -274,9 +291,10 @@ namespace Assets.Scripts.CoreLogic
             return new Position(boardIndex % boardWidth, boardIndex / boardWidth);
         }
 
-        private void MoveArrowAtIndex(int index)
+        private void MoveArrowAtIndex(int boardIndex)
         {
-            var movedArrow = _configData.Arrows[_boardMatrix[index]];
+            //Debug.Log(boardIndex);
+            var movedArrow = _configData.Arrows[_boardMatrix[boardIndex]];
             var headIndexInMatrix = movedArrow.ArrowIndices[0];
             var headPos = new Position(movedArrow.XArrowHead, movedArrow.YArrowHead);
             var neckPos = IndexToPosition(movedArrow.ArrowIndices[1]);
@@ -289,36 +307,36 @@ namespace Assets.Scripts.CoreLogic
                     minBoardIndex = _configData.BoardWidth * movedArrow.YArrowHead;
                     maxBoardIndex = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
                     step = 1;
-                    HandleMove(_boardMatrix[index], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
+                    HandleMove(_boardMatrix[boardIndex], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
                 case Direction.UP: //up
                     minBoardIndex = movedArrow.XArrowHead;
                     maxBoardIndex = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
                     step = _configData.BoardWidth;
-                    HandleMove(_boardMatrix[index], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
+                    HandleMove(_boardMatrix[boardIndex], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
                 case Direction.LEFT: //left
                     minBoardIndex = _configData.BoardWidth * movedArrow.YArrowHead;
                     maxBoardIndex = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
                     step = -1;
-                    HandleMove(_boardMatrix[index], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
+                    HandleMove(_boardMatrix[boardIndex], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
                 case Direction.DOWN: //down
                     minBoardIndex = movedArrow.XArrowHead;
                     maxBoardIndex = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
                     step = -_configData.BoardWidth;
-                    HandleMove(_boardMatrix[index], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
+                    HandleMove(_boardMatrix[boardIndex], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
             }
         }
 
-        private void HandleMove(int configIndex, int headBoardIndex, int minBoardIndex, int maxBoardIndex, int step) //need to be renamed --> stupid name
+        private void HandleMove(int interactedConfigIndex, int headBoardIndex, int minBoardIndex, int maxBoardIndex, int step) //need to be renamed --> stupid name
         {
             int currentBoardIndex = headBoardIndex + step;
             if (currentBoardIndex < minBoardIndex || currentBoardIndex > maxBoardIndex)
             {
-                DiableArrow(configIndex);
-                OnMoveArrowSuccess?.Invoke(configIndex);
+                DiableArrow(interactedConfigIndex);
+                OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
                 return;
             }
 
@@ -326,12 +344,17 @@ namespace Assets.Scripts.CoreLogic
             while (currentBoardIndex >= minBoardIndex && currentBoardIndex <= maxBoardIndex)
             {
                 
-                if (IsBlockedPath(currentBoardIndex, configIndex))
+                if (IsBlockedPath(currentBoardIndex, interactedConfigIndex))
                 {
                     Debug.LogWarning("Fail");
-                    var deltaIndex = (currentBoardIndex - headBoardIndex) / step;
-                    BlockInteractWithArrow(configIndex);
-                    OnMoveArrowFail?.Invoke(configIndex, deltaIndex);
+                    var deltaBoardIndex = (currentBoardIndex - headBoardIndex) / step;
+                    var collidedConfigIndex = _boardMatrix[currentBoardIndex];
+                    BlockInteractWithArrow(interactedConfigIndex);
+                    OnMoveArrowFail?.Invoke(interactedConfigIndex, collidedConfigIndex, deltaBoardIndex);
+                    //Debug.Log(_isFirstMoveFail[configIndex]);
+                    //Debug.Log(configIndex);
+                    
+                    //Debug.Log(_isFirstMoveFail[configIndex]);
                     IsCollided = true;
                     break;
                 }
@@ -340,8 +363,8 @@ namespace Assets.Scripts.CoreLogic
             if (!IsCollided)
             {
                 Debug.LogWarning("Correct");
-                DiableArrow(configIndex);
-                OnMoveArrowSuccess?.Invoke(configIndex);
+                DiableArrow(interactedConfigIndex);
+                OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
                 if (AllArrowsAreCleared())
                 {
                     HandleWin();

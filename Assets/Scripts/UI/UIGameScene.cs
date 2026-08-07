@@ -1,8 +1,6 @@
 using Assets.Scripts.Data;
 using Assets.Scripts.UI;
 using NUnit.Framework;
-using System.Diagnostics;
-using Unity.Android.Gradle;
 using UnityEditor;
 using UnityEngine;
 
