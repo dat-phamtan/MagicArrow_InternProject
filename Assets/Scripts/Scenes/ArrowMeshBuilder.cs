@@ -90,6 +90,7 @@ public class ArrowMeshBuilder : MonoBehaviour
                 maxRadius = Mathf.Max(maxRadius, 0.01f);
 
                 float innerRadius = Mathf.Clamp(cornerRadius, 0.01f, maxRadius);
+                //float innerRadius = Mathf.Clamp(cornerRadius, 0.01f, spacing / 2f - halfThickness);
                 float centerDistance = innerRadius + halfThickness; 
                 var cornerCenter = GetCornerCenter(path[i - 1], path[i], path[i + 1], centerDistance);
                 Vector3 toCorner = (path[i] - cornerCenter).normalized;
@@ -153,7 +154,7 @@ public class ArrowMeshBuilder : MonoBehaviour
 
                 float u = accumulatedLength / bodyLength;
                 //Debug.Log(u);
-                Debug.Log("================");
+                //Debug.Log("================");
                 uvs.Add(new Vector2(u, 1f));
                 uvs.Add(new Vector2(u, 0f));
             }
