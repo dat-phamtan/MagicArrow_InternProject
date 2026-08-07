@@ -3,6 +3,7 @@ using Assets.Scripts.Utility;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -12,6 +13,7 @@ public class ArrowMeshBuilder : MonoBehaviour
     public Material bodyMaterial;
     public Material tailMaterial;
     public Image arrowRayHint;
+    public float cornerRadius = 0.12f;
 
     public float bodyThickness = 0.3f;
     public float bodyLength = 0.24f;
@@ -80,15 +82,19 @@ public class ArrowMeshBuilder : MonoBehaviour
             Vector3 dirNext = ((i < n - 1) ? (path[i + 1] - path[i]) : dirPrev).normalized;
             bool isCorner = dirPrev != dirNext;
 
-            //above is correct
-            Debug.Log(isCorner);
             if (isCorner)
             {
-                var cornerCenter = GetCornerCenter(path[i - 1], path[i], path[i + 1], spacing);
-                float innerRadius = spacing - bodyThickness / 2f;
-                float startAngle = GetStartAngle(controller.GetDirectionAtBoardIndex(arrowIndices[i])); 
+                float innerRadius = Mathf.Clamp(cornerRadius, 0.01f, spacing / 2f - halfThickness);
+                float centerDistance = innerRadius + halfThickness; 
+                var cornerCenter = GetCornerCenter(path[i - 1], path[i], path[i + 1], centerDistance);
+                Vector3 toCorner = (path[i] - cornerCenter).normalized;
+                float cornerAngle = Mathf.Atan2(toCorner.y, toCorner.x) * Mathf.Rad2Deg;
 
-                var cornerVerticles = GenerateCornerVerticle(cornerCenter, innerRadius, bodyThickness, startAngle, 10);
+                float cross = dirPrev.x * dirNext.y - dirPrev.y * dirNext.x;
+                float turnSign = cross >= 0 ? 1f : -1f;
+                float startAngle = cornerAngle - turnSign * 45f;
+
+                var cornerVerticles = GenerateCornerVerticle(cornerCenter, innerRadius, bodyThickness, startAngle, 10, turnSign);
 
                 float segmentLength = (i > 0) ? Vector3.Distance(path[i], path[i - 1]) : 0f;
                 float lengthBeforeCorner = accumulatedLength;
@@ -97,17 +103,25 @@ public class ArrowMeshBuilder : MonoBehaviour
                 for (int j = 0; j < cornerVerticles.Count; j += 2)
                 {
                     int idx = vertices.Count;
-                    vertices.Add(cornerVerticles[j + 1]);
-                    vertices.Add(cornerVerticles[j]);
+                    if (turnSign > 0)
+                    {
+                        vertices.Add(cornerVerticles[j]);  
+                        vertices.Add(cornerVerticles[j + 1]);
+                    }
+                    else
+                    {
+                        vertices.Add(cornerVerticles[j + 1]);
+                        vertices.Add(cornerVerticles[j]);  
+                    }
                     rows.Add((idx, idx + 1));
 
-                    Debug.Log($"{cornerVerticles[j + 1].x} / {cornerVerticles[j + 1].y}");
-                    Debug.Log($"{cornerVerticles[j].x} / {cornerVerticles[j].y}");
+                    //Debug.Log($"{cornerVerticles[j + 1].x} / {cornerVerticles[j + 1].y}");
+                    //Debug.Log($"{cornerVerticles[j].x} / {cornerVerticles[j].y}");
 
-                    int rowIndex = j / 2 + 1;
+                    int rowIndex = j / 2;
                     float u = (lengthBeforeCorner + segmentLength * rowIndex / rowCount) / bodyLength;
                     //Debug.Log(u);
-                    Debug.Log("================");
+                    //Debug.Log("================");
                     uvs.Add(new Vector2(u, 1f));
                     uvs.Add(new Vector2(u, 0f));
                 }
@@ -123,8 +137,8 @@ public class ArrowMeshBuilder : MonoBehaviour
                 vertices.Add(path[i] + normal * halfThickness);
                 vertices.Add(path[i] - normal * halfThickness);
 
-                Debug.Log(path[i] + normal * halfThickness);
-                Debug.Log(path[i] - normal * halfThickness);
+                //Debug.Log(path[i] + normal * halfThickness);
+                //Debug.Log(path[i] - normal * halfThickness);
 
 
                 rows.Add((idx, idx + 1));
@@ -226,13 +240,13 @@ public class ArrowMeshBuilder : MonoBehaviour
         return cornerCenterPos;
     }
 
-    private List<Vector3> GenerateCornerVerticle(Vector3 cornerCenter, float innerRadius, float thickness, float startAngle, int segments)
+    private List<Vector3> GenerateCornerVerticle(Vector3 cornerCenter, float innerRadius, float thickness, float startAngle, int segments, float turnSign)
     {
         float outerRadius = innerRadius + thickness;
-        float endAngle = startAngle + 90f;
+        float endAngle = startAngle + turnSign * 90f;
 
         var result = new List<Vector3>();
-        for (int i = 0; i < segments; i++)
+        for (int i = 0; i <= segments; i++)
         {
             float ratio = (float)i / segments;
             float currentAngle = Mathf.Lerp(startAngle, endAngle, ratio) * Mathf.Deg2Rad;
@@ -248,7 +262,7 @@ public class ArrowMeshBuilder : MonoBehaviour
             float outerY = cornerCenter.y + outerRadius * sin;
             result.Add(new Vector3(outerX, outerY, 0f));
         }
-        result.Reverse();
+        //if (turnSign < 0) result.Reverse();
         return result;
     }
 }

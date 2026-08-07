@@ -76,7 +76,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _inputActions.UI.Clicked.started += HandlePressedStart;
         _inputActions.UI.Clicked.canceled += HandlePressedEnd;
         _inputActions.UI.InteractAtPos.performed += HandleSufInput;
-        _inputActions.UI.ClickAtPos.canceled += HandlePlayZoneClicked;
+        _inputActions.UI.ClickAtPos.performed += HandlePlayZoneClicked;
         
 
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
@@ -116,7 +116,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _inputActions.UI.Clicked.started -= HandlePressedStart;
         _inputActions.UI.Clicked.canceled -= HandlePressedEnd;
         _inputActions.UI.InteractAtPos.performed -= HandleSufInput;
-        _inputActions.UI.ClickAtPos.canceled -= HandlePlayZoneClicked;
+        _inputActions.UI.ClickAtPos.performed -= HandlePlayZoneClicked;
 
         _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
         _controller.OnMoveArrowFail -= HandleMoveFail;
@@ -191,57 +191,113 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private IEnumerator AnimateMoveFail(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir, int deltaIndex, int boardIndex)
     {
+        float exitDistance = (deltaIndex - 1) * spacing;
         int n = originalPath.Length;
-        float targetTravel = (deltaIndex - 1) * spacing;
         float travelled = 0f;
-        //var originPath = originalPath;
-        var newPath = new Vector3[n];
-        while (travelled < targetTravel)
+
+        while (travelled < exitDistance)
         {
             travelled += speed * Time.deltaTime;
+            float headDist = -travelled;
+            float tailDist = exitDistance - travelled;
+
+            var newPathList = new List<Vector3>();
+            newPathList.Add(PositionBehindHead(originalPath, exitDir, headDist));
+
             for (int i = 0; i < n; i++)
             {
-                float behind = i * spacing - travelled;
-                newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
+                float nodeDist = i * spacing;
+                if (nodeDist > headDist && nodeDist < tailDist)
+                {
+                    newPathList.Add(originalPath[i]);
+                }
             }
-            builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPath, spacing);
+            newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
+            builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPathList.ToArray(), spacing);
             yield return null;
         }
 
         while (travelled > 0)
         {
             travelled -= speed * Time.deltaTime;
+            float headDist = -travelled;
+            float tailDist = exitDistance - travelled;
+
+            var newPathList = new List<Vector3>();
             for (int i = 0; i < n; i++)
             {
-                float behind = i * spacing - travelled;
-                newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
+                float nodeDist = i * spacing;
+                if (nodeDist > headDist && nodeDist < tailDist)
+                {
+                    newPathList.Add(originalPath[i]);
+                }
             }
-            builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPath, spacing);
+            newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
+            builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPathList.ToArray(), spacing);
             yield return null;
         }
         builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, originalPath, spacing);
         OnUnblockInteractWidthArrow?.Invoke(boardIndex);
+
+        //int n = originalPath.Length;
+        //float targetTravel = (deltaIndex - 1) * spacing;
+        //float travelled = 0f;
+        ////var originPath = originalPath;
+        //var newPath = new Vector3[n];
+        //while (travelled < targetTravel)
+        //{
+        //    travelled += speed * Time.deltaTime;
+        //    for (int i = 0; i < n; i++)
+        //    {
+        //        float behind = i * spacing - travelled;
+        //        newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
+        //    }
+        //    builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPath, spacing);
+        //    yield return null;
+        //}
+
+        //while (travelled > 0)
+        //{
+        //    travelled -= speed * Time.deltaTime;
+        //    for (int i = 0; i < n; i++)
+        //    {
+        //        float behind = i * spacing - travelled;
+        //        newPath[i] = PositionBehindHead(originalPath, exitDir, behind);
+        //    }
+        //    builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPath, spacing);
+        //    yield return null;
+        //}
+        //builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, originalPath, spacing);
+        //OnUnblockInteractWidthArrow?.Invoke(boardIndex);
     }
 
     private IEnumerator AnimateMoveSuccess(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir, int boardIndex)
     {
         float exitDistance = camera.orthographicSize * 2f * camera.aspect + exitPadding;
-
         int n = originalPath.Length;
         float totalLength = (n - 1) * spacing;
         float targetTravel = totalLength + exitDistance;
         float travelled = 0f;
 
-        var newPath = new Vector3[n];
         while (travelled < targetTravel)
         {
             travelled += speed * Time.deltaTime;
-            for (int i = 0;  i < n; i++)
+            float headDist = -travelled;
+            float tailDist = totalLength - travelled;
+
+            var newPathList = new List<Vector3>();
+            newPathList.Add(PositionBehindHead(originalPath, exitDir, headDist));
+
+            for (int i = 0; i < n; i++)
             {
-                float distanceFromInitHead = i * spacing - travelled; 
-                newPath[i] = PositionBehindHead(originalPath, exitDir, distanceFromInitHead);
+                float nodeDist = i * spacing;
+                if (nodeDist > headDist && nodeDist < tailDist)
+                {
+                    newPathList.Add(originalPath[i]);
+                }
             }
-            builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPath, spacing);
+            newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
+            builder.BuildArrow(_controller, _configData.Arrows[boardIndex].ArrowIndices, newPathList.ToArray(), spacing);
             yield return null;
         }
         Destroy(arrowRoot);
