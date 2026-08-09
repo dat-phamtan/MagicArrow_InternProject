@@ -13,7 +13,13 @@ public class LoadingScene : MonoBehaviour
 {
     private float spacing = 1f;
 
-    void Start()
+    private void Awake()
+    {
+        QualitySettings.vSyncCount = 1;
+        Application.targetFrameRate = 60;
+    }
+
+    private void Start()
     {
         IStorage storage = new LocalStorage();
         IConfig config = new ConfigManager(storage);
@@ -30,10 +36,5 @@ public class LoadingScene : MonoBehaviour
         Locator.Register(boosterManager);
 
         SceneManager.LoadScene("GamePlay");
-    }
-
-    void Update()
-    {
-        
     }
 }

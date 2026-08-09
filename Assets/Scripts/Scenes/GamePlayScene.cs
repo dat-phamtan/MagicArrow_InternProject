@@ -66,7 +66,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _uiManager.Init(this);
         _configData = _controller.GetConfigData();
         BoardInit();
-        
+        arrowAssembler.Init(this);
         cameraModifier.FitCamera(_configData.BoardWidth, _configData.BoardHeight, spacing);
     }
 

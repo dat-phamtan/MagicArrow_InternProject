@@ -3,6 +3,7 @@ using Assets.Scripts.Data;
 using Assets.Scripts.UI;
 using JetBrains.Annotations;
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,7 +27,24 @@ public class ArrowAssembler : MonoBehaviour
     public void Init(IEventHandler eventHandler)
     {
         _eventHandler = eventHandler;
+        _eventHandler.OnCollidedAnimation += HandleCollidedAnimation;
     }
+
+    private void HandleCollidedAnimation(GameObject @object)
+    {
+        //StartCoroutine(PlayCollidedAnimation(@object));
+    }
+
+    //private IEnumerator PlayCollidedAnimation(GameObject collidedArrow)
+    //{
+    //    float temp = 3f;
+    //    float time = 0f;
+    //    while (time < temp)
+    //    {
+    //        time += Time.deltaTime;
+
+    //    }
+    //}
 
     public GameObject Build(Arrow arrow, int boardWidth, int boardHeight, float spacing, out Vector3[] points, out ArrowMeshBuilder builder)
     {
