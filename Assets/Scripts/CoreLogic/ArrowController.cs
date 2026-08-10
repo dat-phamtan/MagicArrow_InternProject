@@ -1,12 +1,14 @@
 ﻿using Assets.Scripts.Config;
 using Assets.Scripts.Data;
 using Assets.Scripts.Input;
+using Assets.Scripts.Scenes;
 using Assets.Scripts.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Assets.Scripts.CoreLogic
 {
@@ -18,19 +20,24 @@ namespace Assets.Scripts.CoreLogic
         private readonly IConfig _config;
         private readonly IInput _input;
         private readonly IUIManager _uiManager;
-        private IEventHandler _eventHandler;    
+        private IEventHandler _eventHandler;
+        private IPopUpManager _popupManager;
 
         private List<int> _boardMatrix; //index: boardIndex, value: configIndex
         private List<bool> _boardMatrixCheck; //index: boardIndex, value: true/false   <-- stupid name
         private List<Direction> _directions;
         private List<bool> _isAnimated;
         private List<bool> _isFirstMoveFail;
-        private bool IsWaitingForEraserBooster = false;
+        private bool _isWaitingForEraserBooster = false;
+        private int _heart = 3;
         
 
         public event Action<int> OnMoveArrowSuccess;
         public event Action<int, int, int> OnMoveArrowFail;
         public event Action<int> OnEraseArrowAt;
+        public event Action OnTurnPopupOff;
+        public event Action<string> OnTurnPopupOn;
+        public event Action OnRerenderBoard;
 
         // implement interface
         public ArrowController(IConfig config, IInput input)
@@ -76,7 +83,7 @@ namespace Assets.Scripts.CoreLogic
 
         public void ChangeEraserUsedMode()
         {
-            IsWaitingForEraserBooster = !IsWaitingForEraserBooster;
+            _isWaitingForEraserBooster = !_isWaitingForEraserBooster;
         }
 
         public void DiableArrow(int configIndex)
@@ -90,7 +97,6 @@ namespace Assets.Scripts.CoreLogic
 
         public bool IsFirstMoveFail(int configIndex)
         {
-            //Debug.Log(configIndex);
             if (_isFirstMoveFail[configIndex])
             {
                 _isFirstMoveFail[configIndex] = false;
@@ -101,26 +107,35 @@ namespace Assets.Scripts.CoreLogic
 
         public int GetConfigIndexAt(int boardIndex)
         {
-            //Debug.Log(_boardMatrix[boardIndex]);
             return _boardMatrix[boardIndex];
         }
 
 
         // logic
-        public void Init(IEventHandler eventHandler)
+        public void Init(IEventHandler eventHandler, IPopUpManager popupManager)
         {
             LoadConfig();
             InputInit();
-            EventHandlerInit(eventHandler);
+            EventHandlerInit(eventHandler, popupManager);
             MatrixesInit();
             LoadMatrixes();
             CurveCorrection();
             RegisterAction();
         }
 
-        private void EventHandlerInit(IEventHandler eventHandler)
+        private void HandlePlayAgain()
+        {
+            int boardSize = _configData.BoardWidth * _configData.BoardHeight;
+            _boardMatrixCheck = Enumerable.Repeat(false, boardSize).ToList();
+            _isFirstMoveFail = Enumerable.Repeat(true, _configData.Arrows.Length).ToList();
+            OnTurnPopupOff?.Invoke();
+            OnRerenderBoard?.Invoke();
+        }
+
+        private void EventHandlerInit(IEventHandler eventHandler, IPopUpManager popupManager)
         {
             _eventHandler = eventHandler;
+            _popupManager = popupManager;
         }
 
         private void LoadConfig()
@@ -137,6 +152,7 @@ namespace Assets.Scripts.CoreLogic
         {
             _input.OnInteractAtPosition += HandleUserInput;
             _eventHandler.OnUnblockInteractWidthArrow += UnblockInteractWithArrow;
+            _popupManager.OnPlayAgain += HandlePlayAgain;
             //tobecontinued
         }
 
@@ -342,19 +358,21 @@ namespace Assets.Scripts.CoreLogic
 
             var IsCollided = false;
             while (currentBoardIndex >= minBoardIndex && currentBoardIndex <= maxBoardIndex)
-            {
-                
+            { 
                 if (IsBlockedPath(currentBoardIndex, interactedConfigIndex))
                 {
-                    Debug.LogWarning("Fail");
+                    //Debug.LogWarning("Fail");
                     var deltaBoardIndex = (currentBoardIndex - headBoardIndex) / step;
                     var collidedConfigIndex = _boardMatrix[currentBoardIndex];
                     BlockInteractWithArrow(interactedConfigIndex);
+
+                    _heart--;
+                    if (AllHeartAreLost())
+                    {
+                        HandleLose();
+                    }
+
                     OnMoveArrowFail?.Invoke(interactedConfigIndex, collidedConfigIndex, deltaBoardIndex);
-                    //Debug.Log(_isFirstMoveFail[configIndex]);
-                    //Debug.Log(configIndex);
-                    
-                    //Debug.Log(_isFirstMoveFail[configIndex]);
                     IsCollided = true;
                     break;
                 }
@@ -362,7 +380,7 @@ namespace Assets.Scripts.CoreLogic
             }
             if (!IsCollided)
             {
-                Debug.LogWarning("Correct");
+                //Debug.LogWarning("Correct");
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
                 if (AllArrowsAreCleared())
@@ -387,9 +405,21 @@ namespace Assets.Scripts.CoreLogic
             return true;
         }
 
+        private bool AllHeartAreLost()
+        {
+            return _heart < 1;
+        }
+
         private void HandleWin()
         {
             Debug.Log("VICTORY!");
+            OnTurnPopupOn?.Invoke("VICTORY");
+        }
+
+        private void HandleLose()
+        {
+            Debug.Log("DEFEAT");
+            OnTurnPopupOn?.Invoke("DEFEAT");
         }
 
         private Direction GetDirection(Position prePos, Position currentPos)
@@ -436,7 +466,7 @@ namespace Assets.Scripts.CoreLogic
             if (IsInteractBlocked(boardIndex))
                 return;
 
-            if (IsWaitingForEraserBooster)
+            if (_isWaitingForEraserBooster)
             {
                 EraseArrowAtPosition(boardIndex);
                 return;

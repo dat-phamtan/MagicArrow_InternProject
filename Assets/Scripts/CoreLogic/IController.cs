@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Config;
 using Assets.Scripts.Data;
 using Assets.Scripts.Input;
+using Assets.Scripts.Scenes;
 using Assets.Scripts.UI;
 using System;
 using System.Collections.Generic;
@@ -14,8 +15,11 @@ namespace Assets.Scripts.CoreLogic
         public event Action<int> OnMoveArrowSuccess;
         public event Action<int, int, int> OnMoveArrowFail;
         public event Action<int> OnEraseArrowAt;
+        public event Action<string> OnTurnPopupOn;
+        public event Action OnTurnPopupOff;
+        public event Action OnRerenderBoard;
 
-        public void Init(IEventHandler eventHandler);
+        public void Init(IEventHandler eventHandler, IPopUpManager popupManager);
         public List<int> GetArrowMatrix();
         public PartType GetArrowTypeAtPosition(Position pos);
         public ConfigData GetConfigData();

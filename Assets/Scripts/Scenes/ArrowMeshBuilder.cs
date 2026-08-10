@@ -100,10 +100,6 @@ public class ArrowMeshBuilder : MonoBehaviour
             _verticles.Add(path[i] + normal * halfThickness);
             _verticles.Add(path[i] - normal * halfThickness);
 
-            //Debug.Log(path[i] + normal * halfThickness);
-            //Debug.Log(path[i] - normal * halfThickness);
-
-
             _rows.Add((idx, idx + 1));
 
             if (i > 0)
@@ -113,86 +109,6 @@ public class ArrowMeshBuilder : MonoBehaviour
 
             _uvs.Add(new Vector2(u, 1f));
             _uvs.Add(new Vector2(u, 0f));
-
-            //Vector3 dirPrev = ((i > 0) ? (path[i] - path[i - 1]) : (path[1] - path[0])).normalized;
-            //Vector3 dirNext = ((i < n - 1) ? (path[i + 1] - path[i]) : dirPrev).normalized;
-            //bool isCorner = dirPrev != dirNext;
-
-            //if (isCorner)
-            //{
-            //    float distPrev = Vector3.Distance(path[i], path[i - 1]);
-            //    float distNext = Vector3.Distance(path[i], path[i + 1]);
-            //    float maxRadius = Mathf.Min(distPrev, distNext) / 2f - halfThickness;
-            //    maxRadius = Mathf.Max(maxRadius, 0.01f);
-
-            //    float innerRadius = Mathf.Clamp(cornerRadius, 0.01f, maxRadius);
-            //    float centerDistance = innerRadius + halfThickness; 
-            //    var cornerCenter = GetCornerCenter(path[i - 1], path[i], path[i + 1], centerDistance);
-            //    Vector3 toCorner = (path[i] - cornerCenter).normalized;
-            //    float cornerAngle = Mathf.Atan2(toCorner.y, toCorner.x) * Mathf.Rad2Deg;
-
-            //    float cross = dirPrev.x * dirNext.y - dirPrev.y * dirNext.x;
-            //    float turnSign = cross >= 0 ? 1f : -1f;
-            //    float startAngle = cornerAngle - turnSign * 45f;
-
-            //    var cornerVerticles = GenerateCornerVerticle(cornerCenter, innerRadius, bodyThickness, startAngle, 10, turnSign);
-
-            //    float segmentLength = (i > 0) ? Vector3.Distance(path[i], path[i - 1]) : 0f;
-            //    float lengthBeforeCorner = accumulatedLength;
-            //    int rowCount = cornerVerticles.Count / 2;
-
-            //    for (int j = 0; j < cornerVerticles.Count; j += 2)
-            //    {
-            //        int idx = _verticles.Count;
-            //        if (turnSign > 0)
-            //        {
-            //            _verticles.Add(cornerVerticles[j]);  
-            //            _verticles.Add(cornerVerticles[j + 1]);
-            //        }
-            //        else
-            //        {
-            //            _verticles.Add(cornerVerticles[j + 1]);
-            //            _verticles.Add(cornerVerticles[j]);  
-            //        }
-            //        _rows.Add((idx, idx + 1));
-
-            //        //Debug.Log($"{cornerVerticles[j + 1].x} / {cornerVerticles[j + 1].y}");
-            //        //Debug.Log($"{cornerVerticles[j].x} / {cornerVerticles[j].y}");
-
-            //        int rowIndex = j / 2;
-            //        float u = (lengthBeforeCorner + segmentLength * rowIndex / rowCount) / bodyLength;
-            //        //Debug.Log(u);
-            //        //Debug1.Log("================");
-            //        _uvs.Add(new Vector2(u, 1f));
-            //        _uvs.Add(new Vector2(u, 0f));
-            //    }
-
-            //    accumulatedLength = lengthBeforeCorner + segmentLength;
-            //}
-            //else
-            //{
-            //    Vector3 dirAvg = (dirPrev + dirNext).normalized;
-            //    Vector3 normal = new(-dirAvg.y, dirAvg.x, 0f);
-
-            //    int idx = _verticles.Count;
-            //    _verticles.Add(path[i] + normal * halfThickness);
-            //    _verticles.Add(path[i] - normal * halfThickness);
-
-            //    //Debug.Log(path[i] + normal * halfThickness);
-            //    //Debug.Log(path[i] - normal * halfThickness);
-
-
-            //    _rows.Add((idx, idx + 1));
-
-            //    if (i > 0) 
-            //        accumulatedLength += Vector3.Distance(path[i], path[i - 1]);
-
-            //    float u = accumulatedLength / bodyLength;
-            //    //Debug.Log(u);
-            //    //Debug.Log("============== ==");
-            //    _uvs.Add(new Vector2(u, 1f));
-            //    _uvs.Add(new Vector2(u, 0f));
-            //}
         }
 
 

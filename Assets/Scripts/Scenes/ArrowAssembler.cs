@@ -50,8 +50,6 @@ public class ArrowAssembler : MonoBehaviour
     {
         var root = new GameObject("Arrow");
         root.transform.SetParent(transform, false);
-
-        //points = BuildPathPoints(arrow.ArrowIndices, boardWidth, boardHeight, spacing);
         builder = null;
 
         if (points.Length < 2)
