@@ -5,6 +5,7 @@ using Assets.Scripts.Data;
 using Assets.Scripts.Input;
 using Assets.Scripts.IO;
 using Assets.Scripts.UI;
+using Assets.Scripts.Ultility;
 using Assets.Scripts.Utility;
 using NUnit.Framework;
 using System;
@@ -30,6 +31,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public float speed = 10f;
     public float exitPadding = 10f;
     public int heart = 3;
+    public float cornerRadius = 0.12f;
+    public int segments = 10;
 
     private bool _isHolded = false;
 
@@ -43,6 +46,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private Dictionary<int, GameObject> _arrowRoots;
     private Dictionary<int, ArrowMeshBuilder> _arrowBuilders;
     private Dictionary<int, Vector3[]> _arrowPaths;
+    private Dictionary<int, Vector3[]> _curvedPath;
+    private Dictionary<int, float[]> _cumulativeLength;
 
     public event Action<Vector3> OnInteractAt;
     public event Action<int> OnUnblockInteractWidthArrow;
@@ -58,6 +63,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _arrowRoots = new Dictionary<int, GameObject>();
         _arrowBuilders = new Dictionary<int, ArrowMeshBuilder>();
         _arrowPaths = new Dictionary<int, Vector3[]>();
+        _curvedPath = new Dictionary<int, Vector3[]>();
+        _cumulativeLength = new Dictionary<int, float[]>();
     }
 
     void Start()
@@ -104,10 +111,15 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         int height = _configData.BoardHeight;
         for (int i = 0; i < _configData.Arrows.Length; i++)
         {
-            var root = arrowAssembler.Build(_configData.Arrows[i], width, height, spacing, out var points, out var builder);
+            var gridPath = arrowAssembler.BuildPathPoints(_configData.Arrows[i].ArrowIndices, width, height, spacing);
+            CurvePathUtils.BuildCurved(gridPath, cornerRadius, segments, out var curvedPath, out var cumulativeLength);
+            var root = arrowAssembler.Build(_configData.Arrows[i], curvedPath, cumulativeLength, spacing, out var builder);
+            
             _arrowRoots[i] = root;
             _arrowBuilders[i] = builder;
-            _arrowPaths[i] = points;
+            _arrowPaths[i] = gridPath;
+            _curvedPath[i] = curvedPath;
+            _cumulativeLength[i] = cumulativeLength;
         }
     }
 
@@ -158,7 +170,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _arrowBuilders.Remove(configIndex);
         _arrowPaths.Remove(configIndex);
 
-        StartCoroutine(AnimateMoveSuccess(arrowRoot, builder, path, direction, configIndex));
+        StartCoroutine(AnimateMoveSuccess(arrowRoot, builder, _curvedPath[configIndex], _cumulativeLength[configIndex], direction, configIndex));
     }
 
     private void HandleMoveFail(int interactedConfigIndex, int collidedConfigIndex, int deltaIndex)
@@ -172,7 +184,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         var headPos = new Position(arrow.XArrowHead, arrow.YArrowHead);
         var direction = DirectionToVector(_controller.GetDirectionAtPosition(headPos));
 
-        StartCoroutine(AnimateMoveFail(interactedArrowRoot, collidedArrowRoot, builder, path, direction, deltaIndex, interactedConfigIndex));
+        StartCoroutine(AnimateMoveFail(interactedArrowRoot, collidedArrowRoot, builder, _curvedPath[interactedConfigIndex], _cumulativeLength[interactedConfigIndex], direction, deltaIndex, interactedConfigIndex));
     }
 
     private void HandleEraseArrowAt(int configIndex)
@@ -201,11 +213,12 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         }
     }
 
-    private IEnumerator AnimateMoveFail(GameObject interactedArrowRoot, GameObject collidedArrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir, int deltaIndex, int interactedConfigIndex)
+    private IEnumerator AnimateMoveFail(GameObject interactedArrowRoot, GameObject collidedArrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, float[] cumulativeLength, Vector3 exitDir, int deltaIndex, int interactedConfigIndex)
     { 
         float exitDistance = (deltaIndex == 1) ? 0.5f * spacing : (deltaIndex - 1) * spacing;
         int n = originalPath.Length;
-        float totalLength = (n - 1) * spacing;
+        //float totalLength = (n - 1) * spacing;
+        float totalLength = cumulativeLength[^1];
         float travelled = 0f;
 
         while (travelled < exitDistance)
@@ -215,16 +228,18 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             float tailDist = totalLength - travelled;
 
             var newPathList = new List<Vector3>();
-            newPathList.Add(PositionBehindHead(originalPath, exitDir, headDist));
+            //newPathList.Add(PositionBehindHead(originalPath, exitDir, headDist));
+            newPathList.Add(PositionAtDistance(originalPath, cumulativeLength, headDist));
 
             for (int i = 0; i < n; i++)
             {
-                float nodeDist = i * spacing;
+                float nodeDist = cumulativeLength[i];
                 if (nodeDist > headDist && nodeDist < tailDist)
                     newPathList.Add(originalPath[i]);
             }
-            newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
-            builder.BuildArrow(newPathList.ToArray(), spacing);
+            //newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
+            newPathList.Add(PositionAtDistance(originalPath, cumulativeLength, tailDist));
+            builder.BuildArrow(newPathList.ToArray(), cumulativeLength, spacing);
             yield return null;
         }
 
@@ -237,28 +252,33 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             float tailDist = totalLength - travelled;
 
             var newPathList = new List<Vector3>();
-            newPathList.Add(PositionBehindHead(originalPath, exitDir, headDist));
+            //newPathList.Add(PositionBehindHead(originalPath, exitDir, headDist));
+            newPathList.Add(PositionAtDistance(originalPath, cumulativeLength, headDist));
 
             for (int i = 0; i < n; i++)
             {
-                float nodeDist = i * spacing;
+                float nodeDist = cumulativeLength[i];
                 if (nodeDist > headDist && nodeDist < tailDist)
+                {
                     newPathList.Add(originalPath[i]);
+                }
             }
-            newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
-            builder.BuildArrow(newPathList.ToArray(), spacing);
+            //newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
+            newPathList.Add(PositionAtDistance(originalPath, cumulativeLength, tailDist));
+            builder.BuildArrow(newPathList.ToArray(), cumulativeLength, spacing);
             yield return null;
         }
 
-        builder.BuildArrow(originalPath, spacing);
+        builder.BuildArrow(originalPath, cumulativeLength, spacing);
         OnUnblockInteractWidthArrow?.Invoke(interactedConfigIndex);
     }
 
-    private IEnumerator AnimateMoveSuccess(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, Vector3 exitDir, int configIndex)
+    private IEnumerator AnimateMoveSuccess(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, float[] cumulativeLength, Vector3 exitDir, int configIndex)
     {
         float exitDistance = camera.orthographicSize * 2f * camera.aspect + exitPadding;
         int n = originalPath.Length;
-        float totalLength = (n - 1) * spacing;
+        //float totalLength = (n - 1) * spacing;
+        float totalLength = cumulativeLength[^1];
         float targetTravel = totalLength + exitDistance;
         float travelled = 0f;
 
@@ -269,18 +289,21 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             float tailDist = totalLength - travelled;
 
             var newPathList = new List<Vector3>();
-            newPathList.Add(PositionBehindHead(originalPath, exitDir, headDist));
+            //newPathList.Add(PositionBehindHead(originalPath, exitDir, headDist));
+            newPathList.Add(PositionAtDistance(originalPath, cumulativeLength, headDist));
 
             for (int i = 0; i < n; i++)
             {
-                float nodeDist = i * spacing;
+                //float nodeDist = i * spacing;
+                float nodeDist = cumulativeLength[i];
                 if (nodeDist > headDist && nodeDist < tailDist)
                 {
                     newPathList.Add(originalPath[i]);
                 }
             }
-            newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
-            builder.BuildArrow(newPathList.ToArray(), spacing);
+            //newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
+            newPathList.Add(PositionAtDistance(originalPath, cumulativeLength, tailDist));
+            builder.BuildArrow(newPathList.ToArray(), cumulativeLength, spacing);
             yield return null;
         }
         Destroy(arrowRoot);
@@ -296,6 +319,28 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         //Debug.Log(loIndex);
         float t = (distanceFromInitHead - loIndex * spacing) / spacing;
         return Vector3.Lerp(path[loIndex], path[loIndex + 1], t);
+    }
+
+    private Vector3 PositionAtDistance(Vector3[] curvedPath, float[] cumLen, float distance)
+    {
+        if (distance <= 0f)
+        {
+            var dir = (curvedPath[1] - curvedPath[0]).normalized;
+            return curvedPath[0] + dir * distance;
+        }
+
+        int lastPos = cumLen.Length - 1;
+        if (distance >= cumLen[lastPos])
+        {
+            var dir = (curvedPath[lastPos] - curvedPath[lastPos - 1]).normalized;
+            return curvedPath[lastPos] + dir * (distance - cumLen[lastPos]);
+        }
+
+        int lo = 0;
+        while (cumLen[lo + 1] < distance)
+            lo++;
+        float t = (distance - cumLen[lo]) / (cumLen[lo + 1] - cumLen[lo]);
+        return Vector3.Lerp(curvedPath[lo], curvedPath[lo + 1], t);
     }
 
     private void HandleArrowFirstFail(int configIndex, GameObject interactedArrowRoot, GameObject collidedArrowRoot)

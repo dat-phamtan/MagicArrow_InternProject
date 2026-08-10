@@ -46,12 +46,12 @@ public class ArrowAssembler : MonoBehaviour
     //    }
     //}
 
-    public GameObject Build(Arrow arrow, int boardWidth, int boardHeight, float spacing, out Vector3[] points, out ArrowMeshBuilder builder)
+    public GameObject Build(Arrow arrow, Vector3[] points, float[] cumulativeLength, float spacing, out ArrowMeshBuilder builder)
     {
         var root = new GameObject("Arrow");
         root.transform.SetParent(transform, false);
 
-        points = BuildPathPoints(arrow.ArrowIndices, boardWidth, boardHeight, spacing);
+        //points = BuildPathPoints(arrow.ArrowIndices, boardWidth, boardHeight, spacing);
         builder = null;
 
         if (points.Length < 2)
@@ -70,7 +70,7 @@ public class ArrowAssembler : MonoBehaviour
         builder.tailLength = tail.rect.width / tail.pixelsPerUnit;
 
         var arrowIndices = arrow.ArrowIndices;
-        builder.BuildArrow(points, spacing);
+        builder.BuildArrow(points, cumulativeLength, spacing);
 
 
         //boosters 
@@ -109,7 +109,7 @@ public class ArrowAssembler : MonoBehaviour
         return new Vector3(offsetX + x * spacing, offsetY + y * spacing, 0);
     }
 
-    private Vector3[] BuildPathPoints(int[] arrowIndices, int boardWidth, int boardHeight, float spacing)
+    public Vector3[] BuildPathPoints(int[] arrowIndices, int boardWidth, int boardHeight, float spacing)
     {
         var points = new Vector3[arrowIndices.Length];
         for (int i = 0; i < arrowIndices.Length; i++)
