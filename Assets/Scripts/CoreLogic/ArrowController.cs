@@ -31,7 +31,7 @@ namespace Assets.Scripts.CoreLogic
         private List<bool> _isFirstMoveFail;
         private bool _isWaitingForEraserBooster = false;
         private int _heart = 3;
-        private int _numArrow = 0;
+        private int _numAnimatedArrow = 0;
         
 
         public event Action<int> OnMoveArrowSuccess;
@@ -47,17 +47,14 @@ namespace Assets.Scripts.CoreLogic
             _config = config;
             _input = input;
         }
-
         public List<int> GetArrowMatrix()
         {
             return _boardMatrix;
         }
-
         public ConfigData GetConfigData()
         {
             return _configData;
         }
-
         public PartType GetArrowTypeAtPosition(Position pos)
         {
             int boardIndex = IntPositionToIndex(pos);
@@ -71,18 +68,15 @@ namespace Assets.Scripts.CoreLogic
 
             return PartType.BODY;
         }
-
         public Direction GetDirectionAtPosition(Position pos)
         {
             var boardIndex = IntPositionToIndex(pos);
             return _directions[boardIndex];
         }
-
         public Direction GetDirectionAtBoardIndex(int boardIndex)
         {
             return _directions[boardIndex];
         }
-
         public void ChangeEraserUsedMode()
         {
             _isWaitingForEraserBooster = !_isWaitingForEraserBooster;
@@ -108,9 +102,9 @@ namespace Assets.Scripts.CoreLogic
         {
             return _boardMatrix[boardIndex];
         }
-        public int GetCurrentNumArrow()
+        public int GetNumAnimatedArrow()
         {
-            return _numArrow;
+            return _numAnimatedArrow;
         }
         public int GetHeart()
         {
@@ -137,6 +131,7 @@ namespace Assets.Scripts.CoreLogic
             _isFirstMoveFail = Enumerable.Repeat(true, _configData.Arrows.Length).ToList();
             _isAnimated = Enumerable.Repeat(false, boardSize).ToList();
             _heart = 3;
+            _numAnimatedArrow = 0;
             _isWaitingForEraserBooster = false;
 
             for (int configIndex = 0; configIndex < _configData.Arrows.Length; configIndex++)
@@ -162,7 +157,7 @@ namespace Assets.Scripts.CoreLogic
         private void LoadConfig()
         {
             _configData = _config.Load();
-            _numArrow = _configData.Arrows.Length;
+            //_numArrow = _configData.Arrows.Length;
         }
         
         private void InputInit()
@@ -175,13 +170,13 @@ namespace Assets.Scripts.CoreLogic
             _input.OnInteractAtPosition += HandleUserInput;
             _eventHandler.OnUnblockInteractWidthArrow += UnblockInteractWithArrow;
             _popupManager.OnPlayAgain += HandlePlayAgain;
-            _eventHandler.OnArrowDestroyed += HandleArrowDestroyed;
+            _eventHandler.OnAnimatedComplete += HandleArrowDestroyed;
             //tobecontinued
         }
 
         private void HandleArrowDestroyed()
         {
-            _numArrow--;
+            _numAnimatedArrow--;
         }
 
         private void LoadMatrixes()
@@ -380,6 +375,7 @@ namespace Assets.Scripts.CoreLogic
             {
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
+                _numAnimatedArrow++;
                 if (AllArrowsAreCleared())
                     HandleWin();
                 return;
@@ -396,6 +392,7 @@ namespace Assets.Scripts.CoreLogic
                     BlockInteractWithArrow(interactedConfigIndex);
                     OnMoveArrowFail?.Invoke(interactedConfigIndex, collidedConfigIndex, deltaBoardIndex);
                     _heart--;
+                    _numAnimatedArrow++;
                     if (AllHeartAreLost())
                     {
                         HandleLose();
@@ -410,6 +407,7 @@ namespace Assets.Scripts.CoreLogic
                 //Debug.LogWarning("Correct");
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
+                _numAnimatedArrow++;
                 if (AllArrowsAreCleared())
                     HandleWin();
             }

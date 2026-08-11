@@ -46,6 +46,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     //private IArrowAssember _arrowAssember;
     private InputSystem_Actions _inputActions;
+
     private ConfigData _configData;
     private Dictionary<int, GameObject> _arrowRoots;
     private Dictionary<int, ArrowMeshBuilder> _arrowBuilders;
@@ -56,7 +57,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public event Action<Vector3> OnInteractAt;
     public event Action<int> OnUnblockInteractWidthArrow;
     public event Action<GameObject> OnCollidedAnimation;
-    public event Action OnArrowDestroyed;
+    public event Action OnAnimatedComplete;
     public event Action<string> OnTurnPopupOn;
 
     private void Awake()
@@ -120,8 +121,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private IEnumerator WaitForAllArrowCoroutine(string text)
     {
-        Debug.Log(_controller.GetHeart());
-        while (_controller.GetCurrentNumArrow() > 0 && _controller.GetHeart() > 0)
+        while (_controller.GetNumAnimatedArrow() > 0 && _controller.GetHeart() > 0)
         {
             yield return null;
         }
@@ -276,6 +276,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
         builder.BuildArrow(originalPath, cumulativeLength, spacing);
         OnUnblockInteractWidthArrow?.Invoke(interactedConfigIndex);
+        OnAnimatedComplete?.Invoke();
     }
 
     private IEnumerator AnimateMoveSuccess(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, float[] cumulativeLength, int configIndex)
@@ -312,7 +313,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             yield return null;
         }
         Destroy(arrowRoot);
-        OnArrowDestroyed?.Invoke();
+        OnAnimatedComplete?.Invoke();
     }
 
     private Vector3 PositionAtDistance(Vector3[] curvedPath, float[] cumLen, float distance)

@@ -17,18 +17,19 @@ namespace Assets.Scripts.UI
         private IInput _input;
         private IController _controller;
         private IEventHandler _eventHandler;
+
         private ConfigData _configData;
-        private float _spacing;
-        private float _arrowAnimationTime;
         private Dictionary<int, GameObject> _arrowRoots;
         private Dictionary<int, ArrowMeshBuilder> _arrowBuilders;
         private Dictionary<int, Vector3[]> _arrowPaths;
+        private Dictionary<int, Vector3[]> _curvedPath;
+        private Dictionary<int, float[]> _cumulativeLength;
 
         public UIManager(IController controller, IInput input, float spacing)
         {
             _input = input;
             _controller = controller;
-            _spacing = spacing;
+            //_spacing = spacing;
         }
 
         public void Init(IEventHandler eventHandler)
