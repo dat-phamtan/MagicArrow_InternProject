@@ -1,5 +1,6 @@
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Scenes;
+using Assets.Scripts.UI;
 using System;
 using TMPro;
 using UnityEngine;
@@ -11,10 +12,12 @@ public class PopUpManager : MonoBehaviour, IPopUpManager
     public Button button1;
     public TextMeshProUGUI result;
     private IController _controller;
+    public IEventHandler _eventHandler;
     public event Action OnPlayAgain;
 
-    public void Init(IController controller)
+    public void Init(IController controller, IEventHandler eventHandler)
     {
+        _eventHandler = eventHandler;
         _controller = controller;
         RegisterAction();
     }
@@ -22,7 +25,7 @@ public class PopUpManager : MonoBehaviour, IPopUpManager
     private void RegisterAction()
     {
         button1.onClick.AddListener(() => { OnPlayAgain?.Invoke(); });
-        _controller.OnTurnPopupOn += HandleTurnPopupOn;
+        _eventHandler.OnTurnPopupOn += HandleTurnPopupOn;
         _controller.OnTurnPopupOff += HandleTurnPopupOff;
     }
 

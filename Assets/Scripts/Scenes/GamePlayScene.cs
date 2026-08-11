@@ -57,6 +57,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public event Action<int> OnUnblockInteractWidthArrow;
     public event Action<GameObject> OnCollidedAnimation;
     public event Action OnArrowDestroyed;
+    public event Action<string> OnTurnPopupOn;
 
     private void Awake()
     {
@@ -76,12 +77,13 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         _controller.Init(this, popUpManager);
         _uiManager.Init(this);
-        popUpManager.Init(_controller);
+        
         _configData = _controller.GetConfigData();
         _boardWidth = _configData.BoardWidth;
         _boardHeight = _configData.BoardHeight;
         BoardInit();
         arrowAssembler.Init(this);
+        popUpManager.Init(_controller, this);
         cameraModifier.FitCamera(_boardWidth, _boardHeight, spacing);
     }
 
@@ -97,8 +99,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
         _controller.OnMoveArrowFail += HandleMoveFail;
         _controller.OnEraseArrowAt += HandleEraseArrowAt;
-        _controller.OnRerenderBoard += PlayAgain;
-
+        _controller.OnRerenderBoard += BoardInit;
+        _controller.OnTurnPopupOn += TurnPopUp;
     }
 
     private void OnDisable()
@@ -111,7 +113,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
         _controller.OnMoveArrowFail -= HandleMoveFail;
         _controller.OnEraseArrowAt -= HandleEraseArrowAt;
-        _controller.OnRerenderBoard -= PlayAgain;
+        _controller.OnRerenderBoard -= BoardInit;
+        _controller.OnTurnPopupOn -= TurnPopUp;
         _inputActions.Disable();
     }
 
@@ -121,12 +124,13 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         {
             yield return null;
         }
+        StopAllCoroutines();
     }
 
-    private void PlayAgain()
+    private void TurnPopUp(string text)
     {
         StartCoroutine(WaitForAllArrowCoroutine());
-        BoardInit();
+        OnTurnPopupOn?.Invoke(text);
     }
 
     private void BoardInit()

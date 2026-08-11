@@ -11,5 +11,6 @@ namespace Assets.Scripts.UI
         public event Action<int> OnUnblockInteractWidthArrow;
         public event Action<GameObject> OnCollidedAnimation;
         public event Action OnArrowDestroyed;
+        public event Action<string> OnTurnPopupOn;
     }
 }
