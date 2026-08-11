@@ -26,6 +26,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public int heart = 3;
     public float cornerRadius = 0.12f;
     public int segments = 10;
+    public float panSpeed = 1.2f;
+    public float previousPinchDistance = 0f;
 
     public new Camera camera;
     public GameObject headPrefab;
@@ -61,7 +63,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public event Action<Vector3> OnInteractAt;
     public event Action<int> OnUnblockInteractWidthArrow;
     public event Action<GameObject> OnCollidedAnimation;
-    public event Action OnAnimatedComplete;
+    public event Action<bool> OnAnimatedComplete;
     public event Action<string> OnTurnPopupOn;
 
     private void Awake()
@@ -95,12 +97,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private void OnEnable()
     {
         _inputActions.Enable();
-        //_inputActions.UI.Clicked.started += HandlePressedStart;
-        //_inputActions.UI.Clicked.canceled += HandlePressedEnd;
-        //_inputActions.UI.InteractAtPos.performed += HandleSufInput;
         _inputActions.UI.Tap.performed += HandlePlayZoneClicked;
-        //_inputActions.UI.ClickAtPos.performed += HandlePlayZoneClicked;
-
 
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
         _controller.OnMoveArrowFail += HandleMoveFail;
@@ -111,10 +108,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void OnDisable()
     {
-        //_inputActions.UI.Clicked.started -= HandlePressedStart;
-        //_inputActions.UI.Clicked.canceled -= HandlePressedEnd;
-        //_inputActions.UI.InteractAtPos.performed -= HandleSufInput;
-        //_inputActions.UI.ClickAtPos.performed -= HandlePlayZoneClicked;
         _inputActions.UI.Tap.performed -= HandlePlayZoneClicked;
 
         _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
@@ -125,18 +118,70 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _inputActions.Disable();
     }
 
-    private IEnumerator WaitForAllArrowCoroutine(string text)
+    private void Update()
     {
-        while (_controller.GetNumAnimatedArrow() > 0)
-        {
-            yield return null;
-        }
-        OnTurnPopupOn?.Invoke(text);
+        HandleZoom();
+        if (!IsSecondTouched())
+            HandlePan();
+
     }
 
-    private void TurnPopUp(string text)
+    private bool IsSecondTouched()
     {
-        StartCoroutine(WaitForAllArrowCoroutine(text));
+        return _inputActions.UI.Touch2Contact.IsPressed();
+    }
+
+    private void HandlePan()
+    {
+        if (_inputActions.UI.Press.IsPressed())
+        {
+            var delta = _inputActions.UI.DragPosition.ReadValue<Vector2>();
+            var moveDirection = Time.deltaTime * new Vector3(-delta.x, -delta.y, 0);
+            cameraModifier.TranslateCamera(moveDirection);
+        }
+    }
+
+    private void HandleZoom()
+    {
+        if (_inputActions.UI.Touch2Contact.IsPressed())
+        {
+            var pos1 = _inputActions.UI.Touch1.ReadValue<Vector2>();
+            var pos2 = _inputActions.UI.Touch2.ReadValue<Vector2>();
+
+            var distance = Vector2.Distance(pos1, pos2);
+            if (previousPinchDistance > 0)
+            {
+                var delta = previousPinchDistance - distance;
+                cameraModifier.ZoomCamera(delta * 0.01f);
+            }
+            previousPinchDistance = distance;
+        }
+        else
+        {
+            previousPinchDistance = 0f;
+        }
+    }
+
+
+    private IEnumerator WaitForAllArrowCoroutine(bool isWin)
+    {
+        if (isWin)
+        {
+            while (_controller.GetSuccessAnimationNum() > 0)
+                yield return null;
+            OnTurnPopupOn?.Invoke("VICTORY");
+        }
+        else
+        {
+            while (_controller.GetFailAnimationNum() > 0)
+                yield return null;
+            OnTurnPopupOn?.Invoke("DEFEAT");
+        }
+    }
+
+    private void TurnPopUp(bool isWin)
+    {
+        StartCoroutine(WaitForAllArrowCoroutine(isWin));
     }
 
     private void BoardInit()
@@ -195,6 +240,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         if (_isHolded)
             return;
         var screenPos = _inputActions.UI.Position.ReadValue<Vector2>();
+        //Debug.Log($"{screenPos.x}/{screenPos.y}");
         OnInteractAt?.Invoke(camera.ScreenToWorldPoint(screenPos));
     }
 
@@ -282,7 +328,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
         builder.BuildArrow(originalPath, cumulativeLength, spacing);
         OnUnblockInteractWidthArrow?.Invoke(interactedConfigIndex);
-        OnAnimatedComplete?.Invoke();
+        OnAnimatedComplete?.Invoke(false);
     }
 
     private IEnumerator AnimateMoveSuccess(GameObject arrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, float[] cumulativeLength, int configIndex)
@@ -319,7 +365,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             yield return null;
         }
         Destroy(arrowRoot);
-        OnAnimatedComplete?.Invoke();
+        OnAnimatedComplete?.Invoke(true);
     }
 
     private Vector3 PositionAtDistance(Vector3[] curvedPath, float[] cumLen, float distance)
@@ -348,7 +394,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         if (_controller.IsFirstMoveFail(configIndex))
         {
-            //arrowAssembler.ChangeArrowColor(1, interactedArrowRoot.GetComponent<ArrowMeshBuilder>());
+            arrowAssembler.ChangeArrowColor(1, interactedArrowRoot.GetComponent<ArrowMeshBuilder>());
         }
         OnCollidedAnimation?.Invoke(collidedArrowRoot);
     }

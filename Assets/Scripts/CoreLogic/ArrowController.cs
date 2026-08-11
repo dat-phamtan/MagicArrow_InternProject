@@ -32,14 +32,15 @@ namespace Assets.Scripts.CoreLogic
         private bool _isWinOrLose = false;
         private bool _isWaitingForEraserBooster = false;
         private int _heart = 3;
-        private int _numAnimatedArrow = 0;
+        private int _numAnimationSuccess = 0;
+        private int _numAnimationFail = 0;
         
 
         public event Action<int> OnMoveArrowSuccess;
         public event Action<int, int, int> OnMoveArrowFail;
         public event Action<int> OnEraseArrowAt;
         public event Action OnTurnPopupOff;
-        public event Action<string> OnTurnPopupOn;
+        public event Action<bool> OnTurnPopupOn;
         public event Action OnRerenderBoard;
 
         // implement interface
@@ -103,9 +104,13 @@ namespace Assets.Scripts.CoreLogic
         {
             return _boardMatrix[boardIndex];
         }
-        public int GetNumAnimatedArrow()
+        public int GetSuccessAnimationNum()
         {
-            return _numAnimatedArrow;
+            return _numAnimationSuccess;
+        }
+        public int GetFailAnimationNum()
+        {
+            return _numAnimationFail;
         }
         public int GetHeart()
         {
@@ -132,7 +137,8 @@ namespace Assets.Scripts.CoreLogic
             _isFirstMoveFail = Enumerable.Repeat(true, _configData.Arrows.Length).ToList();
             _isAnimated = Enumerable.Repeat(false, boardSize).ToList();
             _heart = 3;
-            _numAnimatedArrow = 0;
+            _numAnimationSuccess = 0;
+            _numAnimationFail = 0;
             _isWaitingForEraserBooster = false;
             _isWinOrLose = false;
 
@@ -176,9 +182,12 @@ namespace Assets.Scripts.CoreLogic
             //tobecontinued
         }
 
-        private void HandleArrowDestroyed()
+        private void HandleArrowDestroyed(bool isSuccess)
         {
-            _numAnimatedArrow--;
+            if (isSuccess)
+                _numAnimationSuccess--;
+            else
+                _numAnimationFail--;
         }
 
         private void LoadMatrixes()
@@ -377,7 +386,7 @@ namespace Assets.Scripts.CoreLogic
             {
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
-                _numAnimatedArrow++;
+                _numAnimationSuccess++;
                 if (AllArrowsAreCleared())
                     HandleWin();
                 return;
@@ -394,7 +403,8 @@ namespace Assets.Scripts.CoreLogic
                     BlockInteractWithArrow(interactedConfigIndex);
                     OnMoveArrowFail?.Invoke(interactedConfigIndex, collidedConfigIndex, deltaBoardIndex);
                     _heart--;
-                    _numAnimatedArrow++;
+                    //Debug.Log(_nu)
+                    _numAnimationFail++;
                     if (AllHeartAreLost())
                     {
                         HandleLose();
@@ -409,7 +419,7 @@ namespace Assets.Scripts.CoreLogic
                 //Debug.LogWarning("Correct");
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
-                _numAnimatedArrow++;
+                _numAnimationSuccess++;
                 if (AllArrowsAreCleared())
                     HandleWin();
             }
@@ -439,14 +449,14 @@ namespace Assets.Scripts.CoreLogic
         {
             Debug.Log("VICTORY!");
             _isWinOrLose = true;
-            OnTurnPopupOn?.Invoke("VICTORY");
+            OnTurnPopupOn?.Invoke(true);
         }
 
         private void HandleLose()
         {
             Debug.Log("DEFEAT");
             _isWinOrLose = true;
-            OnTurnPopupOn?.Invoke("DEFEAT");
+            OnTurnPopupOn?.Invoke(false);
         }
 
         private Direction GetDirection(Position prePos, Position currentPos)

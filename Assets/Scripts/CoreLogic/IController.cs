@@ -15,7 +15,7 @@ namespace Assets.Scripts.CoreLogic
         public event Action<int> OnMoveArrowSuccess;
         public event Action<int, int, int> OnMoveArrowFail;
         public event Action<int> OnEraseArrowAt;
-        public event Action<string> OnTurnPopupOn;
+        public event Action<bool> OnTurnPopupOn;
         public event Action OnTurnPopupOff;
         public event Action OnRerenderBoard;
         
@@ -30,7 +30,8 @@ namespace Assets.Scripts.CoreLogic
         public void DiableArrow(int configIndex);
         public bool IsFirstMoveFail(int configIndex);
         public int GetConfigIndexAt(int boardIndex);
-        public int GetNumAnimatedArrow();
+        public int GetSuccessAnimationNum();
+        public int GetFailAnimationNum();
         public int GetHeart();
     }
 }

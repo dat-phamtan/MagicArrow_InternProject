@@ -14,18 +14,20 @@ namespace Assets.Scripts.Input
         private float _absPlayZoneX;
         private float _absPlayZoneY;
         private readonly float _spacing;
+        private readonly float _padding;
 
         public event Action<Position> OnInteractAtPosition;
 
         public PlayerInput(float spacing)
         {
             _spacing = spacing;
+            _padding = spacing / 2; 
         }
 
         public void InitInput(int width, int height)
         {
-            _absPlayZoneX = (width - 1) * _spacing / 2;
-            _absPlayZoneY = (height - 1) * _spacing / 2;
+            _absPlayZoneX = ((width - 1) * _spacing + _padding) / 2;
+            _absPlayZoneY = ((height - 1) * _spacing + _padding) / 2;
         }
 
         public void HandleInput(UnityEngine.Vector3 pos)
@@ -36,13 +38,6 @@ namespace Assets.Scripts.Input
             var boardPos = ConvertWorldPointToPosition(pos);
             OnInteractAtPosition?.Invoke(boardPos);
         }
-
-
-
-
-
-
-
 
 
 
