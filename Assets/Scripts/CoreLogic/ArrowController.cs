@@ -29,6 +29,7 @@ namespace Assets.Scripts.CoreLogic
         private List<Direction> _directions;
         private List<bool> _isAnimated;
         private List<bool> _isFirstMoveFail;
+        private bool _isWinOrLose = false;
         private bool _isWaitingForEraserBooster = false;
         private int _heart = 3;
         private int _numAnimatedArrow = 0;
@@ -133,6 +134,7 @@ namespace Assets.Scripts.CoreLogic
             _heart = 3;
             _numAnimatedArrow = 0;
             _isWaitingForEraserBooster = false;
+            _isWinOrLose = false;
 
             for (int configIndex = 0; configIndex < _configData.Arrows.Length; configIndex++)
             {
@@ -436,12 +438,14 @@ namespace Assets.Scripts.CoreLogic
         private void HandleWin()
         {
             Debug.Log("VICTORY!");
+            _isWinOrLose = true;
             OnTurnPopupOn?.Invoke("VICTORY");
         }
 
         private void HandleLose()
         {
             Debug.Log("DEFEAT");
+            _isWinOrLose = true;
             OnTurnPopupOn?.Invoke("DEFEAT");
         }
 
@@ -494,8 +498,8 @@ namespace Assets.Scripts.CoreLogic
                 EraseArrowAtPosition(boardIndex);
                 return;
             }
-               
-            MoveArrowAtIndex(boardIndex);
+            if (!_isWinOrLose)
+                MoveArrowAtIndex(boardIndex);
         }
 
         

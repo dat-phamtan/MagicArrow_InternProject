@@ -51,6 +51,11 @@ public class ArrowMeshBuilder : MonoBehaviour
     //NEED REFACTOR NOWWW
     public void BuildArrow(Vector3[] path, float[] cumulativeLength, float spacing)
     {
+        if (_meshRenderer == null)
+        {
+            return;
+        }
+
         int n = path.Length;
         if (n < 2) 
         { 

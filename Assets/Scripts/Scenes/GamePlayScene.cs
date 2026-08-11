@@ -36,6 +36,10 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public CameraModifier cameraModifier;
     public PopUpManager popUpManager;
 
+    //[Header("Input")]
+    //public InputActionReference inputTap;
+    //public InputActionReference inputPosition
+
     private bool _isHolded = false;
     private Vector2 _currentPos;
     private int _boardWidth;
@@ -94,7 +98,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         //_inputActions.UI.Clicked.started += HandlePressedStart;
         //_inputActions.UI.Clicked.canceled += HandlePressedEnd;
         //_inputActions.UI.InteractAtPos.performed += HandleSufInput;
-        _inputActions.UI.ClickAtPos.performed += HandlePlayZoneClicked;
+        _inputActions.UI.Tap.performed += HandlePlayZoneClicked;
+        //_inputActions.UI.ClickAtPos.performed += HandlePlayZoneClicked;
 
 
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
@@ -109,7 +114,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         //_inputActions.UI.Clicked.started -= HandlePressedStart;
         //_inputActions.UI.Clicked.canceled -= HandlePressedEnd;
         //_inputActions.UI.InteractAtPos.performed -= HandleSufInput;
-        _inputActions.UI.ClickAtPos.performed -= HandlePlayZoneClicked;
+        //_inputActions.UI.ClickAtPos.performed -= HandlePlayZoneClicked;
+        _inputActions.UI.Tap.performed -= HandlePlayZoneClicked;
 
         _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
         _controller.OnMoveArrowFail -= HandleMoveFail;
@@ -188,7 +194,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         if (_isHolded)
             return;
-        var screenPos = context.ReadValue<Vector2>();
+        var screenPos = _inputActions.UI.Position.ReadValue<Vector2>();
         OnInteractAt?.Invoke(camera.ScreenToWorldPoint(screenPos));
     }
 
@@ -250,7 +256,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             yield return null;
         }
 
-        HandleFirstFailAnimaion(interactedConfigIndex, interactedArrowRoot, collidedArrowRoot);
+        HandleFirstFailAnimation(interactedConfigIndex, interactedArrowRoot, collidedArrowRoot);
 
         while (travelled > 0)
         {
@@ -338,11 +344,11 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         return Vector3.Lerp(curvedPath[lo], curvedPath[lo + 1], t);
     }
 
-    private void HandleFirstFailAnimaion(int configIndex, GameObject interactedArrowRoot, GameObject collidedArrowRoot)
+    private void HandleFirstFailAnimation(int configIndex, GameObject interactedArrowRoot, GameObject collidedArrowRoot)
     {
         if (_controller.IsFirstMoveFail(configIndex))
         {
-            arrowAssembler.ChangeArrowColor(1, interactedArrowRoot.GetComponent<ArrowMeshBuilder>());
+            //arrowAssembler.ChangeArrowColor(1, interactedArrowRoot.GetComponent<ArrowMeshBuilder>());
         }
         OnCollidedAnimation?.Invoke(collidedArrowRoot);
     }
