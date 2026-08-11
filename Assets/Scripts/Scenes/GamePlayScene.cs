@@ -116,6 +116,17 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void BoardInit()
     {
+        foreach (var root in _arrowRoots.Values)
+        {
+            if (root != null)
+                Destroy(root);
+        }
+        _arrowRoots.Clear();
+        _arrowBuilders.Clear();
+        _arrowPaths.Clear();
+        _curvedPath.Clear();
+        _cumulativeLength.Clear();
+
         for (int i = 0; i < _configData.Arrows.Length; i++)
         {
             var gridPath = arrowAssembler.BuildPathPoints(_configData.Arrows[i].ArrowIndices, _boardWidth, _boardHeight, spacing);

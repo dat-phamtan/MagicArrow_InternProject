@@ -123,11 +123,26 @@ namespace Assets.Scripts.CoreLogic
             RegisterAction();
         }
 
+        //temp
         private void HandlePlayAgain()
         {
             int boardSize = _configData.BoardWidth * _configData.BoardHeight;
             _boardMatrixCheck = Enumerable.Repeat(false, boardSize).ToList();
             _isFirstMoveFail = Enumerable.Repeat(true, _configData.Arrows.Length).ToList();
+            _isAnimated = Enumerable.Repeat(false, boardSize).ToList();
+            _heart = 3;
+            _isWaitingForEraserBooster = false;
+
+            for (int configIndex = 0; configIndex < _configData.Arrows.Length; configIndex++)
+            {
+                var arrow = _configData.Arrows[configIndex];
+                for (int i = 0; i < arrow.ArrowIndices.Length; i++)
+                {
+                    int boardIndex = arrow.ArrowIndices[i];
+                    _boardMatrixCheck[boardIndex] = true;
+                }
+            }
+
             OnTurnPopupOff?.Invoke();
             OnRerenderBoard?.Invoke();
         }
@@ -361,7 +376,7 @@ namespace Assets.Scripts.CoreLogic
             { 
                 if (IsBlockedPath(currentBoardIndex, interactedConfigIndex))
                 {
-                    //Debug.LogWarning("Fail");
+                    Debug.LogWarning("Fail");
                     var deltaBoardIndex = (currentBoardIndex - headBoardIndex) / step;
                     var collidedConfigIndex = _boardMatrix[currentBoardIndex];
                     BlockInteractWithArrow(interactedConfigIndex);
@@ -380,7 +395,7 @@ namespace Assets.Scripts.CoreLogic
             }
             if (!IsCollided)
             {
-                //Debug.LogWarning("Correct");
+                Debug.LogWarning("Correct");
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
                 if (AllArrowsAreCleared())
@@ -407,7 +422,7 @@ namespace Assets.Scripts.CoreLogic
 
         private bool AllHeartAreLost()
         {
-            return _heart < 1;
+            return _heart == 0;
         }
 
         private void HandleWin()
