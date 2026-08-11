@@ -168,6 +168,9 @@ public class ArrowMeshBuilder : MonoBehaviour
         tris.Add(b + 2);
     }
 
+
+
+    //DONT USE FOR NOW
     private Vector3 GetCornerCenter(Vector3 prePos, Vector3 cornerPos, Vector3 postPos, float radius)
     {
         var dir1 = (prePos - cornerPos).normalized;

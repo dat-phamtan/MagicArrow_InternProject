@@ -30,14 +30,11 @@ namespace Assets.Scripts.Input
 
         public void HandleInput(UnityEngine.Vector3 pos)
         {
-            //Debug.Log($"World Pos: {pos}");
             if (!IsInsideThePlayZone(pos))
                 return;
 
             var boardPos = ConvertWorldPointToPosition(pos);
-            //Debug.Log($"{boardPos.X}/{boardPos.Y}");
             OnInteractAtPosition?.Invoke(boardPos);
-
         }
 
         private bool IsInsideThePlayZone(Vector3 pos)

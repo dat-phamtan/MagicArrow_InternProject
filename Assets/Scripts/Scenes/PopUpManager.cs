@@ -21,7 +21,7 @@ public class PopUpManager : MonoBehaviour, IPopUpManager
 
     private void RegisterAction()
     {
-        button1.onClick.AddListener(() => { OnPlayAgain(); });
+        button1.onClick.AddListener(() => { OnPlayAgain?.Invoke(); });
         _controller.OnTurnPopupOn += HandleTurnPopupOn;
         _controller.OnTurnPopupOff += HandleTurnPopupOff;
     }

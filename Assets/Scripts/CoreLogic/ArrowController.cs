@@ -4,6 +4,7 @@ using Assets.Scripts.Input;
 using Assets.Scripts.Scenes;
 using Assets.Scripts.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +31,7 @@ namespace Assets.Scripts.CoreLogic
         private List<bool> _isFirstMoveFail;
         private bool _isWaitingForEraserBooster = false;
         private int _heart = 3;
+        private int _numArrow = 0;
         
 
         public event Action<int> OnMoveArrowSuccess;
@@ -109,7 +111,10 @@ namespace Assets.Scripts.CoreLogic
         {
             return _boardMatrix[boardIndex];
         }
-
+        public int GetCurrentNumArrow()
+        {
+            return _numArrow;
+        }
 
         // logic
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager)
@@ -156,6 +161,7 @@ namespace Assets.Scripts.CoreLogic
         private void LoadConfig()
         {
             _configData = _config.Load();
+            _numArrow = _configData.Arrows.Length;
         }
         
         private void InputInit()
@@ -168,7 +174,13 @@ namespace Assets.Scripts.CoreLogic
             _input.OnInteractAtPosition += HandleUserInput;
             _eventHandler.OnUnblockInteractWidthArrow += UnblockInteractWithArrow;
             _popupManager.OnPlayAgain += HandlePlayAgain;
+            _eventHandler.OnArrowDestroyed += HandleArrowDestroyed;
             //tobecontinued
+        }
+
+        private void HandleArrowDestroyed()
+        {
+            _numArrow--;
         }
 
         private void LoadMatrixes()
@@ -270,7 +282,6 @@ namespace Assets.Scripts.CoreLogic
 
         private bool IsInteractBlocked(int matrixIndex)
         {
-            //Debug.Log(_isAnimated[matrixIndex]);
             return _isAnimated[matrixIndex];
         }
 
@@ -368,6 +379,8 @@ namespace Assets.Scripts.CoreLogic
             {
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
+                if (AllArrowsAreCleared())
+                    HandleWin();
                 return;
             }
 
@@ -399,9 +412,7 @@ namespace Assets.Scripts.CoreLogic
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
                 if (AllArrowsAreCleared())
-                {
                     HandleWin();
-                }
             }
         }
 
@@ -430,6 +441,8 @@ namespace Assets.Scripts.CoreLogic
             Debug.Log("VICTORY!");
             OnTurnPopupOn?.Invoke("VICTORY");
         }
+
+        
 
         private void HandleLose()
         {
@@ -489,5 +502,7 @@ namespace Assets.Scripts.CoreLogic
                
             MoveArrowAtIndex(boardIndex);
         }
+
+        
     }
 }

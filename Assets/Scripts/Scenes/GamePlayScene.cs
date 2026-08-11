@@ -56,6 +56,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public event Action<Vector3> OnInteractAt;
     public event Action<int> OnUnblockInteractWidthArrow;
     public event Action<GameObject> OnCollidedAnimation;
+    public event Action OnArrowDestroyed;
 
     private void Awake()
     {
@@ -96,7 +97,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
         _controller.OnMoveArrowFail += HandleMoveFail;
         _controller.OnEraseArrowAt += HandleEraseArrowAt;
-        _controller.OnRerenderBoard += BoardInit;
+        _controller.OnRerenderBoard += PlayAgain;
 
     }
 
@@ -110,8 +111,22 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
         _controller.OnMoveArrowFail -= HandleMoveFail;
         _controller.OnEraseArrowAt -= HandleEraseArrowAt;
-        _controller.OnRerenderBoard -= BoardInit;
+        _controller.OnRerenderBoard -= PlayAgain;
         _inputActions.Disable();
+    }
+
+    private IEnumerator WaitForAllArrowCoroutine()
+    {
+        while (_controller.GetCurrentNumArrow() > 0)
+        {
+            yield return null;
+        }
+    }
+
+    private void PlayAgain()
+    {
+        StartCoroutine(WaitForAllArrowCoroutine());
+        BoardInit();
     }
 
     private void BoardInit()
@@ -320,6 +335,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             yield return null;
         }
         Destroy(arrowRoot);
+        OnArrowDestroyed?.Invoke();
     }
 
     private Vector3 PositionAtDistance(Vector3[] curvedPath, float[] cumLen, float distance)

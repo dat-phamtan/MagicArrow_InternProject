@@ -18,6 +18,7 @@ namespace Assets.Scripts.CoreLogic
         public event Action<string> OnTurnPopupOn;
         public event Action OnTurnPopupOff;
         public event Action OnRerenderBoard;
+        
 
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager);
         public List<int> GetArrowMatrix();
@@ -29,6 +30,6 @@ namespace Assets.Scripts.CoreLogic
         public void DiableArrow(int configIndex);
         public bool IsFirstMoveFail(int configIndex);
         public int GetConfigIndexAt(int boardIndex);
-
+        public int GetCurrentNumArrow();
     }
 }
