@@ -43,7 +43,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private IController _controller;
     private IUIManager _uiManager;
-    
+
     //private IArrowAssember _arrowAssember;
     private InputSystem_Actions _inputActions;
     private ConfigData _configData;
@@ -77,7 +77,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         _controller.Init(this, popUpManager);
         _uiManager.Init(this);
-        
+
         _configData = _controller.GetConfigData();
         _boardWidth = _configData.BoardWidth;
         _boardHeight = _configData.BoardHeight;
@@ -94,7 +94,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         //_inputActions.UI.Clicked.canceled += HandlePressedEnd;
         //_inputActions.UI.InteractAtPos.performed += HandleSufInput;
         _inputActions.UI.ClickAtPos.performed += HandlePlayZoneClicked;
-        
+
 
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
         _controller.OnMoveArrowFail += HandleMoveFail;
@@ -161,7 +161,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void HandlePressedEnd(InputAction.CallbackContext context)
     {
-        _isHolded = false;  
+        _isHolded = false;
     }
 
     private void HandlePressedStart(InputAction.CallbackContext context)
@@ -196,11 +196,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         var arrowRoot = _arrowRoots[configIndex];
         var builder = _arrowBuilders[configIndex];
-        var path = _arrowPaths[configIndex];
-
-        var arrow = _configData.Arrows[configIndex];
-        var headPos = new Position(arrow.XArrowHead, arrow.YArrowHead);
-        var direction = DirectionToVector(_controller.GetDirectionAtPosition(headPos));
 
         _arrowRoots.Remove(configIndex);
         _arrowBuilders.Remove(configIndex);
@@ -214,11 +209,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         var interactedArrowRoot = _arrowRoots[interactedConfigIndex];
         var collidedArrowRoot = _arrowRoots[collidedConfigIndex];
         var builder = _arrowBuilders[interactedConfigIndex];
-        var path = _arrowPaths[interactedConfigIndex];
-
-        var arrow = _configData.Arrows[interactedConfigIndex];
-        var headPos = new Position(arrow.XArrowHead, arrow.YArrowHead);
-        var direction = DirectionToVector(_controller.GetDirectionAtPosition(headPos));
 
         StartCoroutine(AnimateMoveFail(interactedArrowRoot, collidedArrowRoot, builder, _curvedPath[interactedConfigIndex], _cumulativeLength[interactedConfigIndex], deltaIndex, interactedConfigIndex));
     }
@@ -232,25 +222,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         Destroy(arrowRoot);
     }
 
-    private Vector3 DirectionToVector(Direction dir)
-    {
-        switch (dir)
-        {
-            case Direction.RIGHT:
-                return Vector3.right;
-            case Direction.LEFT:
-                return Vector3.left;
-            case Direction.UP:
-                return Vector3.up;
-            case Direction.DOWN:
-                return Vector3.down;
-            default:
-                return Vector3.left;
-        }
-    }
-
     private IEnumerator AnimateMoveFail(GameObject interactedArrowRoot, GameObject collidedArrowRoot, ArrowMeshBuilder builder, Vector3[] originalPath, float[] cumulativeLength, int deltaIndex, int interactedConfigIndex)
-    { 
+    {
         float exitDistance = (deltaIndex == 1) ? 0.5f * spacing : (deltaIndex - 1) * spacing;
         int n = originalPath.Length;
         //float totalLength = (n - 1) * spacing;
@@ -374,16 +347,52 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     }
 
 
-    //FUNC THAT NO MORE USED
-    private Vector3 PositionBehindHead(Vector3[] path, Vector3 exitDir, float distanceFromInitHead)
-    {
-        //out of gameplay
-        if (distanceFromInitHead <= 0f)
-            return path[0] - exitDir * distanceFromInitHead;
-
-        int loIndex = Mathf.Min((int)(distanceFromInitHead / spacing), path.Length - 2);
-        //Debug.Log(loIndex);
-        float t = (distanceFromInitHead - loIndex * spacing) / spacing;
-        return Vector3.Lerp(path[loIndex], path[loIndex + 1], t);
-    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //FUNC THAT NO MORE USED
+    //private Vector3 PositionBehindHead(Vector3[] path, Vector3 exitDir, float distanceFromInitHead)
+    //{
+    //    //out of gameplay
+    //    if (distanceFromInitHead <= 0f)
+    //        return path[0] - exitDir * distanceFromInitHead;
+
+    //    int loIndex = Mathf.Min((int)(distanceFromInitHead / spacing), path.Length - 2);
+    //    //Debug.Log(loIndex);
+    //    float t = (distanceFromInitHead - loIndex * spacing) / spacing;
+    //    return Vector3.Lerp(path[loIndex], path[loIndex + 1], t);
+    //}
+
+    //private Vector3 DirectionToVector(Direction dir)
+    //{
+    //    switch (dir)
+    //    {
+    //        case Direction.RIGHT:
+    //            return Vector3.right;
+    //        case Direction.LEFT:
+    //            return Vector3.left;
+    //        case Direction.UP:
+    //            return Vector3.up;
+    //        case Direction.DOWN:
+    //            return Vector3.down;
+    //        default:
+    //            return Vector3.left;
+    //    }
+    //}

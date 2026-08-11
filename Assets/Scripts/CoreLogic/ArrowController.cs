@@ -87,7 +87,6 @@ namespace Assets.Scripts.CoreLogic
         {
             _isWaitingForEraserBooster = !_isWaitingForEraserBooster;
         }
-
         public void DiableArrow(int configIndex)
         {
             var arrowIndices = _configData.Arrows[configIndex].ArrowIndices;
@@ -96,7 +95,6 @@ namespace Assets.Scripts.CoreLogic
                 _boardMatrixCheck[arrowIndices[i]] = false;
             }
         }
-
         public bool IsFirstMoveFail(int configIndex)
         {
             if (_isFirstMoveFail[configIndex])
@@ -106,7 +104,6 @@ namespace Assets.Scripts.CoreLogic
             }
             return false;
         }
-
         public int GetConfigIndexAt(int boardIndex)
         {
             return _boardMatrix[boardIndex];
@@ -397,14 +394,12 @@ namespace Assets.Scripts.CoreLogic
                     var deltaBoardIndex = (currentBoardIndex - headBoardIndex) / step;
                     var collidedConfigIndex = _boardMatrix[currentBoardIndex];
                     BlockInteractWithArrow(interactedConfigIndex);
-
+                    OnMoveArrowFail?.Invoke(interactedConfigIndex, collidedConfigIndex, deltaBoardIndex);
                     _heart--;
                     if (AllHeartAreLost())
                     {
                         HandleLose();
                     }
-
-                    OnMoveArrowFail?.Invoke(interactedConfigIndex, collidedConfigIndex, deltaBoardIndex);
                     IsCollided = true;
                     break;
                 }
@@ -412,7 +407,7 @@ namespace Assets.Scripts.CoreLogic
             }
             if (!IsCollided)
             {
-                Debug.LogWarning("Correct");
+                //Debug.LogWarning("Correct");
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
                 if (AllArrowsAreCleared())

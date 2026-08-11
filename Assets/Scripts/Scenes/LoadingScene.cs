@@ -3,6 +3,7 @@ using Assets.Scripts.Config;
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Input;
 using Assets.Scripts.IO;
+using Assets.Scripts.Scenes;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
 using System.Linq.Expressions;
@@ -27,6 +28,7 @@ public class LoadingScene : MonoBehaviour
         IController controller = new ArrowController(config, input);
         IUIManager uiManager = new UIManager(controller, input, spacing);
         IBoostersManager boosterManager = new BoostersManager(controller);
+        //IPopUpManager popupManager = new PopUpManager();
 
         Locator.Register(storage);
         Locator.Register(config);
@@ -34,6 +36,7 @@ public class LoadingScene : MonoBehaviour
         Locator.Register(controller);
         Locator.Register(uiManager);
         Locator.Register(boosterManager);
+        //Locator.Register(popupManager);
 
         SceneManager.LoadScene("GamePlay");
     }

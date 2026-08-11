@@ -37,6 +37,20 @@ namespace Assets.Scripts.Input
             OnInteractAtPosition?.Invoke(boardPos);
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // HELPER FUNCS
         private bool IsInsideThePlayZone(Vector3 pos)
         {
             if (pos.x > _absPlayZoneX || pos.x < -_absPlayZoneX)
