@@ -121,7 +121,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private IEnumerator WaitForAllArrowCoroutine(string text)
     {
-        while (_controller.GetNumAnimatedArrow() > 0 && _controller.GetHeart() > 0)
+        while (_controller.GetNumAnimatedArrow() > 0)
         {
             yield return null;
         }
