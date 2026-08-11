@@ -118,19 +118,19 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _inputActions.Disable();
     }
 
-    private IEnumerator WaitForAllArrowCoroutine()
+    private IEnumerator WaitForAllArrowCoroutine(string text)
     {
-        while (_controller.GetCurrentNumArrow() > 0)
+        Debug.Log(_controller.GetHeart());
+        while (_controller.GetCurrentNumArrow() > 0 && _controller.GetHeart() > 0)
         {
             yield return null;
         }
-        StopAllCoroutines();
+        OnTurnPopupOn?.Invoke(text);
     }
 
     private void TurnPopUp(string text)
     {
-        StartCoroutine(WaitForAllArrowCoroutine());
-        OnTurnPopupOn?.Invoke(text);
+        StartCoroutine(WaitForAllArrowCoroutine(text));
     }
 
     private void BoardInit()

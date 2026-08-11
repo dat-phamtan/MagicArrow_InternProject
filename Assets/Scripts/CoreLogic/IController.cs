@@ -31,5 +31,6 @@ namespace Assets.Scripts.CoreLogic
         public bool IsFirstMoveFail(int configIndex);
         public int GetConfigIndexAt(int boardIndex);
         public int GetCurrentNumArrow();
+        public int GetHeart();
     }
 }

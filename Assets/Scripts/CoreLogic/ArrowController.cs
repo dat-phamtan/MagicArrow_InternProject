@@ -115,6 +115,10 @@ namespace Assets.Scripts.CoreLogic
         {
             return _numArrow;
         }
+        public int GetHeart()
+        {
+            return _heart;
+        }
 
         // logic
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager)
@@ -441,8 +445,6 @@ namespace Assets.Scripts.CoreLogic
             Debug.Log("VICTORY!");
             OnTurnPopupOn?.Invoke("VICTORY");
         }
-
-        
 
         private void HandleLose()
         {
