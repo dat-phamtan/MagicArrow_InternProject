@@ -116,6 +116,10 @@ namespace Assets.Scripts.CoreLogic
         {
             return _heart;
         }
+        public bool IsOccupiedCell(int boardIndex)
+        {
+            return _boardMatrix[boardIndex] != -1 && _boardMatrixCheck[boardIndex];
+        }
 
         // logic
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager)

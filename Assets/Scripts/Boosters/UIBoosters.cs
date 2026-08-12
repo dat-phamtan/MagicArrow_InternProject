@@ -18,7 +18,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     public Button ruler;
     private IBooster _booster;
     public event Action<IBooster> OnBoosterClicked;
-
+        
 
     private void OnEnable()
     {

@@ -33,5 +33,6 @@ namespace Assets.Scripts.CoreLogic
         public int GetSuccessAnimationNum();
         public int GetFailAnimationNum();
         public int GetHeart();
+        public bool IsOccupiedCell(int boardIndex);
     }
 }
