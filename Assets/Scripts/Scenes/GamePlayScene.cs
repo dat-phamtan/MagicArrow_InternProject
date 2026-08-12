@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Unity.Mathematics.Geometry;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 using PlayerInput = Assets.Scripts.Input.PlayerInput;
 
 public class GamePlayScene : MonoBehaviour, IEventHandler
@@ -28,6 +29,10 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public int segments = 10;
     public float panSpeed = 1.2f;
     public float previousPinchDistance = 0f;
+
+    //public float baseScale = 1.0f;
+    //public float activeScale = 1.8f;
+    //public float animationDuration = 0.5f;
 
     public new Camera camera;
     public GameObject headPrefab;
@@ -46,6 +51,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private Vector2 _currentPos;
     private int _boardWidth;
     private int _boardHeight;
+    //private Tile _generatedCirleTile;
 
     private IController _controller;
     private IUIManager _uiManager;
@@ -98,6 +104,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         _inputActions.Enable();
         _inputActions.UI.Tap.performed += HandlePlayZoneClicked;
+        //_inputActions.UI.Touch2Contact.performed += HandlePlayZoneClicked;
 
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
         _controller.OnMoveArrowFail += HandleMoveFail;
@@ -109,6 +116,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private void OnDisable()
     {
         _inputActions.UI.Tap.performed -= HandlePlayZoneClicked;
+        //_inputActions.UI.Touch2Contact.performed -= HandlePlayZoneClicked;
 
         _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
         _controller.OnMoveArrowFail -= HandleMoveFail;
@@ -120,10 +128,12 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void Update()
     {
-        HandleZoom();
-        if (!IsSecondTouched())
-            HandlePan();
-
+        if (!_controller.IsWinOrLose())
+        {
+            HandleZoom();
+            if (!IsSecondTouched())
+                HandlePan();
+        }
     }
 
     private bool IsSecondTouched()
@@ -143,7 +153,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void HandleZoom()
     {
-        if (_inputActions.UI.Touch2Contact.IsPressed())
+        if (_inputActions.UI.Touch2Contact.IsPressed() && _inputActions.UI.Tap.IsPressed())
         {
             var pos1 = _inputActions.UI.Touch1.ReadValue<Vector2>();
             var pos2 = _inputActions.UI.Touch2.ReadValue<Vector2>();
@@ -336,6 +346,11 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         float exitDistance = camera.orthographicSize * 2f * camera.aspect + exitPadding;
         int n = originalPath.Length;
         //float totalLength = (n - 1) * spacing;
+        //for (int i = 0; i < cumulativeLength.Length; i++)
+        //{
+        //    Debug.Log(cumulativeLength[i]);
+        //}
+
         float totalLength = cumulativeLength[^1];
         float targetTravel = totalLength + exitDistance;
         float travelled = 0f;
@@ -343,8 +358,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         while (travelled < targetTravel)
         {
             travelled += speed * Time.deltaTime;
-            float headDist = -travelled;
-            float tailDist = totalLength - travelled;
+            float headDist = -travelled; //at goal
+            float tailDist = totalLength - travelled; //goal - travelled
 
             var newPathList = new List<Vector3>();
             //newPathList.Add(PositionBehindHead(originalPath, exitDir, headDist));
@@ -361,6 +376,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             }
             //newPathList.Add(PositionBehindHead(originalPath, exitDir, tailDist));
             newPathList.Add(PositionAtDistance(originalPath, cumulativeLength, tailDist));
+            //Debug.Log(newPathList.Count);
             builder.BuildArrow(newPathList.ToArray(), cumulativeLength, spacing);
             yield return null;
         }

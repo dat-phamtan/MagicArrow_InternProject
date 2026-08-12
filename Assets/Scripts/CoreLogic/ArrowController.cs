@@ -120,6 +120,11 @@ namespace Assets.Scripts.CoreLogic
         {
             return _boardMatrix[boardIndex] != -1 && _boardMatrixCheck[boardIndex];
         }
+        public bool IsWinOrLose()
+        {
+            return _isWinOrLose;
+        }
+
 
         // logic
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager)
@@ -406,13 +411,14 @@ namespace Assets.Scripts.CoreLogic
                     var collidedConfigIndex = _boardMatrix[currentBoardIndex];
                     BlockInteractWithArrow(interactedConfigIndex);
                     OnMoveArrowFail?.Invoke(interactedConfigIndex, collidedConfigIndex, deltaBoardIndex);
-                    _heart--;
-                    //Debug.Log(_nu)
+
+                    if (_isFirstMoveFail[interactedConfigIndex])
+                        _heart--;
+
                     _numAnimationFail++;
                     if (AllHeartAreLost())
-                    {
                         HandleLose();
-                    }
+
                     IsCollided = true;
                     break;
                 }
@@ -424,6 +430,7 @@ namespace Assets.Scripts.CoreLogic
                 DiableArrow(interactedConfigIndex);
                 OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
                 _numAnimationSuccess++;
+
                 if (AllArrowsAreCleared())
                     HandleWin();
             }

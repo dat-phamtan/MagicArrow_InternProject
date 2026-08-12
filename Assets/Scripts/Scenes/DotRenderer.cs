@@ -1,0 +1,93 @@
+using Assets.Scripts.CoreLogic;
+using Assets.Scripts.Ultility;
+using Assets.Scripts.Utility;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Tilemaps;
+
+public class DotRenderer : MonoBehaviour
+{
+    public float spacing = 1f;
+    public Tilemap targetTilemap;
+    public Color baseColor = Color.gray;
+    public Color activeColor = Color.blue;
+    public float baseScale = 0.15f;
+    public float activeScale = 0.5f;
+    public float animationDuration = 0.5f;
+
+    private IController _controller;
+    private int _width;
+    private int _height;
+
+
+    private Tile _dotTile;
+    private readonly Dictionary<Vector3Int, float> _currentScale = new();
+    private readonly Dictionary<Vector3Int, Color> _currentColor = new();
+
+    private void Start()
+    {
+        _controller = Locator.Get<IController>();        
+        _width = _controller.GetConfigData().BoardWidth;
+        _height = _controller.GetConfigData().BoardHeight;
+
+        _controller.OnMoveArrowSuccess += HandleSpawnDots;
+    }
+
+    private void HandleSpawnDots(int interactedConfigIndex)
+    {
+        targetTilemap.ClearAllTiles();
+        var arrowIndices = _controller.GetConfigData().Arrows[interactedConfigIndex].ArrowIndices;
+        for (int i = 0; i < arrowIndices.Length; i++)
+        {
+            var worldPos = PositionConverter.IndexToWorldPos(arrowIndices[i], _width, _height, spacing);
+            var intWorldPos = new Vector3Int((int)worldPos.x, (int)worldPos.y, (int)worldPos.z);
+            var offset = worldPos - intWorldPos;
+            SetupBaseTile(intWorldPos, offset);
+        }
+    }
+
+    private void SetupBaseTile(Vector3Int pos, Vector3 offset)
+    {
+
+        targetTilemap.SetTile(pos, _dotTile);
+        targetTilemap.SetTileFlags(pos, TileFlags.None);
+
+        var matrix = Matrix4x4.TRS(offset, Quaternion.identity, new Vector3(1f, 1f, 1f));
+        targetTilemap.SetTransformMatrix(pos, matrix);
+        ApplyTileVisual(pos, baseScale, baseColor);
+    }
+
+    private void ApplyTileVisual(Vector3Int pos, float scale, Color color)
+    {
+        targetTilemap.SetColor(pos, color);
+        targetTilemap.SetTransformMatrix(pos, Matrix4x4.Scale(Vector3.one * scale));
+        _currentScale[pos] = scale;
+        _currentColor[pos] = color;
+    }
+
+    private Tile CreateCircleTile(int resolution)
+    {
+        Texture2D tex = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false);
+        //tex.filterMode = FilterMode.Bilinear;
+
+        float radius = resolution / 2f;
+        var center = new Vector2(radius, radius);
+
+        for (int x = 0; x < resolution; x++)
+        {
+            for (int y = 0; y < resolution; y++)
+            {
+                float distance = Vector2.Distance(new Vector2(x, y), center);
+                float alpha = Mathf.Clamp01(radius - distance);
+                tex.SetPixel(x, y, new Color(1, 1, 1, alpha));
+            }
+        }
+        tex.Apply();
+
+        Sprite circleSprite = Sprite.Create(tex, new Rect(0, 0, resolution, resolution), new Vector2(0.5f, 0.5f), resolution);
+        Tile tile = ScriptableObject.CreateInstance<Tile>();
+        tile.sprite = circleSprite;
+        return tile;
+    }
+}

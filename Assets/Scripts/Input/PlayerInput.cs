@@ -40,8 +40,8 @@ namespace Assets.Scripts.Input
             if (!IsInsideThePlayZone(pos))
                 return;
 
-            //var boardPos = FindTheNearestCellPos(pos);
             var boardPos = FindTheNearestCellPos(pos);
+            //var boardPos = FindTheNearestCellPos(pos);
             //var boardPos2 = ConvertWorldPointToPosition2(pos);
             if (boardPos == null) return;
             OnInteractAtPosition?.Invoke(boardPos);

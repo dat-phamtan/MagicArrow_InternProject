@@ -26,7 +26,8 @@ namespace Assets.Scripts.Ultility
                     continue;
                 }
 
-                float maxRadius = Mathf.Min(Vector3.Distance(gridPath[i], gridPath[i - 1]), Vector3.Distance(gridPath[i], gridPath[i + 1]) / 2);
+                float maxRadius = Vector3.Distance(gridPath[i], gridPath[i + 1]) / 2;
+                //Debug.Log(maxRadius);
                 float radius = Mathf.Clamp(cornerRadius, 0.01f, maxRadius);
 
                 Vector3 startVerticle = gridPath[i] - dirPrev * radius;
