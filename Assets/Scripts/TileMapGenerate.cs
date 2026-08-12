@@ -42,6 +42,7 @@ public class TileMapGenerate : MonoBehaviour
 
     private void SetupBaseTile(Vector3Int pos)
     {
+        
         targetTilemap.SetTile(pos, _dotTile);
         targetTilemap.SetTileFlags(pos, TileFlags.None);
         ApplyTileVisual(pos, baseScale, baseColor);

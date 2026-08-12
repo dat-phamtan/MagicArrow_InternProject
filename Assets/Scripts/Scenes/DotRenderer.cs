@@ -17,8 +17,6 @@ public class DotRenderer : MonoBehaviour
     public float animationDuration = 0.5f;
 
     private IController _controller;
-    private int _width;
-    private int _height;
 
 
     private Tile _dotTile;
@@ -27,20 +25,26 @@ public class DotRenderer : MonoBehaviour
 
     private void Start()
     {
+        _dotTile = CreateCircleTile(32);
         _controller = Locator.Get<IController>();        
-        _width = _controller.GetConfigData().BoardWidth;
-        _height = _controller.GetConfigData().BoardHeight;
 
         _controller.OnMoveArrowSuccess += HandleSpawnDots;
     }
 
+    private void OnDisable()
+    {
+        _controller.OnMoveArrowSuccess -= HandleSpawnDots;
+    }
+
     private void HandleSpawnDots(int interactedConfigIndex)
     {
-        targetTilemap.ClearAllTiles();
+        int width = _controller.GetConfigData().BoardWidth;
+        int height = _controller.GetConfigData().BoardHeight;
+        //targetTilemap.ClearAllTiles();
         var arrowIndices = _controller.GetConfigData().Arrows[interactedConfigIndex].ArrowIndices;
         for (int i = 0; i < arrowIndices.Length; i++)
         {
-            var worldPos = PositionConverter.IndexToWorldPos(arrowIndices[i], _width, _height, spacing);
+            var worldPos = PositionConverter.IndexToWorldPos(arrowIndices[i], width, height, spacing);
             var intWorldPos = new Vector3Int((int)worldPos.x, (int)worldPos.y, (int)worldPos.z);
             var offset = worldPos - intWorldPos;
             SetupBaseTile(intWorldPos, offset);
