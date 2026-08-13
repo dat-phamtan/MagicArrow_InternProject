@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -29,12 +30,13 @@ namespace Assets.Scripts.CoreLogic
         private List<Direction> _directions;
         private List<bool> _isAnimated;
         private List<bool> _isFirstMoveFail;
+        private float _spacing;
         private bool _isWinOrLose = false;
         private bool _isWaitingForEraserBooster = false;
         private int _heart = 3;
         private int _numAnimationSuccess = 0;
         private int _numAnimationFail = 0;
-        
+
 
         public event Action<int> OnMoveArrowSuccess;
         public event Action<int, int, int> OnMoveArrowFail;
@@ -44,10 +46,11 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnRerenderBoard;
 
         // implement interface
-        public ArrowController(IConfig config, IInput input)
+        public ArrowController(IConfig config, IInput input, float spacing)
         {
             _config = config;
             _input = input;
+            _spacing = spacing;
         }
         public List<int> GetArrowMatrix()
         {
@@ -116,6 +119,10 @@ namespace Assets.Scripts.CoreLogic
         {
             return _heart;
         }
+        public float GetSpacing()
+        {
+            return _spacing;
+        }
         public bool IsOccupiedCell(int boardIndex)
         {
             return _boardMatrix[boardIndex] != -1 && _boardMatrixCheck[boardIndex];
@@ -150,22 +157,25 @@ namespace Assets.Scripts.CoreLogic
                     maxBoardIndex = (_configData.BoardHeight - 1) * _configData.BoardWidth + xArrowHead;
                     step = -_configData.BoardWidth;
                     return GenerateListCell(headBoardIndex, minBoardIndex, maxBoardIndex, step);
-                default:   
+                default:
                     return new List<int>();
             }
         }
-
-        private List<int> GenerateListCell(int headBoardIndex, int min, int max, int step)
+        public int GetMovableArrowPosAndDir(out Direction direction)
         {
-            var cells = new List<int>();
-            int currentBoardIndex = headBoardIndex + step;
-            while (currentBoardIndex >= min && currentBoardIndex <= max)
-            {
-                cells.Add(currentBoardIndex);
-                currentBoardIndex += step;
-            }
-            return cells;
+            var index = FindAMoveableArrow();
+            direction = _directions[index];
+            return index;
         }
+
+
+
+
+
+        
+
+
+
 
         // logic
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager)
@@ -217,7 +227,7 @@ namespace Assets.Scripts.CoreLogic
             _configData = _config.Load();
             //_numArrow = _configData.Arrows.Length;
         }
-        
+
         private void InputInit()
         {
             _input.InitInput(_configData.BoardWidth, _configData.BoardHeight);
@@ -309,6 +319,18 @@ namespace Assets.Scripts.CoreLogic
             }
         }
 
+        private List<int> GenerateListCell(int headBoardIndex, int min, int max, int step)
+        {
+            var cells = new List<int>();
+            int currentBoardIndex = headBoardIndex + step;
+            while (currentBoardIndex >= min && currentBoardIndex <= max)
+            {
+                cells.Add(currentBoardIndex);
+                currentBoardIndex += step;
+            }
+            return cells;
+        }
+
         private void MatrixesInit()
         {
             int boardSize = _configData.BoardWidth * _configData.BoardHeight;
@@ -355,7 +377,7 @@ namespace Assets.Scripts.CoreLogic
             var headDirection = GetDirection(headPos, neckPos);
             _directions[indices[0]] = headDirection;
             _directions[indices[1]] = headDirection;
-            
+
             for (int i = 2; i < indices.Length; i++)
             {
                 var prePos = IndexToPosition(indices[i - 1]);
@@ -369,7 +391,11 @@ namespace Assets.Scripts.CoreLogic
         {
             if (_configData == null) return false;
             if (pos.X < 0 || pos.Y < 0) return false;
-            if (pos.X >= _configData.BoardWidth || pos.Y >= _configData.BoardHeight) return false;
+
+            int width = _configData.BoardWidth;
+            int height = _configData.BoardHeight;
+            if (pos.X >= width || pos.Y >= height) return false;
+
             return true;
         }
 
@@ -392,96 +418,99 @@ namespace Assets.Scripts.CoreLogic
 
         private void MoveArrowAtIndex(int boardIndex)
         {
-            //Debug.Log(boardIndex);
             var movedArrow = _configData.Arrows[_boardMatrix[boardIndex]];
-            var headIndexInMatrix = movedArrow.ArrowIndices[0];
-            var headPos = new Position(movedArrow.XArrowHead, movedArrow.YArrowHead);
+
+            var headPos = IndexToPosition(movedArrow.ArrowIndices[0]);
             var neckPos = IndexToPosition(movedArrow.ArrowIndices[1]);
 
             var direction = GetDirection(headPos, neckPos);
-            int minBoardIndex, maxBoardIndex, step;
+            GetZoneWithDirection(movedArrow, direction, out int minBoardIndex, out int maxBoardIndex, out int step);
+            HandleMove(_boardMatrix[boardIndex], movedArrow.ArrowIndices[0], minBoardIndex, maxBoardIndex, step);
+        }
+
+        private void GetZoneWithDirection(Arrow movedArrow, Direction direction, out int min, out int max, out int step)
+        {
+            int width = _configData.BoardWidth;
+            int height = _configData.BoardHeight;
             switch (direction)
             {
-                case Direction.RIGHT: //right
-                    minBoardIndex = _configData.BoardWidth * movedArrow.YArrowHead;
-                    maxBoardIndex = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
+                case Direction.RIGHT:
+                    min = width * movedArrow.YArrowHead;
+                    max = width * (movedArrow.YArrowHead + 1) - 1;
                     step = 1;
-                    HandleMove(_boardMatrix[boardIndex], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
-                case Direction.UP: //up
-                    minBoardIndex = movedArrow.XArrowHead;
-                    maxBoardIndex = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
-                    step = _configData.BoardWidth;
-                    HandleMove(_boardMatrix[boardIndex], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
+                case Direction.UP:
+                    min = movedArrow.XArrowHead;
+                    max = (height - 1) * width + movedArrow.XArrowHead;
+                    step = width;
                     break;
-                case Direction.LEFT: //left
-                    minBoardIndex = _configData.BoardWidth * movedArrow.YArrowHead;
-                    maxBoardIndex = _configData.BoardWidth * (movedArrow.YArrowHead + 1) - 1;
+                case Direction.LEFT:
+                    min = width * movedArrow.YArrowHead;
+                    max = width * (movedArrow.YArrowHead + 1) - 1;
                     step = -1;
-                    HandleMove(_boardMatrix[boardIndex], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
                     break;
-                case Direction.DOWN: //down
-                    minBoardIndex = movedArrow.XArrowHead;
-                    maxBoardIndex = (_configData.BoardHeight - 1) * _configData.BoardWidth + movedArrow.XArrowHead;
-                    step = -_configData.BoardWidth;
-                    HandleMove(_boardMatrix[boardIndex], headIndexInMatrix, minBoardIndex, maxBoardIndex, step);
+                case Direction.DOWN:
+                    min = movedArrow.XArrowHead;
+                    max = (height - 1) * width + movedArrow.XArrowHead;
+                    step = -width;
+                    break;
+                default:
+                    min = max = step = -1;
                     break;
             }
         }
 
-        private void HandleMove(int interactedConfigIndex, int headBoardIndex, int minBoardIndex, int maxBoardIndex, int step) //need to be renamed --> stupid name
+        private void HandleMove(int iConfigIndex, int headBoardIndex, int minBoardIndex, int maxBoardIndex, int step) //need to be renamed --> stupid name
         {
-            int currentBoardIndex = headBoardIndex + step;
-            if (currentBoardIndex < minBoardIndex || currentBoardIndex > maxBoardIndex)
+            if (IsABlockedPath(headBoardIndex, iConfigIndex, minBoardIndex, maxBoardIndex, step, out int currentBoardIndex))
             {
-                DiableArrow(interactedConfigIndex);
-                OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
-                _numAnimationSuccess++;
-                if (AllArrowsAreCleared())
-                    HandleWin();
-                return;
+                var deltaBoardIndex = (currentBoardIndex - headBoardIndex) / step;
+                var cConfigIndex = _boardMatrix[currentBoardIndex];
+
+                BlockInteractWithArrow(iConfigIndex);
+                OnMoveArrowFail?.Invoke(iConfigIndex, cConfigIndex, deltaBoardIndex);
+
+                if (_isFirstMoveFail[iConfigIndex])
+                    _heart--;
+
+                _numAnimationFail++;
+                if (AllHeartAreLost())
+                    HandleLose();
             }
-
-            var IsCollided = false;
-            while (currentBoardIndex >= minBoardIndex && currentBoardIndex <= maxBoardIndex)
-            { 
-                if (IsBlockedPath(currentBoardIndex, interactedConfigIndex))
-                {
-                    Debug.LogWarning("Fail");
-                    var deltaBoardIndex = (currentBoardIndex - headBoardIndex) / step;
-                    var collidedConfigIndex = _boardMatrix[currentBoardIndex];
-                    BlockInteractWithArrow(interactedConfigIndex);
-                    OnMoveArrowFail?.Invoke(interactedConfigIndex, collidedConfigIndex, deltaBoardIndex);
-
-                    if (_isFirstMoveFail[interactedConfigIndex])
-                        _heart--;
-
-                    _numAnimationFail++;
-                    if (AllHeartAreLost())
-                        HandleLose();
-
-                    IsCollided = true;
-                    break;
-                }
-                currentBoardIndex += step;
-            }
-            if (!IsCollided)
+            else
             {
-                //Debug.LogWarning("Correct");
-                DiableArrow(interactedConfigIndex);
-                OnMoveArrowSuccess?.Invoke(interactedConfigIndex);
+                DiableArrow(iConfigIndex);
+                OnMoveArrowSuccess?.Invoke(iConfigIndex);
                 _numAnimationSuccess++;
-
                 if (AllArrowsAreCleared())
                     HandleWin();
             }
         }
 
-        private bool IsBlockedPath(int currentBoardIndex, int configIndex)
+        private bool IsBlockedCell(int currentBoardIndex, int configIndex)
         {
-            return _boardMatrix[currentBoardIndex] != -1 
-                && _boardMatrix[currentBoardIndex] != configIndex 
+            return _boardMatrix[currentBoardIndex] != -1
+                && _boardMatrix[currentBoardIndex] != configIndex
                 && _boardMatrixCheck[currentBoardIndex];
+        }
+
+        private bool IsABlockedPath(int headBoardIndex, int configIndex, int minBoardIndex, int maxBoardIndex, int step, out int currentBoardIndex)
+        {
+            int cBoardIndex = headBoardIndex + step;
+            currentBoardIndex = -1;
+            if (cBoardIndex < minBoardIndex || cBoardIndex > maxBoardIndex) //the head at border
+                return false;
+
+            while (cBoardIndex >= minBoardIndex && cBoardIndex <= maxBoardIndex)
+            {
+                if (IsBlockedCell(cBoardIndex, configIndex))
+                {
+                    currentBoardIndex = cBoardIndex;
+                    return true;
+                }
+                cBoardIndex += step;
+            }
+            return false;
         }
 
         private bool AllArrowsAreCleared()
@@ -539,10 +568,18 @@ namespace Assets.Scripts.CoreLogic
             ChangeEraserUsedMode();
         }
 
-        private void FindMoveableArrow()
+        private int FindAMoveableArrow()
         {
-            //for (int i = 0; i < _boardMatrix)
-            //find a movable arrow
+            for (int i = 0; i < _configData.Arrows.Length; i++)
+            {
+                var arrow = _configData.Arrows[i];
+                var direction = GetDirectionAtBoardIndex(arrow.ArrowIndices[0]);
+                GetZoneWithDirection(arrow, direction, out int min, out int max, out int step);
+                if (!IsABlockedPath(arrow.ArrowIndices[0], i, min, max, step, out _)){
+                    return arrow.ArrowIndices[0];
+                }
+            }
+            return -1; 
         }
 
 

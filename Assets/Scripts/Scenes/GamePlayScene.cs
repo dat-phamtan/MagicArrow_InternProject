@@ -30,10 +30,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public float panSpeed = 1.2f;
     public float previousPinchDistance = 0f;
 
-    //public float baseScale = 1.0f;
-    //public float activeScale = 1.8f;
-    //public float animationDuration = 0.5f;
-
     public new Camera camera;
     public GameObject headPrefab;
     public GameObject bodyPrefab;
@@ -42,10 +38,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public ArrowAssembler arrowAssembler;
     public CameraModifier cameraModifier;
     public PopUpManager popUpManager;
-
-    //[Header("Input")]
-    //public InputActionReference inputTap;
-    //public InputActionReference inputPosition
 
     private bool _isHolded = false;
     private Vector2 _currentPos;

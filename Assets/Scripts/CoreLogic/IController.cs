@@ -33,8 +33,10 @@ namespace Assets.Scripts.CoreLogic
         public int GetSuccessAnimationNum();
         public int GetFailAnimationNum();
         public int GetHeart();
+        public float GetSpacing(); 
         public bool IsOccupiedCell(int boardIndex);
         public bool IsWinOrLose();
         public List<int> GetNextCells(int yArrowHead, int xArrowHead, Direction direction);
+        public int GetMovableArrowPosAndDir(out Direction direction); 
     }
 }

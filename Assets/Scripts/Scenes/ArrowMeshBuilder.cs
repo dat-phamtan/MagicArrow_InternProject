@@ -27,7 +27,6 @@ public class ArrowMeshBuilder : MonoBehaviour
     private Mesh _mesh;
     private MeshFilter _meshFilter;
     private MeshRenderer _meshRenderer;
-    private const float CORNER_MULTIPLIER = 1.41421356f;
     private IController _controller;
     private readonly List<Vector3> _verticles = new(64);
     private readonly List<Vector2> _uvs = new(64);

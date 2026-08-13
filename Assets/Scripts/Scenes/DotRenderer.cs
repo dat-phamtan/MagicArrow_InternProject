@@ -13,10 +13,11 @@ public class DotRenderer : MonoBehaviour
     public Tilemap targetTilemap;
     public Color baseColor = Color.gray;
     public Color activeColor = Color.blue;
-    public float baseScale = 0.02f;
-    public float activeScale = 0.04f;
+    
+    public float baseScale = 0.1f;
+    public float activeScale = 0.2f;
     public float animationDuration = 0.5f;
-    public float chainStepDelay = 0.105f;
+    public float chainStepDelay = 0.11f;
 
     private IController _controller;
 
@@ -160,4 +161,6 @@ public class DotRenderer : MonoBehaviour
         tile.sprite = circleSprite;
         return tile;
     }
+
+    
 }

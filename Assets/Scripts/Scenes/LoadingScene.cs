@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 
 public class LoadingScene : MonoBehaviour
 {
-    private float spacing = 1f;
+    public float spacing = 1f;
 
     private void Awake()
     {
@@ -25,7 +25,7 @@ public class LoadingScene : MonoBehaviour
         IStorage storage = new LocalStorage();
         IConfig config = new ConfigManager(storage);
         IInput input = new PlayerInput(spacing);
-        IController controller = new ArrowController(config, input);
+        IController controller = new ArrowController(config, input, spacing);
         IUIManager uiManager = new UIManager(controller, input, spacing);
         IBoostersManager boosterManager = new BoostersManager(controller);
         //IPopUpManager popupManager = new PopUpManager();

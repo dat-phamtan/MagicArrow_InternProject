@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Tilemaps;
 
 public class TileMapGenerate : MonoBehaviour
@@ -12,38 +14,40 @@ public class TileMapGenerate : MonoBehaviour
 
     public Color baseColor = Color.gray;
     public Color activeColor = Color.blue;
-    public float baseScale = 0.15f;
-    public float activeScale = 0.5f;
+    public Color lineColor = Color.green;
+    public float baseScale = 1f;
+    public float activeScale = 2f;
     public float animationDuration = 0.5f;
 
     //private Tile generatedCircleTile;
-    private Tile _dotTile;
+    private Tile _lineTile;
     private readonly Dictionary<Vector3Int, float> _currentScale = new();
     private readonly Dictionary<Vector3Int, Color> _currentColor = new();
 
     private void Start()
     {
-        _dotTile = CreateCircleTile(32);
+        _lineTile = CreateLineTile(1000, 10);
         GenerateMap();
     }
 
     private void GenerateMap()
     {
         targetTilemap.ClearAllTiles();
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                var cellPos = new Vector3Int(i, j, 0);
-                SetupBaseTile(cellPos);
-            }
-        }
+        SetupBaseTile(new Vector3Int(0, 0, 0));
+        //for (int i = 0; i < width; i++)
+        //{
+        //    for (int j = 0; j < height; j++)
+        //    {
+        //        var cellPos = new Vector3Int(i, j, 0);
+        //        SetupBaseTile(cellPos);
+        //    }
+        //}
     }
 
     private void SetupBaseTile(Vector3Int pos)
     {
         
-        targetTilemap.SetTile(pos, _dotTile);
+        targetTilemap.SetTile(pos, _lineTile);
         targetTilemap.SetTileFlags(pos, TileFlags.None);
         ApplyTileVisual(pos, baseScale, baseColor);
     }
@@ -56,28 +60,22 @@ public class TileMapGenerate : MonoBehaviour
         _currentColor[pos] = color;
     }
 
-    private Tile CreateCircleTile(int resolution)
+    private Tile CreateLineTile(int length, int width)
     {
-        Texture2D tex = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false);
-        //tex.filterMode = FilterMode.Bilinear;
-
-        float radius = resolution / 2f;
-        var center = new Vector2(radius, radius);
-
-        for (int x = 0; x < resolution; x++)
+        Texture2D tex = new Texture2D(width, length, TextureFormat.RGBA32, false);
+        for (int x = 0; x < width; x++)
         {
-            for (int y = 0; y < resolution; y++)
+            for (int y = 0; y < length; y++)
             {
-                float distance = Vector2.Distance(new Vector2(x, y), center);
-                float alpha = Mathf.Clamp01(radius - distance);
-                tex.SetPixel(x, y, new Color(1, 1, 1, alpha));
+                tex.SetPixel(x, y, lineColor);
             }
         }
         tex.Apply();
 
-        Sprite circleSprite = Sprite.Create(tex, new Rect(0, 0, resolution, resolution), new Vector2(0.5f, 0.5f), resolution);
+        Sprite lineSprite = Sprite.Create(tex, new Rect(0, 0, width, length), new Vector2(0.5f, 0), 100);
         Tile tile = ScriptableObject.CreateInstance<Tile>();
-        tile.sprite = circleSprite;
+        //tile.GetComponent<Tilemap>().tileAnchor = new Vector3(0, 0, 0);
+        tile.sprite = lineSprite;
         return tile;
     }
 }
