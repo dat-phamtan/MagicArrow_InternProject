@@ -13,9 +13,10 @@ public class DotRenderer : MonoBehaviour
     public Tilemap targetTilemap;
     public Color baseColor = Color.gray;
     public Color activeColor = Color.blue;
-    public float baseScale = 0.15f;
-    public float activeScale = 0.2f;
+    public float baseScale = 0.02f;
+    public float activeScale = 0.04f;
     public float animationDuration = 0.5f;
+    public float chainStepDelay = 0.105f;
 
     private IController _controller;
 
@@ -41,18 +42,6 @@ public class DotRenderer : MonoBehaviour
     public void TriggerEffect(Vector3Int pos, Vector3 offset)
     {
         StartCoroutine(AnimateDot( pos, offset));
-        //int width = _controller.GetConfigData().BoardWidth;
-        //int height = _controller.GetConfigData().BoardHeight;
-        ////targetTilemap.ClearAllTiles();
-        //var arrowIndices = _controller.GetConfigData().Arrows[interactedConfigIndex].ArrowIndices;
-        //for (int i = 0; i < arrowIndices.Length; i++)
-        //{
-        //    var worldPos = PositionConverter.IndexToWorldPos(arrowIndices[i], width, height, spacing);
-        //    var intWorldPos = new Vector3Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y), Mathf.FloorToInt(worldPos.z));
-        //    var offset = worldPos - intWorldPos;
-            
-        //}
-        
     }
 
     private IEnumerator AnimateDot(Vector3Int pos, Vector3 offset)
@@ -90,26 +79,42 @@ public class DotRenderer : MonoBehaviour
     {
         int width = _controller.GetConfigData().BoardWidth;
         int height = _controller.GetConfigData().BoardHeight;
-        //targetTilemap.ClearAllTiles();
         var interactdArrow = _controller.GetConfigData().Arrows[interactedConfigIndex];
+
+        var chain = new List<(Vector3Int pos, Vector3 offset, bool needsTile)>();
+
+        // tail -> head
         for (int i = interactdArrow.ArrowIndices.Length - 1; i >= 0; i--)
         {
             var worldPos = PositionConverter.IndexToWorldPos(interactdArrow.ArrowIndices[i], width, height, spacing);
             var intWorldPos = new Vector3Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y), Mathf.FloorToInt(worldPos.z));
             var offset = worldPos - intWorldPos;
-            SetupBaseTile(intWorldPos, offset);
-            TriggerEffect(intWorldPos, offset);
+            chain.Add((intWorldPos, offset, true));
         }
 
+        // head -> off board
         var cellList = _controller.GetNextCells(interactdArrow.YArrowHead, interactdArrow.XArrowHead, _controller.GetDirectionAtBoardIndex(interactdArrow.ArrowIndices[0]));
         for (int i = 0; i < cellList.Count; i++)
         {
             var worldPos = PositionConverter.IndexToWorldPos(cellList[i], width, height, spacing);
             var intWorldPos = new Vector3Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y), Mathf.FloorToInt(worldPos.z));
             var offset = worldPos - intWorldPos;
-            TriggerEffect(intWorldPos, offset);
+            chain.Add((intWorldPos, offset, false));
         }
-    
+
+        StartCoroutine(PlayDotChain(chain));
+    }
+
+    private IEnumerator PlayDotChain(List<(Vector3Int pos, Vector3 offset, bool needsTile)> chain)
+    {
+        foreach (var step in chain)
+        {
+            if (step.needsTile)
+                SetupBaseTile(step.pos, step.offset);
+
+            TriggerEffect(step.pos, step.offset);
+            yield return new WaitForSeconds(chainStepDelay);
+        }
     }
 
     private void SetupBaseTile(Vector3Int pos, Vector3 offset)
