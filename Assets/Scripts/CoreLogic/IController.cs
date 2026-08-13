@@ -35,5 +35,6 @@ namespace Assets.Scripts.CoreLogic
         public int GetHeart();
         public bool IsOccupiedCell(int boardIndex);
         public bool IsWinOrLose();
+        public List<int> GetNextCells(int yArrowHead, int xArrowHead, Direction direction);
     }
 }

@@ -124,7 +124,48 @@ namespace Assets.Scripts.CoreLogic
         {
             return _isWinOrLose;
         }
+        public List<int> GetNextCells(int yArrowHead, int xArrowHead, Direction direction)
+        {
+            int minBoardIndex, maxBoardIndex, step;
+            int headBoardIndex = IntPositionToIndex(new Position(xArrowHead, yArrowHead));
+            switch (direction)
+            {
+                case Direction.RIGHT: //right
+                    minBoardIndex = _configData.BoardWidth * yArrowHead;
+                    maxBoardIndex = _configData.BoardWidth * (yArrowHead + 1) - 1;
+                    step = 1;
+                    return GenerateListCell(headBoardIndex, minBoardIndex, maxBoardIndex, step);
+                case Direction.UP: //up
+                    minBoardIndex = xArrowHead;
+                    maxBoardIndex = (_configData.BoardHeight - 1) * _configData.BoardWidth + xArrowHead;
+                    step = _configData.BoardWidth;
+                    return GenerateListCell(headBoardIndex, minBoardIndex, maxBoardIndex, step);
+                case Direction.LEFT: //left
+                    minBoardIndex = _configData.BoardWidth * yArrowHead;
+                    maxBoardIndex = _configData.BoardWidth * (yArrowHead + 1) - 1;
+                    step = -1;
+                    return GenerateListCell(headBoardIndex, minBoardIndex, maxBoardIndex, step);
+                case Direction.DOWN: //down
+                    minBoardIndex = xArrowHead;
+                    maxBoardIndex = (_configData.BoardHeight - 1) * _configData.BoardWidth + xArrowHead;
+                    step = -_configData.BoardWidth;
+                    return GenerateListCell(headBoardIndex, minBoardIndex, maxBoardIndex, step);
+                default:   
+                    return new List<int>();
+            }
+        }
 
+        private List<int> GenerateListCell(int headBoardIndex, int min, int max, int step)
+        {
+            var cells = new List<int>();
+            int currentBoardIndex = headBoardIndex + step;
+            while (currentBoardIndex >= min && currentBoardIndex <= max)
+            {
+                cells.Add(currentBoardIndex);
+                currentBoardIndex += step;
+            }
+            return cells;
+        }
 
         // logic
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager)
@@ -488,6 +529,8 @@ namespace Assets.Scripts.CoreLogic
             }
             return Direction.RIGHT;
         }
+
+
 
         private void EraseArrowAtPosition(int boardIndex)
         {
