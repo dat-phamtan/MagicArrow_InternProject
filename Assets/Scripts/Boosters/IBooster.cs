@@ -7,6 +7,7 @@ namespace Assets.Scripts.Boosters
 {
     public interface IBooster
     {
+        //public event Action OnArrowClicked;
         public void OnClick(IController controller);
     }
 }

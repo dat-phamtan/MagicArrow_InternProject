@@ -2,55 +2,54 @@
 using Assets.Scripts.Ultility;
 using Assets.Scripts.Utility;
 using System;
-using System.Drawing;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 namespace Assets.Scripts.Boosters
-{ 
-    public class Magnifier : IBooster
+{
+    public class Ruler : IBooster
     {
         private int _pixelsPerUnit = 100;
         private int _lineWidth = 15;
         private int _lineLength = 5000;
-        private UnityEngine.Color _lineColor = UnityEngine.Color.green;
+        private UnityEngine.Color _lineColor = UnityEngine.Color.blue;
         private Tile _lineTile;
         private Tilemap _tilemap;
         private IController _controller;
 
 
-        public Magnifier(Tilemap tilemap)
+        public Ruler(Tilemap tilemap)
         {
             _tilemap = tilemap;
             _lineTile = CreateLineTile(_lineLength, _lineWidth);
             _controller = Locator.Get<IController>();
-            _controller.OnArrowClicked += HandleDisableLine;
+            _controller.OnArrowClicked += HandleDisableLines;
         }
 
-        private void HandleDisableLine(int boardIndex)
+        private void HandleDisableLines(int boardIndex)
         {
-            var width = _controller.GetConfigData().BoardWidth;
-            var height = _controller.GetConfigData().BoardHeight;
-            var worldPos = PositionConverter.IndexToWorldPos(boardIndex, width, height, _controller.GetSpacing());
-            var intWorldPos = new Vector3Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y), Mathf.FloorToInt(worldPos.z));
-
-            _tilemap.SetTile(intWorldPos, null);
+            _tilemap.ClearAllTiles();
         }
 
         public void OnClick(IController controller)
         {
-            var index = _controller.GetMovableArrowPosAndDir(out Direction direction);
-            if (index == -1)
-                return;
-
+            var arrows = controller.GetConfigData().Arrows;
             var width = _controller.GetConfigData().BoardWidth;
             var height = _controller.GetConfigData().BoardHeight;
-            
-            var worldPos = PositionConverter.IndexToWorldPos(index, width, height, _controller.GetSpacing());
-            var intWorldPos = new Vector3Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y), Mathf.FloorToInt(worldPos.z));
-            var offset = worldPos - intWorldPos;
-
-            SetupBaseTile(intWorldPos, offset, direction);
+            for (int i = 0; i < arrows.Length; i++)
+            {
+                var arrowIndices = arrows[i].ArrowIndices;
+                if (!controller.IsArrowExisted(arrowIndices[0]))
+                    return;
+                Debug.Log(i);
+                var direction = controller.GetDirectionAtBoardIndex(arrowIndices[0]);
+                var worldPos = PositionConverter.IndexToWorldPos(arrowIndices[0], width, height, _controller.GetSpacing());
+                var intWorldPos = new Vector3Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y), Mathf.FloorToInt(worldPos.z));
+                var offset = worldPos - intWorldPos;
+                SetupBaseTile(intWorldPos, offset, direction);
+            }
         }
 
         private void SetupBaseTile(Vector3Int pos, Vector3 offset, Direction direction)
@@ -69,15 +68,15 @@ namespace Assets.Scripts.Boosters
         {
             switch (direction)
             {
-                case Direction.RIGHT: 
+                case Direction.RIGHT:
                     return 270f;
-                case Direction.UP: 
+                case Direction.UP:
                     return 0f;
-                case Direction.LEFT: 
+                case Direction.LEFT:
                     return 90f;
-                case Direction.DOWN: 
+                case Direction.DOWN:
                     return 180f;
-                default: 
+                default:
                     return 0f;
             }
         }

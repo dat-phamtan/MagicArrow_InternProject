@@ -17,17 +17,18 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     public Button eraser;
     public Button wand;
     public Button ruler;
-    public Tilemap boosterTilemap;
+    public Tilemap magnifierTilemap;
+    public Tilemap rulerTilemap;
     private IBooster _booster;
     public event Action<IBooster> OnBoosterClicked;
-        
+
 
     private void OnEnable()
     {
-        magnifier.onClick.AddListener(() => {OnBoosterClicked(new Magnifier(boosterTilemap)); });
-        eraser.onClick.AddListener(() => {OnBoosterClicked(new Eraser()); });
-        wand.onClick.AddListener(() => {OnBoosterClicked(new Eraser()); });
-        ruler.onClick.AddListener(() => {OnBoosterClicked(new Eraser()); });
+        magnifier.onClick.AddListener(() => { OnBoosterClicked(new Magnifier(magnifierTilemap)); });
+        eraser.onClick.AddListener(() => { OnBoosterClicked(new Eraser()); });
+        wand.onClick.AddListener(() => { OnBoosterClicked(new Eraser()); });
+        ruler.onClick.AddListener(() => { OnBoosterClicked(new Ruler(rulerTilemap)); });
     }
 
     private void Start()

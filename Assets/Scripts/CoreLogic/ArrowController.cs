@@ -44,6 +44,7 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnTurnPopupOff;
         public event Action<bool> OnTurnPopupOn;
         public event Action OnRerenderBoard;
+        public event Action<int> OnArrowClicked;
 
         // implement interface
         public ArrowController(IConfig config, IInput input, float spacing)
@@ -130,6 +131,10 @@ namespace Assets.Scripts.CoreLogic
         public bool IsWinOrLose()
         {
             return _isWinOrLose;
+        }
+        public bool IsArrowExisted(int boardIndex)
+        {
+            return _boardMatrixCheck[boardIndex];
         }
         public List<int> GetNextCells(int yArrowHead, int xArrowHead, Direction direction)
         {
@@ -482,6 +487,7 @@ namespace Assets.Scripts.CoreLogic
                 DiableArrow(iConfigIndex);
                 OnMoveArrowSuccess?.Invoke(iConfigIndex);
                 _numAnimationSuccess++;
+                OnArrowClicked?.Invoke(headBoardIndex);
                 if (AllArrowsAreCleared())
                     HandleWin();
             }
@@ -575,7 +581,7 @@ namespace Assets.Scripts.CoreLogic
                 var arrow = _configData.Arrows[i];
                 var direction = GetDirectionAtBoardIndex(arrow.ArrowIndices[0]);
                 GetZoneWithDirection(arrow, direction, out int min, out int max, out int step);
-                if (!IsABlockedPath(arrow.ArrowIndices[0], i, min, max, step, out _)){
+                if (!IsABlockedPath(arrow.ArrowIndices[0], i, min, max, step, out _) && _boardMatrixCheck[arrow.ArrowIndices[0]]){
                     return arrow.ArrowIndices[0];
                 }
             }

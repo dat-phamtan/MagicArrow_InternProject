@@ -6,7 +6,8 @@ using System.Text;
 namespace Assets.Scripts.Boosters
 {
     public class Eraser : IBooster
-    { 
+    {
+        //public event Action OnArrowClicked;
         public Eraser() { }
 
         public void OnClick(IController controller)
