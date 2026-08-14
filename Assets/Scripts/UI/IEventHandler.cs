@@ -12,5 +12,6 @@ namespace Assets.Scripts.UI
         public event Action<GameObject> OnCollidedAnimation;
         public event Action<bool> OnAnimatedComplete;
         public event Action<string> OnTurnPopupOn;
+        public event Action OnDisableCameraCenter;
     }
 }

@@ -19,7 +19,8 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnTurnPopupOff;
         public event Action OnRerenderBoard;
         public event Action<int> OnArrowClicked;
-        public event Action OnBoostersReset;
+        public event Action OnReset;
+        public event Action OnLoseHeart;
         
 
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager);

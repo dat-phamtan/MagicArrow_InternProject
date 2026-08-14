@@ -14,7 +14,7 @@ namespace Assets.Scripts.Boosters
         private int _pixelsPerUnit = 100;
         private int _lineWidth = 15;
         private int _lineLength = 5000;
-        private UnityEngine.Color _lineColor = UnityEngine.Color.blue;
+        private UnityEngine.Color _lineColor = UnityEngine.Color.lightSkyBlue;
         private Tile _lineTile;
         private Tilemap _tilemap;
         private IController _controller;
@@ -26,7 +26,7 @@ namespace Assets.Scripts.Boosters
             _lineTile = CreateLineTile(_lineLength, _lineWidth);
             _controller = Locator.Get<IController>();
             _controller.OnArrowClicked += HandleDisableLines;
-            _controller.OnBoostersReset += OnReset;
+            _controller.OnReset += OnReset;
         }
 
         private void HandleDisableLines(int boardIndex)

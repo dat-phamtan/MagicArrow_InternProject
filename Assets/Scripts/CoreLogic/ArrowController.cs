@@ -44,7 +44,8 @@ namespace Assets.Scripts.CoreLogic
         public event Action<bool> OnTurnPopupOn;
         public event Action OnRerenderBoard;
         public event Action<int> OnArrowClicked;
-        public event Action OnBoostersReset;
+        public event Action OnReset;
+        public event Action OnLoseHeart;
 
         // implement interface
         public ArrowController(IConfig config, IInput input, float spacing)
@@ -234,7 +235,7 @@ namespace Assets.Scripts.CoreLogic
 
             OnTurnPopupOff?.Invoke();
             OnRerenderBoard?.Invoke();
-            OnBoostersReset?.Invoke();
+            OnReset?.Invoke();
         }
 
         private void EventHandlerInit(IEventHandler eventHandler, IPopUpManager popupManager)
@@ -492,7 +493,10 @@ namespace Assets.Scripts.CoreLogic
                 OnMoveArrowFail?.Invoke(iConfigIndex, cConfigIndex, deltaBoardIndex);
 
                 if (_isFirstMoveFail[iConfigIndex])
+                {
                     _heart--;
+                    OnLoseHeart?.Invoke();
+                }
 
                 _numAnimationFail++;
                 if (AllHeartAreLost())

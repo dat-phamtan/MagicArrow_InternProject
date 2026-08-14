@@ -12,7 +12,7 @@ public class DotRenderer : MonoBehaviour
     public float spacing = 1f;
     public Tilemap targetTilemap;
     public Color baseColor = Color.gray;
-    public Color activeColor = Color.blue;
+    public Color activeColor = Color.lightBlue;
     
     public float baseScale = 0.1f;
     public float activeScale = 0.2f;

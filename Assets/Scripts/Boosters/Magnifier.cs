@@ -25,7 +25,7 @@ namespace Assets.Scripts.Boosters
             _lineTile = CreateLineTile(_lineLength, _lineWidth);
             _controller = Locator.Get<IController>();
             _controller.OnArrowClicked += HandleDisableLine;
-            _controller.OnBoostersReset += OnReset;
+            _controller.OnReset += OnReset;
         }
 
         private void HandleDisableLine(int boardIndex)

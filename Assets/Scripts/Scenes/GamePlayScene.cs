@@ -1,24 +1,16 @@
-using Assets.Scripts.Boosters;
-using Assets.Scripts.Config;
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
-using Assets.Scripts.Input;
-using Assets.Scripts.IO;
-using Assets.Scripts.Scenes;
 using Assets.Scripts.UI;
 using Assets.Scripts.Ultility;
 using Assets.Scripts.Utility;
-using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Unity.Mathematics.Geometry;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Tilemaps;
-using PlayerInput = Assets.Scripts.Input.PlayerInput;
+using UnityEngine.UI;
 
+[RequireComponent(typeof(Image))]
 public class GamePlayScene : MonoBehaviour, IEventHandler
 {
     public float spacing = 1f;
@@ -35,6 +27,12 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public GameObject bodyPrefab;
     public GameObject tailPrefab;
     public GameObject dotPrefab;
+
+    public Image glowHit;
+    public float fadeInDuration = 1.5f; 
+    public float waitDuration = 1f;     
+    public float fadeOutDuration = 1.5f;
+
     public ArrowAssembler arrowAssembler;
     public CameraModifier cameraModifier;
     public PopUpManager popUpManager;
@@ -63,6 +61,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public event Action<GameObject> OnCollidedAnimation;
     public event Action<bool> OnAnimatedComplete;
     public event Action<string> OnTurnPopupOn;
+    public event Action OnDisableCameraCenter;
 
     private void Awake()
     {
@@ -89,7 +88,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         BoardInit();
         arrowAssembler.Init(this);
         popUpManager.Init(_controller, this);
-        cameraModifier.Init(_boardWidth, _boardHeight, spacing);
+        cameraModifier.Init(this, _boardWidth, _boardHeight, spacing);
         cameraModifier.FitCamera();
     }
 
@@ -104,6 +103,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnEraseArrowAt += HandleEraseArrowAt;
         _controller.OnRerenderBoard += BoardInit;
         _controller.OnTurnPopupOn += TurnPopUp;
+        _controller.OnLoseHeart += GlowHitAnimation;
     }
 
     private void OnDisable()
@@ -116,6 +116,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnEraseArrowAt -= HandleEraseArrowAt;
         _controller.OnRerenderBoard -= BoardInit;
         _controller.OnTurnPopupOn -= TurnPopUp;
+        _controller.OnLoseHeart -= GlowHitAnimation;
         _inputActions.Disable();
     }
 
@@ -125,7 +126,14 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         {
             HandleZoom();
             if (!IsSecondTouched())
+            {
                 HandlePan();
+            }
+            if (!_inputActions.UI.Press.IsPressed())
+            {
+                OnDisableCameraCenter?.Invoke();
+            }
+                
         }
     }
 
@@ -143,6 +151,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         {
             var delta = _inputActions.UI.DragPosition.ReadValue<Vector2>();
             var moveDirection = Time.deltaTime * new Vector3(-delta.x, -delta.y, 0);
+
             cameraModifier.TranslateCamera(moveDirection);
         }
     }
@@ -188,6 +197,44 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private void TurnPopUp(bool isWin)
     {
         StartCoroutine(WaitForAllArrowCoroutine(isWin));
+    }
+
+    private void GlowHitAnimation()
+    {
+        //Debug.Log("++++++");
+        //glowHit = GetComponent<Image>();
+        //StartCoroutine(PlayGlowHitAnimation());
+        //Debug.Log("________");
+    }
+
+    private IEnumerator PlayGlowHitAnimation()
+    {
+        Color glowHitColor = glowHit.color;
+        float timer = 0f;
+        while (timer < fadeInDuration)
+        {
+            timer += Time.deltaTime;
+            glowHitColor.a = Mathf.Lerp(0f, 1f, timer / fadeInDuration);
+            glowHit.color = glowHitColor;
+            yield return null;
+        }
+
+        glowHitColor.a = 1f;
+        glowHit.color = glowHitColor;
+
+        yield return new WaitForSeconds(waitDuration);
+
+        timer = 0f;
+        while (timer < fadeOutDuration)
+        {
+            timer += Time.deltaTime;
+            glowHitColor.a = Mathf.Lerp(1f, 0f, timer / fadeInDuration);
+            glowHit.color = glowHitColor;
+            yield return null;
+        }
+
+        glowHitColor.a = 0f;
+        glowHit.color = glowHitColor;
     }
 
     private void BoardInit()

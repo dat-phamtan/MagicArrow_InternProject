@@ -1,3 +1,5 @@
+using Assets.Scripts.UI;
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -10,40 +12,67 @@ public class CameraModifier : MonoBehaviour
     public float maxCameraSize = 20f;
     public float panSpeed = 0.1f;
 
+    private IEventHandler _eventHandler;
     private int _width;
     private int _height;
     private float _spacing;
     private float _xSafe;
     private float _ySafe;
+    private bool _isPanning = false;
 
 
     private void Update()
     {
-        CenterTheCamera();
+        if (!_isPanning)
+            CenterTheCamera();
     }
 
-    public void Init(int width, int height, float spacing)
+    public void Init(IEventHandler eventHandler, int width, int height, float spacing)
     {
         _width = width;
         _height = height;
         _spacing = spacing;
+        _eventHandler = eventHandler;
+        eventHandler.OnDisableCameraCenter += HandleDisable;
+        CalaculateSafeZone();
+    }
+
+    private void HandleDisable()
+    {
+        _isPanning = false;
     }
 
     private void CenterTheCamera()
     {
+        var camPos = mainCamera.transform.position;
         if (IsOutsideXZone())
+        {    
+            var delta = _xSafe - camPos.x;
+            var moveDirection = Time.deltaTime * new Vector3(delta, 0f) * 10f;
+            mainCamera.transform.Translate(moveDirection);
+        }
+
+        if (IsOutsideYZone())
         {
-            var camPos = mainCamera.transform.position;
-            var delta = camPos - new Vector3(_xSafe, _ySafe, 0f);
-            var moveDirection = Time.deltaTime * delta;
-            mainCamera.transform.Translate(-moveDirection);
+            var delta = _ySafe - camPos.y;
+            var moveDirection = Time.deltaTime * new Vector3(0f, delta) * 10f;
+            mainCamera.transform.Translate(moveDirection);
         }
     }
-    
+
+    private void ClampCameraToSafeZone()
+    {
+        var camPos = mainCamera.transform.position;
+        camPos.x = Mathf.Clamp(camPos.x, -_xSafe, _xSafe);
+        camPos.y = Mathf.Clamp(camPos.y, -_ySafe, _ySafe);
+        mainCamera.transform.position = camPos;
+    }
+
+
     private void CalaculateSafeZone()
     {
-        _xSafe = (_width - 1) * _spacing * 1.5f;
-        _ySafe = (_height - 1) * _spacing * 1.5f;
+        _xSafe = (_width - 1) * _spacing / 2f;
+        _ySafe = (_height - 1) * _spacing/ 2f;
     }
 
     private bool IsOutsideXZone()
@@ -64,6 +93,7 @@ public class CameraModifier : MonoBehaviour
 
     public void TranslateCamera(Vector3 moveDir)
     {
+        _isPanning = true;
         mainCamera.transform.Translate(mainCamera.orthographicSize * panSpeed * moveDir);
     }
 

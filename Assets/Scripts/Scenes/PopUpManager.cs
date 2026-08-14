@@ -9,6 +9,8 @@ using UnityEngine.UI;
 public class PopUpManager : MonoBehaviour, IPopUpManager
 {
     public GameObject popupPannel;
+    public GameObject blackBg;
+    //public GameObject
     public Button button1;
     public TextMeshProUGUI result;
     private IController _controller;
@@ -32,11 +34,13 @@ public class PopUpManager : MonoBehaviour, IPopUpManager
     private void HandleTurnPopupOff()
     {
         popupPannel.SetActive(false);
+        blackBg.SetActive(false);
     }
 
     private void HandleTurnPopupOn(string text)
     {
         popupPannel.SetActive(true);
+        blackBg.SetActive(true);
         result.text = text;
     }
 }
