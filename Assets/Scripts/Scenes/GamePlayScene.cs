@@ -89,7 +89,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         BoardInit();
         arrowAssembler.Init(this);
         popUpManager.Init(_controller, this);
-        cameraModifier.FitCamera(_boardWidth, _boardHeight, spacing);
+        cameraModifier.Init(_boardWidth, _boardHeight, spacing);
+        cameraModifier.FitCamera();
     }
 
     private void OnEnable()
@@ -127,6 +128,9 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
                 HandlePan();
         }
     }
+
+
+
 
     private bool IsSecondTouched()
     {
