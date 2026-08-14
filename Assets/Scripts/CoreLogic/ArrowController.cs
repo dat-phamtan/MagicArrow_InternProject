@@ -8,7 +8,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -45,6 +44,7 @@ namespace Assets.Scripts.CoreLogic
         public event Action<bool> OnTurnPopupOn;
         public event Action OnRerenderBoard;
         public event Action<int> OnArrowClicked;
+        public event Action OnBoostersReset;
 
         // implement interface
         public ArrowController(IConfig config, IInput input, float spacing)
@@ -169,10 +169,25 @@ namespace Assets.Scripts.CoreLogic
         public int GetMovableArrowPosAndDir(out Direction direction)
         {
             var index = FindAMoveableArrow();
+            if (index == -1)
+            {
+                direction = Direction.LEFT;
+                return index;
+            }
             direction = _directions[index];
             return index;
         }
+        public void MoveSomeArrow(int numArrows)
+        {
+            for (int i = 0; i < numArrows; i++)
+            {
+                var index = GetMovableArrowPosAndDir(out _);
+                if (index == -1)
+                    return;
 
+                MoveArrowAtIndex(index);
+            }
+        }
 
 
 
@@ -219,6 +234,7 @@ namespace Assets.Scripts.CoreLogic
 
             OnTurnPopupOff?.Invoke();
             OnRerenderBoard?.Invoke();
+            OnBoostersReset?.Invoke();
         }
 
         private void EventHandlerInit(IEventHandler eventHandler, IPopUpManager popupManager)

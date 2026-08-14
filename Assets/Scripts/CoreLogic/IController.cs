@@ -19,6 +19,7 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnTurnPopupOff;
         public event Action OnRerenderBoard;
         public event Action<int> OnArrowClicked;
+        public event Action OnBoostersReset;
         
 
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager);
@@ -39,6 +40,7 @@ namespace Assets.Scripts.CoreLogic
         public bool IsWinOrLose();
         public bool IsArrowExisted(int boardIndex);
         public List<int> GetNextCells(int yArrowHead, int xArrowHead, Direction direction);
-        public int GetMovableArrowPosAndDir(out Direction direction); 
+        public int GetMovableArrowPosAndDir(out Direction direction);
+        public void MoveSomeArrow(int numArrows);
     }
 }

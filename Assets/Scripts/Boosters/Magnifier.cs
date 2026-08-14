@@ -25,6 +25,7 @@ namespace Assets.Scripts.Boosters
             _lineTile = CreateLineTile(_lineLength, _lineWidth);
             _controller = Locator.Get<IController>();
             _controller.OnArrowClicked += HandleDisableLine;
+            _controller.OnBoostersReset += OnReset;
         }
 
         private void HandleDisableLine(int boardIndex)
@@ -51,6 +52,11 @@ namespace Assets.Scripts.Boosters
             var offset = worldPos - intWorldPos;
 
             SetupBaseTile(intWorldPos, offset, direction);
+        }
+
+        public void OnReset()
+        {
+            _tilemap.ClearAllTiles();
         }
 
         private void SetupBaseTile(Vector3Int pos, Vector3 offset, Direction direction)

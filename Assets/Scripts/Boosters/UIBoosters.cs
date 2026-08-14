@@ -27,7 +27,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     {
         magnifier.onClick.AddListener(() => { OnBoosterClicked(new Magnifier(magnifierTilemap)); });
         eraser.onClick.AddListener(() => { OnBoosterClicked(new Eraser()); });
-        wand.onClick.AddListener(() => { OnBoosterClicked(new Eraser()); });
+        wand.onClick.AddListener(() => { OnBoosterClicked(new Wand()); });
         ruler.onClick.AddListener(() => { OnBoosterClicked(new Ruler(rulerTilemap)); });
     }
 

@@ -9,5 +9,6 @@ namespace Assets.Scripts.Boosters
     {
         //public event Action OnArrowClicked;
         public void OnClick(IController controller);
+        //public void OnReset();
     }
 }
