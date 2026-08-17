@@ -56,8 +56,13 @@ namespace Assets.Scripts.Boosters
             uiSequence.Append(_rectTransform.DOAnchorPos(originalPosition, 0.3f).SetEase(Ease.InOutQuad));
             uiSequence.Join(_rectTransform.DOLocalRotate(originalRotation, 0.3f).SetEase(Ease.InOutQuad));
 
-            SetupBaseTile(intWorldPos, offset, direction);
-            uiSequence.OnComplete(() => onComplete?.Invoke());
+
+
+            uiSequence.OnComplete(() =>
+            {
+                SetupBaseTile(intWorldPos, offset, direction);
+                onComplete?.Invoke();
+            });
         }
 
         private void HandleDisableLine(int boardIndex)
