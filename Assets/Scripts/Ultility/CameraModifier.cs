@@ -3,10 +3,11 @@ using Assets.Scripts.UI;
 using Assets.Scripts.Ultility;
 using Assets.Scripts.Utility;
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class CameraModifier : MonoBehaviour
+public class CameraModifier : MonoBehaviour, ICamera
 {
     public Camera mainCamera;
     public float padding = 1.5f;
@@ -22,13 +23,18 @@ public class CameraModifier : MonoBehaviour
     private float _spacing;
     private float _xSafe;
     private float _ySafe;
+    private Vector3 _focusPos;
     private bool _isPanning = false;
+    private bool _isFocusing = false;
 
 
     private void Update()
     {
         if (!_isPanning)
             CenterTheCamera();
+
+        if (_isFocusing)
+            HandleFocus();
     }
 
     public void Init(IEventHandler eventHandler, int width, int height, float spacing)
@@ -121,5 +127,28 @@ public class CameraModifier : MonoBehaviour
         float sizeX = (targetWidth / 2f) / ratio;
         //float sizeX = 0;
         mainCamera.orthographicSize = Mathf.Max(sizeY, sizeX);
+    }
+
+    public void FocusOnPos(Vector3 pos)
+    {
+        _focusPos = pos;
+        _focusPos.z = 0;
+        _isFocusing = true;
+    }
+
+    private void HandleFocus()
+    {
+        var camPos = mainCamera.transform.position;
+        var deltaX = _focusPos.x - camPos.x;
+        var deltaY = _focusPos.y - camPos.y;
+        if (deltaX < 0.01 && deltaY < 0.01)
+        {
+            _isFocusing = false;
+            return;
+        }
+        var orthoSize = mainCamera.orthographicSize;
+        mainCamera.orthographicSize = Mathf.Max(orthoSize - 1f, minCameraSize);
+        mainCamera.transform.Translate(10f * Time.deltaTime * new Vector3(deltaX, deltaY, 0f));
+        //mainCamera.orthographicSize 
     }
 }

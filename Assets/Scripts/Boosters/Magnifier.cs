@@ -21,6 +21,7 @@ namespace Assets.Scripts.Boosters
         private Tile _lineTile;
         private Tilemap _tilemap;
         private IController _controller;
+        private ICamera _camera;
 
         private RectTransform _rectTransform;
         private Vector2 originalPosition;
@@ -35,6 +36,7 @@ namespace Assets.Scripts.Boosters
             _controller = Locator.Get<IController>();
             _controller.OnArrowClicked += HandleDisableLine;
             _controller.OnReset += OnReset;
+            _camera = Locator.Get<ICamera>();
         }
 
         private void ClickedAnimationInit(Image image)
@@ -92,6 +94,7 @@ namespace Assets.Scripts.Boosters
             var offset = worldPos - intWorldPos;
 
             //SET CAM FOCUS
+            _camera.FocusOnPos(worldPos);
             //PLAY ANIMATION
             HandleAnimation(onComplete, intWorldPos, offset, direction);
 
