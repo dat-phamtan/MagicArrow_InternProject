@@ -1,4 +1,6 @@
+using Assets.Scripts.Boosters;
 using Assets.Scripts.UI;
+using Assets.Scripts.Utility;
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -13,6 +15,7 @@ public class CameraModifier : MonoBehaviour
     public float panSpeed = 0.1f;
 
     private IEventHandler _eventHandler;
+    private IBoostersManager _boosterManager;
     private int _width;
     private int _height;
     private float _spacing;
@@ -33,6 +36,7 @@ public class CameraModifier : MonoBehaviour
         _height = height;
         _spacing = spacing;
         _eventHandler = eventHandler;
+        _boosterManager = Locator.Get<IBoostersManager>();
         eventHandler.OnDisableCameraCenter += HandleDisable;
         CalaculateSafeZone();
     }

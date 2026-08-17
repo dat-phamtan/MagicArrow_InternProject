@@ -10,7 +10,7 @@ namespace Assets.Scripts.Boosters
         //public event Action OnArrowClicked;
         public Eraser() { }
 
-        public void OnClick(IController controller)
+        public void OnClick(IController controller, Action onComplete)
         {
             //hide topbar and boosters bar
             controller.ChangeEraserUsedMode();

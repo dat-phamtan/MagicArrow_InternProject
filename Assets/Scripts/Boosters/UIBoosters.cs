@@ -23,19 +23,38 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     public Tilemap magnifierTilemap;
     public Tilemap rulerTilemap;
     private IBooster _booster;
+    private IBoostersManager _boostersManager;
     public event Action<IBooster> OnBoosterClicked;
 
     private void OnEnable()
     {
+        //_boostersManager.OnBoosterBusyChanged += HandleBusyChanged;
         magnifier.onClick.AddListener(() => { OnBoosterClicked(new Magnifier(magnifierTilemap, magnifierImage)); });
         eraser.onClick.AddListener(() => { OnBoosterClicked(new Eraser()); });
         wand.onClick.AddListener(() => { OnBoosterClicked(new Wand()); });
         ruler.onClick.AddListener(() => { OnBoosterClicked(new Ruler(rulerTilemap)); });
     }
 
+    private void Awake()
+    {
+        _boostersManager = Locator.Get<IBoostersManager>();
+    }
+
     private void Start()
     {
-        var boosterManager = Locator.Get<IBoostersManager>();
-        boosterManager.Init(this);
+        _boostersManager.Init(this);
+    }
+
+    private void OnDisable() 
+    {
+        //_boostersManager.OnBoosterBusyChanged -= HandleBusyChanged;
+    }
+
+    private void HandleBusyChanged(bool isBusy)
+    {
+        magnifier.interactable = !isBusy;
+        eraser.interactable = !isBusy;
+        wand.interactable = !isBusy;
+        ruler.interactable = !isBusy;
     }
 }

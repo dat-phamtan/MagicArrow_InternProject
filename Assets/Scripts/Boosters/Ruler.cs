@@ -34,7 +34,7 @@ namespace Assets.Scripts.Boosters
             _tilemap.ClearAllTiles();
         }
 
-        public void OnClick(IController controller)
+        public void OnClick(IController controller, Action onComplete)
         {
             var arrows = controller.GetConfigData().Arrows;
             var width = _controller.GetConfigData().BoardWidth;

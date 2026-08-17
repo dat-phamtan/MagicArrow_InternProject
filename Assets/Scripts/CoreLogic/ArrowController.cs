@@ -1,8 +1,10 @@
-﻿using Assets.Scripts.Config;
+﻿using Assets.Scripts.Boosters;
+using Assets.Scripts.Config;
 using Assets.Scripts.Data;
 using Assets.Scripts.Input;
 using Assets.Scripts.Scenes;
 using Assets.Scripts.UI;
+using Assets.Scripts.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,6 +25,7 @@ namespace Assets.Scripts.CoreLogic
         private readonly IUIManager _uiManager;
         private IEventHandler _eventHandler;
         private IPopUpManager _popupManager;
+        //private IBoostersManager _boostersManager = Locator.Get<IBoostersManager>();
 
         private List<int> _boardMatrix; //index: boardIndex, value: configIndex
         private List<bool> _boardMatrixCheck; //index: boardIndex, value: true/false   <-- stupid name
@@ -261,6 +264,7 @@ namespace Assets.Scripts.CoreLogic
             _eventHandler.OnUnblockInteractWidthArrow += UnblockInteractWithArrow;
             _popupManager.OnPlayAgain += HandlePlayAgain;
             _eventHandler.OnAnimatedComplete += HandleArrowDestroyed;
+            //_boostersManager.OnBoosterBusyChanged += HandleBlockInput;
             //tobecontinued
         }
 

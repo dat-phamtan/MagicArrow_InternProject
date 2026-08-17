@@ -16,6 +16,7 @@ namespace Assets.Scripts.Boosters
         private int _pixelsPerUnit = 100;
         private int _lineWidth = 15;
         private int _lineLength = 5000;
+        private bool _isAnimationCompleted = false;
         
         private Tile _lineTile;
         private Tilemap _tilemap;
@@ -43,7 +44,7 @@ namespace Assets.Scripts.Boosters
             originalRotation = _rectTransform.localEulerAngles;
         }
 
-        private void PlayAnimation()
+        private void HandleAnimation(Action onComplete, Vector3Int intWorldPos, Vector3 offset, Direction direction)
         {
             var uiSequence = DOTween.Sequence();
             uiSequence.Append(_rectTransform.DOAnchorPosY(originalPosition.y + 50f, 1f).SetEase(Ease.OutQuad));
@@ -54,6 +55,9 @@ namespace Assets.Scripts.Boosters
 
             uiSequence.Append(_rectTransform.DOAnchorPos(originalPosition, 0.3f).SetEase(Ease.InOutQuad));
             uiSequence.Join(_rectTransform.DOLocalRotate(originalRotation, 0.3f).SetEase(Ease.InOutQuad));
+
+            SetupBaseTile(intWorldPos, offset, direction);
+            uiSequence.OnComplete(() => onComplete?.Invoke());
         }
 
         private void HandleDisableLine(int boardIndex)
@@ -66,11 +70,14 @@ namespace Assets.Scripts.Boosters
             _tilemap.SetTile(intWorldPos, null);
         }
 
-        public void OnClick(IController controller)
+        public void OnClick(IController controller, Action onComplete)
         {
             var index = _controller.GetMovableArrowPosAndDir(out Direction direction);
             if (index == -1)
+            {
+                onComplete?.Invoke();
                 return;
+            }
 
             var width = _controller.GetConfigData().BoardWidth;
             var height = _controller.GetConfigData().BoardHeight;
@@ -81,9 +88,9 @@ namespace Assets.Scripts.Boosters
 
             //SET CAM FOCUS
             //PLAY ANIMATION
-            PlayAnimation();
+            HandleAnimation(onComplete, intWorldPos, offset, direction);
 
-            SetupBaseTile(intWorldPos, offset, direction);
+            //SetupBaseTile(intWorldPos, offset, direction);
         }
 
         public void OnReset()
@@ -122,7 +129,7 @@ namespace Assets.Scripts.Boosters
 
         private Tile CreateLineTile(int length, int width)
         {
-            Texture2D tex = new Texture2D(width, length, TextureFormat.RGBA32, false);
+            var tex = new Texture2D(width, length, TextureFormat.RGBA32, false);
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < length; y++)
                     tex.SetPixel(x, y, _lineColor);

@@ -18,7 +18,7 @@ namespace Assets.Scripts.Boosters
 
         }
 
-        public void OnClick(IController controller)
+        public void OnClick(IController controller, Action onComplete)
         {
             _controller.MoveSomeArrow(_numMovedArrow);
         }

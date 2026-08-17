@@ -6,6 +6,7 @@ namespace Assets.Scripts.Boosters
 {
     public interface IBoostersManager
     {
+        public event Action<bool> OnBoosterBusyChanged;
         public void Init(IBoosterAction boosterAction);
     }
 }

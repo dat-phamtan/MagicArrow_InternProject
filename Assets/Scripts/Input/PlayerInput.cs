@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.CoreLogic;
+﻿using Assets.Scripts.Boosters;
+using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
 using Assets.Scripts.Utility;
 using System;
@@ -18,6 +19,8 @@ namespace Assets.Scripts.Input
         private readonly float _padding;
         private int _width;
         private int _height;
+        private bool _isAnimationPlayed;
+        private IBoostersManager _boostersManager;
 
         public event Action<Position> OnInteractAtPosition;
 
@@ -29,15 +32,22 @@ namespace Assets.Scripts.Input
 
         public void InitInput(int width, int height)
         {
+            _boostersManager = Locator.Get<IBoostersManager>();
+            _boostersManager.OnBoosterBusyChanged += HandleAnimationBlock;
             _absPlayZoneX = ((width - 1) * _spacing) / 2;
             _absPlayZoneY = ((height - 1) * _spacing) / 2;
             _width = width;
             _height = height;
         }
 
+        private void HandleAnimationBlock(bool isBusy)
+        {
+            _isAnimationPlayed = isBusy;
+        }
+
         public void HandleInput(UnityEngine.Vector3 pos)
         {
-            if (!IsInsideThePlayZone(pos))
+            if (!IsInsideThePlayZone(pos) || _isAnimationPlayed)
                 return;
 
             var boardPos = FindTheNearestCellPos(pos);

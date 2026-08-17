@@ -141,7 +141,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
 
 
-
     private bool IsSecondTouched()
     {
         return _inputActions.UI.Touch2Contact.IsPressed();
