@@ -1,31 +1,59 @@
 ﻿using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Ultility;
 using Assets.Scripts.Utility;
+using DG.Tweening;
 using System;
 using System.Drawing;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Boosters
 { 
     public class Magnifier : IBooster
     {
+        private UnityEngine.Color _lineColor = UnityEngine.Color.green;
         private int _pixelsPerUnit = 100;
         private int _lineWidth = 15;
         private int _lineLength = 5000;
-        private UnityEngine.Color _lineColor = UnityEngine.Color.green;
+        
         private Tile _lineTile;
         private Tilemap _tilemap;
         private IController _controller;
 
+        private RectTransform _rectTransform;
+        private Vector2 originalPosition;
+        private Vector3 originalRotation;
 
-        public Magnifier(Tilemap tilemap)
+
+        public Magnifier(Tilemap tilemap, Image image)
         {
             _tilemap = tilemap;
+            ClickedAnimationInit(image);
             _lineTile = CreateLineTile(_lineLength, _lineWidth);
             _controller = Locator.Get<IController>();
             _controller.OnArrowClicked += HandleDisableLine;
             _controller.OnReset += OnReset;
+        }
+
+        private void ClickedAnimationInit(Image image)
+        {
+            _rectTransform = image.GetComponent<RectTransform>();
+            originalPosition = _rectTransform.anchoredPosition;
+            originalRotation = _rectTransform.localEulerAngles;
+        }
+
+        private void PlayAnimation()
+        {
+            var uiSequence = DOTween.Sequence();
+            uiSequence.Append(_rectTransform.DOAnchorPosY(originalPosition.y + 50f, 1f).SetEase(Ease.OutQuad));
+            uiSequence.Join(_rectTransform.DOLocalRotate(new Vector3(0, 0, 20f), 0.5f).SetEase(Ease.OutQuad));
+
+            uiSequence.Append(_rectTransform.DOLocalRotate(new Vector3(0, 0, 40f), 0.5f).SetEase(Ease.OutQuad));
+            uiSequence.Append(_rectTransform.DOLocalRotate(new Vector3(0, 0, 20f), 0.2f).SetEase(Ease.OutQuad));
+
+            uiSequence.Append(_rectTransform.DOAnchorPos(originalPosition, 0.3f).SetEase(Ease.InOutQuad));
+            uiSequence.Join(_rectTransform.DOLocalRotate(originalRotation, 0.3f).SetEase(Ease.InOutQuad));
         }
 
         private void HandleDisableLine(int boardIndex)
@@ -50,6 +78,10 @@ namespace Assets.Scripts.Boosters
             var worldPos = PositionConverter.IndexToWorldPos(index, width, height, _controller.GetSpacing());
             var intWorldPos = new Vector3Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y), Mathf.FloorToInt(worldPos.z));
             var offset = worldPos - intWorldPos;
+
+            //SET CAM FOCUS
+            //PLAY ANIMATION
+            PlayAnimation();
 
             SetupBaseTile(intWorldPos, offset, direction);
         }

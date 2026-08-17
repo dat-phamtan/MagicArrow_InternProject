@@ -29,9 +29,11 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public GameObject dotPrefab;
 
     public Image glowHit;
-    public float fadeInDuration = 1.5f; 
-    public float waitDuration = 1f;     
-    public float fadeOutDuration = 1.5f;
+    public float fadeInDuration = 0.05f; 
+    public float waitDuration = 0.1f;     
+    public float fadeOutDuration = 0.05f;
+    private bool _isGlowing = false;
+    private Coroutine _glowing;
 
     public ArrowAssembler arrowAssembler;
     public CameraModifier cameraModifier;
@@ -203,17 +205,23 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         //Debug.Log("++++++");
         //glowHit = GetComponent<Image>();
-        //StartCoroutine(PlayGlowHitAnimation());
+        if (_isGlowing)
+        {
+            StopCoroutine(_glowing);
+        }
+        _glowing = StartCoroutine(PlayGlowHitAnimation());
         //Debug.Log("________");
     }
 
     private IEnumerator PlayGlowHitAnimation()
     {
+        _isGlowing = true;
         Color glowHitColor = glowHit.color;
         float timer = 0f;
         while (timer < fadeInDuration)
         {
             timer += Time.deltaTime;
+            //Debug.Log(timer);
             glowHitColor.a = Mathf.Lerp(0f, 1f, timer / fadeInDuration);
             glowHit.color = glowHitColor;
             yield return null;
@@ -228,13 +236,14 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         while (timer < fadeOutDuration)
         {
             timer += Time.deltaTime;
-            glowHitColor.a = Mathf.Lerp(1f, 0f, timer / fadeInDuration);
+            glowHitColor.a = Mathf.Lerp(1f, 0f, timer / fadeOutDuration);
             glowHit.color = glowHitColor;
             yield return null;
         }
 
         glowHitColor.a = 0f;
         glowHit.color = glowHitColor;
+        _isGlowing = false;
     }
 
     private void BoardInit()
