@@ -21,7 +21,7 @@ namespace Assets.Scripts.Boosters
             //hide topbar and boosters bar
             controller.ChangeEraserUsedMode();
             controller.HideGameSceneUI();
-
+            onComplete?.Invoke();
             //_uiManager.HideUI()
             //show notification bar
             //disable arrow in boardmatrix

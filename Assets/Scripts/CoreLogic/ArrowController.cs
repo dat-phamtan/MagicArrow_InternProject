@@ -613,6 +613,7 @@ namespace Assets.Scripts.CoreLogic
             DiableArrow(_boardMatrix[boardIndex]);
             OnEraseArrowAt?.Invoke(_boardMatrix[boardIndex]);
             OnHideEraserPopup?.Invoke();
+            ShowGameSceneUI();
             ChangeEraserUsedMode();
         }
 

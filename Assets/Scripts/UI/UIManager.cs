@@ -14,7 +14,8 @@ namespace Assets.Scripts.UI
 {
     public class UIManager : IUIManager
     {
-        public float animationDuration = 1f;
+        public float boostersAnimation = 0.3f;
+        public float barsAnimation = 1f;
 
         private IInput _input;
         private IController _controller;
@@ -58,8 +59,8 @@ namespace Assets.Scripts.UI
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
 
-            rectTransform.DOScale(Vector3.one, animationDuration).SetEase(Ease.OutBack);
-            canvasGroup.DOFade(1f, animationDuration).SetEase(Ease.OutQuad);
+            rectTransform.DOScale(Vector3.one, boostersAnimation).SetEase(Ease.OutBack);
+            canvasGroup.DOFade(1f, boostersAnimation).SetEase(Ease.OutQuad);
         }
         
         public void HideUI(GameObject obj)
@@ -70,8 +71,8 @@ namespace Assets.Scripts.UI
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
             
-            rectTransform.DOScale(Vector3.zero, animationDuration).SetEase(Ease.InBack);
-            canvasGroup.DOFade(0f, animationDuration).SetEase(Ease.InQuad).OnComplete(() =>
+            rectTransform.DOScale(Vector3.zero, boostersAnimation).SetEase(Ease.InBack);
+            canvasGroup.DOFade(0f, boostersAnimation).SetEase(Ease.InQuad).OnComplete(() =>
             {
                 obj.SetActive(false);
             });
@@ -87,7 +88,7 @@ namespace Assets.Scripts.UI
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
 
-            rectTransform.DOAnchorPos(to, animationDuration / 2f).SetEase(Ease.OutBack);
+            rectTransform.DOAnchorPos(to, barsAnimation).SetEase(Ease.OutBack);
         }
 
         public void HideTopBar(GameObject obj, Vector2 to)
@@ -98,7 +99,7 @@ namespace Assets.Scripts.UI
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
 
-            rectTransform.DOAnchorPos(to, animationDuration / 2f).SetEase(Ease.OutBack).OnComplete(() =>
+            rectTransform.DOAnchorPos(to, barsAnimation).SetEase(Ease.OutBack).OnComplete(() =>
             {
                 obj.SetActive(false);
             });
