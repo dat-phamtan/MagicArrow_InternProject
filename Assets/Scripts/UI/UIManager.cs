@@ -46,10 +46,13 @@ namespace Assets.Scripts.UI
             _input.HandleInput(pos);
         }
 
-        public void ShowUI(GameObject obj)
+        public void PlayJumpInAnimation(GameObject obj)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();
+
+            canvasGroup.DOKill();
+            rectTransform.DOKill();
 
             obj.SetActive(true);
 
@@ -63,10 +66,13 @@ namespace Assets.Scripts.UI
             canvasGroup.DOFade(1f, boostersAnimation).SetEase(Ease.OutQuad);
         }
         
-        public void HideUI(GameObject obj)
+        public void PlayJumpOutAnimation(GameObject obj)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();
+
+            canvasGroup.DOKill();
+            rectTransform.DOKill();
 
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
@@ -78,10 +84,13 @@ namespace Assets.Scripts.UI
             });
         }
 
-        public void ShowTopBar(GameObject obj, Vector2 to)
+        public void PlaySlideInAnimation(GameObject obj, Vector2 to)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();
+
+            canvasGroup.DOKill();
+            rectTransform.DOKill();
 
             obj.SetActive(true);
 
@@ -91,10 +100,13 @@ namespace Assets.Scripts.UI
             rectTransform.DOAnchorPos(to, barsAnimation).SetEase(Ease.OutBack);
         }
 
-        public void HideTopBar(GameObject obj, Vector2 to)
+        public void PlaySlideOutAnimation(GameObject obj, Vector2 to)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();
+
+            canvasGroup.DOKill();
+            rectTransform.DOKill();
 
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
@@ -104,6 +116,9 @@ namespace Assets.Scripts.UI
                 obj.SetActive(false);
             });
         }
+
+
+
     }
 }
 

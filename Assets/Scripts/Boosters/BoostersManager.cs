@@ -39,6 +39,10 @@ namespace Assets.Scripts.Boosters
         {
             _isBusy = isBusy;
             OnBoosterBusyChanged?.Invoke(isBusy);
+            if (isBusy)
+                _controller.BlockInteraction();
+            else
+                _controller.UnblockInteraction();
         }
     }
 }

@@ -28,6 +28,8 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     public GameObject eraserPopup;
     public Button eraserPopupExit;
 
+    public GameObject wandAnimation;
+
     public Image magnifierImage;
     public Image rulerImage;
 
@@ -47,10 +49,10 @@ public class UIBooster : MonoBehaviour, IBoosterAction
 
     private void OnEnable()
     {
-        //_boostersManager.OnBoosterBusyChanged += HandleBusyChanged;
+        
         magnifier.onClick.AddListener(() => { OnBoosterClicked(new Magnifier(magnifierTilemap, magnifierImage, particle)); });
         eraser.onClick.AddListener(HandleEraserOnClicked);
-        wand.onClick.AddListener(() => { OnBoosterClicked(new Wand()); });
+        wand.onClick.AddListener(() => { OnBoosterClicked(new Wand(wandAnimation)); });
         ruler.onClick.AddListener(() => { OnBoosterClicked(new Ruler(rulerTilemap, rulerImage)); });
         eraserPopupExit.onClick.AddListener(HandleExit);
     }
@@ -64,6 +66,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
         _controller.OnHideBoosters += HandleHideBoosters;
         _controller.OnShowBoosters += HandleShowBoosters;
         _controller.OnHideEraserPopup += HideEraserPopup;
+        _boostersManager.OnBoosterBusyChanged += HandleBusyChanged;
         _eraserPopupBasePos = new Vector2(0, eraserPopupYPos);
         _eraserPopupHidePos = new Vector2(0, -eraserPopupYPos);
         HandleShowBoosters();
@@ -77,18 +80,20 @@ public class UIBooster : MonoBehaviour, IBoosterAction
 
     private void HandleEraserOnClicked()
     {
+        if (_controller.IsEraserModeTrue())
+            return;
         OnBoosterClicked?.Invoke(new Eraser());
         ShowEraserPopup();
     }
 
     private void ShowEraserPopup()
     {
-        _uiManager.ShowTopBar(eraserPopup, _eraserPopupBasePos);
+        _uiManager.PlaySlideInAnimation(eraserPopup, _eraserPopupBasePos);
     }
 
     private void HideEraserPopup()
     {
-        _uiManager.HideTopBar(eraserPopup, _eraserPopupHidePos);
+        _uiManager.PlaySlideOutAnimation(eraserPopup, _eraserPopupHidePos);
     }
 
     private void HandleShowBoosters()
@@ -105,7 +110,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     {
         for (int i = 0; i < boosters.Length; i++)
         {
-            _uiManager.ShowUI(boosters[i]);
+            _uiManager.PlayJumpInAnimation(boosters[i]);
             yield return null;
         }
     }
@@ -114,14 +119,14 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     {
         for (int i = boosters.Length - 1; i >= 0; i--)
         {
-            _uiManager.HideUI(boosters[i]);
+            _uiManager.PlayJumpOutAnimation(boosters[i]);
             yield return null;
         }
     }
 
     private void OnDisable() 
     {
-        //_boostersManager.OnBoosterBusyChanged -= HandleBusyChanged;
+        _boostersManager.OnBoosterBusyChanged -= HandleBusyChanged;
     }
 
     private void HandleBusyChanged(bool isBusy)

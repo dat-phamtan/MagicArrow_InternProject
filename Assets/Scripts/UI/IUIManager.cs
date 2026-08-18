@@ -10,9 +10,9 @@ namespace Assets.Scripts.UI
     public interface IUIManager
     {
         public void Init(IEventHandler eventHandler);
-        public void ShowUI(GameObject obj);
-        public void HideUI(GameObject obj);
-        public void ShowTopBar(GameObject obj, Vector2 to);
-        public void HideTopBar(GameObject obj, Vector2 to);
+        public void PlayJumpInAnimation(GameObject obj);
+        public void PlayJumpOutAnimation(GameObject obj);
+        public void PlaySlideInAnimation(GameObject obj, Vector2 to);
+        public void PlaySlideOutAnimation(GameObject obj, Vector2 to);
     }
 }

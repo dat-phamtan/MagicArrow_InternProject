@@ -1,3 +1,4 @@
+using Assets.Scripts.Boosters;
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
@@ -22,6 +23,7 @@ public class BarTopManager : MonoBehaviour
     private Vector2 _hidePos;
     private IController _controller;
     private IUIManager _uiManager;
+    private IBoostersManager _boostersManager;
 
     private void OnEnable()
     {
@@ -32,13 +34,20 @@ public class BarTopManager : MonoBehaviour
     {
         _controller = Locator.Get<IController>();
         _uiManager = Locator.Get<IUIManager>();
+        _boostersManager = Locator.Get<IBoostersManager>();
         _controller.OnLoseHeart += HandleLoseHeart;
         _controller.OnReset += HandleReset;
         _controller.OnShowBarTop += HandleShowBarTop;
         _controller.OnHideBarTop += HandleHideBarTop;
+        _boostersManager.OnBoosterBusyChanged += HandleBusyChanged;
         PositionInit();
         HandleShowBarTop();
         
+    }
+
+    private void HandleBusyChanged(bool isBusy)
+    {
+        pauseButton.interactable = !isBusy;
     }
 
     private void PositionInit() 
@@ -49,17 +58,17 @@ public class BarTopManager : MonoBehaviour
 
     private void HandleHideBarTop()
     {
-        _uiManager.HideTopBar(topBar, _hidePos);
+        _uiManager.PlaySlideOutAnimation(topBar, _hidePos);
     }
 
     private void HandleShowBarTop()
     {
-        _uiManager.ShowTopBar(topBar, _basePos);
+        _uiManager.PlaySlideInAnimation(topBar, _basePos);
     }
 
     private void HandlePauseClicked()
     {
-        _controller.BlockBgInteraction();
+        _controller.BlockInteraction();
         pausePopup.SetActive(true);
         blackBg.SetActive(true);
     }

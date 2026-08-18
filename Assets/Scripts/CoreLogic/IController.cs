@@ -35,7 +35,6 @@ namespace Assets.Scripts.CoreLogic
         public ConfigData GetConfigData();
         public Direction GetDirectionAtPosition(Position pos);
         public Direction GetDirectionAtBoardIndex(int boardIndex);
-        public void ChangeEraserUsedMode();
         public void DiableArrow(int configIndex);
         public bool IsFirstMoveFail(int configIndex);
         public int GetConfigIndexAt(int boardIndex);
@@ -49,8 +48,12 @@ namespace Assets.Scripts.CoreLogic
         public List<int> GetNextCells(int yArrowHead, int xArrowHead, Direction direction);
         public int GetMovableArrowPosAndDir(out Direction direction);
         public void MoveSomeArrow(int numArrows);
-        public void BlockBgInteraction();
+        public void BlockInteraction();
+        public void UnblockInteraction();
         public void HideGameSceneUI();
         public void ShowGameSceneUI();
+        public void EnterEraserMode();
+        public void ExitEraserMode();
+        public bool IsEraserModeTrue();
     }
 }

@@ -19,13 +19,13 @@ namespace Assets.Scripts.Boosters
         public void OnClick(IController controller, Action onComplete)
         {
             //hide topbar and boosters bar
-            controller.ChangeEraserUsedMode();
-            controller.HideGameSceneUI();
+            if (controller.IsEraserModeTrue())
+            {
+                onComplete?.Invoke();
+                return;
+            }
+            controller.EnterEraserMode();
             onComplete?.Invoke();
-            //_uiManager.HideUI()
-            //show notification bar
-            //disable arrow in boardmatrix
-            //play delete animation <-- just simple for now ;))) --> disapear
         }
     }
 }

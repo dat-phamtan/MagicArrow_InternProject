@@ -93,10 +93,6 @@ namespace Assets.Scripts.CoreLogic
         {
             return _directions[boardIndex];
         }
-        public void ChangeEraserUsedMode()
-        {
-            _isWaitingForEraserBooster = !_isWaitingForEraserBooster;
-        }
         public void DiableArrow(int configIndex)
         {
             var arrowIndices = _configData.Arrows[configIndex].ArrowIndices;
@@ -198,9 +194,13 @@ namespace Assets.Scripts.CoreLogic
                 MoveArrowAtIndex(index);
             }
         }
-        public void BlockBgInteraction()
+        public void BlockInteraction()
         {
             _isBgInteractBlock = true;
+        }
+        public void UnblockInteraction()
+        {
+            _isBgInteractBlock = false;
         }
         public void HideGameSceneUI()
         {
@@ -212,7 +212,26 @@ namespace Assets.Scripts.CoreLogic
             OnShowBarTop?.Invoke();
             OnShowBoosters?.Invoke();
         }
+        public void EnterEraserMode()
+        {
+            if (_isWaitingForEraserBooster)
+                return;
 
+            _isWaitingForEraserBooster = true;
+            HideGameSceneUI();
+        }
+        public void ExitEraserMode()
+        {
+            if (!_isWaitingForEraserBooster)
+                return;
+
+            _isWaitingForEraserBooster = false;
+            ShowGameSceneUI();
+        }
+        public bool IsEraserModeTrue()
+        {
+            return _isWaitingForEraserBooster;
+        }
 
 
 
@@ -240,7 +259,7 @@ namespace Assets.Scripts.CoreLogic
             _heart = 3;
             _numAnimationSuccess = 0;
             _numAnimationFail = 0;
-            _isWaitingForEraserBooster = false;
+            //_isWaitingForEraserBooster = false;
             _isBgInteractBlock = false;
 
             for (int configIndex = 0; configIndex < _configData.Arrows.Length; configIndex++)
@@ -613,8 +632,7 @@ namespace Assets.Scripts.CoreLogic
             DiableArrow(_boardMatrix[boardIndex]);
             OnEraseArrowAt?.Invoke(_boardMatrix[boardIndex]);
             OnHideEraserPopup?.Invoke();
-            ShowGameSceneUI();
-            ChangeEraserUsedMode();
+            ExitEraserMode();
         }
 
         private int FindAMoveableArrow()
