@@ -21,6 +21,12 @@ namespace Assets.Scripts.CoreLogic
         public event Action<int> OnArrowClicked;
         public event Action OnReset;
         public event Action OnLoseHeart;
+
+        public event Action OnHideBarTop;
+        public event Action OnShowBarTop;
+        public event Action OnHideBoosters;
+        public event Action OnShowBoosters;
+        public event Action OnHideEraserPopup;
         
 
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager);
@@ -38,10 +44,13 @@ namespace Assets.Scripts.CoreLogic
         public int GetHeart();
         public float GetSpacing(); 
         public bool IsOccupiedCell(int boardIndex);
-        public bool IsWinOrLose();
+        public bool IsBgInteractionBlocked();
         public bool IsArrowExisted(int boardIndex);
         public List<int> GetNextCells(int yArrowHead, int xArrowHead, Direction direction);
         public int GetMovableArrowPosAndDir(out Direction direction);
         public void MoveSomeArrow(int numArrows);
+        public void BlockBgInteraction();
+        public void HideGameSceneUI();
+        public void ShowGameSceneUI();
     }
 }

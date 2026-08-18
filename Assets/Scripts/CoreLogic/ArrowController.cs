@@ -33,7 +33,7 @@ namespace Assets.Scripts.CoreLogic
         private List<bool> _isAnimated;
         private List<bool> _isFirstMoveFail;
         private float _spacing;
-        private bool _isWinOrLose = false;
+        private bool _isBgInteractBlock = false;
         private bool _isWaitingForEraserBooster = false;
         private int _heart = 3;
         private int _numAnimationSuccess = 0;
@@ -49,6 +49,12 @@ namespace Assets.Scripts.CoreLogic
         public event Action<int> OnArrowClicked;
         public event Action OnReset;
         public event Action OnLoseHeart;
+
+        public event Action OnHideBarTop;
+        public event Action OnShowBarTop;
+        public event Action OnHideBoosters;
+        public event Action OnShowBoosters;
+        public event Action OnHideEraserPopup;
 
         // implement interface
         public ArrowController(IConfig config, IInput input, float spacing)
@@ -132,9 +138,9 @@ namespace Assets.Scripts.CoreLogic
         {
             return _boardMatrix[boardIndex] != -1 && _boardMatrixCheck[boardIndex];
         }
-        public bool IsWinOrLose()
+        public bool IsBgInteractionBlocked()
         {
-            return _isWinOrLose;
+            return _isBgInteractBlock;
         }
         public bool IsArrowExisted(int boardIndex)
         {
@@ -192,11 +198,22 @@ namespace Assets.Scripts.CoreLogic
                 MoveArrowAtIndex(index);
             }
         }
+        public void BlockBgInteraction()
+        {
+            _isBgInteractBlock = true;
+        }
+        public void HideGameSceneUI()
+        {
+            OnHideBarTop?.Invoke();
+            OnHideBoosters?.Invoke();
+        }
+        public void ShowGameSceneUI()
+        {
+            OnShowBarTop?.Invoke();
+            OnShowBoosters?.Invoke();
+        }
 
 
-
-
-        
 
 
 
@@ -224,7 +241,7 @@ namespace Assets.Scripts.CoreLogic
             _numAnimationSuccess = 0;
             _numAnimationFail = 0;
             _isWaitingForEraserBooster = false;
-            _isWinOrLose = false;
+            _isBgInteractBlock = false;
 
             for (int configIndex = 0; configIndex < _configData.Arrows.Length; configIndex++)
             {
@@ -559,14 +576,14 @@ namespace Assets.Scripts.CoreLogic
         private void HandleWin()
         {
             Debug.Log("VICTORY!");
-            _isWinOrLose = true;
+            _isBgInteractBlock = true;
             OnTurnPopupOn?.Invoke(true);
         }
 
         private void HandleLose()
         {
             Debug.Log("DEFEAT");
-            _isWinOrLose = true;
+            _isBgInteractBlock = true;
             OnTurnPopupOn?.Invoke(false);
         }
 
@@ -595,6 +612,7 @@ namespace Assets.Scripts.CoreLogic
         {
             DiableArrow(_boardMatrix[boardIndex]);
             OnEraseArrowAt?.Invoke(_boardMatrix[boardIndex]);
+            OnHideEraserPopup?.Invoke();
             ChangeEraserUsedMode();
         }
 
@@ -629,7 +647,7 @@ namespace Assets.Scripts.CoreLogic
                 EraseArrowAtPosition(boardIndex);
                 return;
             }
-            if (!_isWinOrLose)
+            if (!_isBgInteractBlock)
                 MoveArrowAtIndex(boardIndex);
         }
 

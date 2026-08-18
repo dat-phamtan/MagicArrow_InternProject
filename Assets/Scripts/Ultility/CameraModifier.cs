@@ -15,6 +15,7 @@ public class CameraModifier : MonoBehaviour, ICamera
     public float minCameraSize = 5f;
     public float maxCameraSize = 20f;
     public float panSpeed = 0.1f;
+    public float zoomSpeed = 5f;
 
     private IEventHandler _eventHandler;
     private IBoostersManager _boosterManager;
@@ -30,7 +31,7 @@ public class CameraModifier : MonoBehaviour, ICamera
 
     private void Update()
     {
-        if (!_isPanning)
+        if (!_isPanning && !_isFocusing)
             CenterTheCamera();
 
         if (_isFocusing)
@@ -141,13 +142,13 @@ public class CameraModifier : MonoBehaviour, ICamera
         var camPos = mainCamera.transform.position;
         var deltaX = _focusPos.x - camPos.x;
         var deltaY = _focusPos.y - camPos.y;
-        if (deltaX < 0.01 && deltaY < 0.01)
+        if (Mathf.Abs(deltaX) < 0.01 && Mathf.Abs(deltaY) < 0.01)
         {
             _isFocusing = false;
             return;
         }
         var orthoSize = mainCamera.orthographicSize;
-        mainCamera.orthographicSize = Mathf.Max(orthoSize - 1f, minCameraSize);
+        mainCamera.orthographicSize = Mathf.Max(orthoSize - zoomSpeed * Time.deltaTime, minCameraSize);
         mainCamera.transform.Translate(10f * Time.deltaTime * new Vector3(deltaX, deltaY, 0f));
         //mainCamera.orthographicSize 
     }

@@ -1,11 +1,13 @@
 ﻿using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Ultility;
 using Assets.Scripts.Utility;
+using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Boosters
 {
@@ -19,14 +21,41 @@ namespace Assets.Scripts.Boosters
         private Tilemap _tilemap;
         private IController _controller;
 
+        private RectTransform _rectTransform;
+        private Vector2 originalPosition;
+        private Vector3 originalRotation;
 
-        public Ruler(Tilemap tilemap)
+
+        public Ruler(Tilemap tilemap, Image image)
         {
             _tilemap = tilemap;
+            ClickedAnimationInit(image);
             _lineTile = CreateLineTile(_lineLength, _lineWidth);
             _controller = Locator.Get<IController>();
             _controller.OnArrowClicked += HandleDisableLines;
             _controller.OnReset += OnReset;
+        }
+
+        private void ClickedAnimationInit(Image image)
+        {
+            _rectTransform = image.GetComponent<RectTransform>();
+            originalPosition = _rectTransform.anchoredPosition;
+            originalRotation = _rectTransform.localEulerAngles;
+            //_particle.SetPositionAndRotation(originalPosition, Quaternion.identity);
+        }
+
+        private void HandleAnimation(Action onComplete, Vector3 worldPos, Vector3Int intWorldPos, Vector3 offset, Direction direction)
+        {
+            var uiSequence = DOTween.Sequence();
+            uiSequence.Append(_rectTransform.DOAnchorPosY(originalPosition.y + 50f, 1f).SetEase(Ease.OutQuad));
+
+            uiSequence.Append(_rectTransform.DOAnchorPos(originalPosition, 0.3f).SetEase(Ease.InOutQuad));
+
+            uiSequence.OnComplete(() =>
+            {
+                SetupBaseTile(intWorldPos, offset, direction);
+                onComplete?.Invoke();
+            });
         }
 
         private void HandleDisableLines(int boardIndex)
@@ -49,9 +78,11 @@ namespace Assets.Scripts.Boosters
                 var worldPos = PositionConverter.IndexToWorldPos(arrowIndices[0], width, height, _controller.GetSpacing());
                 var intWorldPos = new Vector3Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y), Mathf.FloorToInt(worldPos.z));
                 var offset = worldPos - intWorldPos;
-                SetupBaseTile(intWorldPos, offset, direction);
+                //SetupBaseTile(intWorldPos, offset, direction);
+                HandleAnimation(onComplete, worldPos, intWorldPos, offset, direction);
             }
         }
+
         public void OnReset()
         {
             _tilemap.ClearAllTiles();

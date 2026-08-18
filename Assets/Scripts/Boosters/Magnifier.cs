@@ -20,6 +20,7 @@ namespace Assets.Scripts.Boosters
         
         private Tile _lineTile;
         private Tilemap _tilemap;
+        private Transform _particle;
         private IController _controller;
         private ICamera _camera;
 
@@ -28,9 +29,10 @@ namespace Assets.Scripts.Boosters
         private Vector3 originalRotation;
 
 
-        public Magnifier(Tilemap tilemap, Image image)
+        public Magnifier(Tilemap tilemap, Image image, GameObject particle)
         {
             _tilemap = tilemap;
+            _particle = particle.GetComponent<Transform>();
             ClickedAnimationInit(image);
             _lineTile = CreateLineTile(_lineLength, _lineWidth);
             _controller = Locator.Get<IController>();
@@ -44,20 +46,21 @@ namespace Assets.Scripts.Boosters
             _rectTransform = image.GetComponent<RectTransform>();
             originalPosition = _rectTransform.anchoredPosition;
             originalRotation = _rectTransform.localEulerAngles;
+            //_particle.SetPositionAndRotation(originalPosition, Quaternion.identity);
         }
 
-        private void HandleAnimation(Action onComplete, Vector3Int intWorldPos, Vector3 offset, Direction direction)
+        private void HandleAnimation(Action onComplete, Vector3 worldPos, Vector3Int intWorldPos, Vector3 offset, Direction direction)
         {
             var uiSequence = DOTween.Sequence();
             uiSequence.Append(_rectTransform.DOAnchorPosY(originalPosition.y + 50f, 1f).SetEase(Ease.OutQuad));
             uiSequence.Join(_rectTransform.DOLocalRotate(new Vector3(0, 0, 20f), 0.5f).SetEase(Ease.OutQuad));
 
             uiSequence.Append(_rectTransform.DOLocalRotate(new Vector3(0, 0, 40f), 0.5f).SetEase(Ease.OutQuad));
+            //_particle.DOMove(worldPos, 0.5f).SetEase(Ease.OutQuart);
             uiSequence.Append(_rectTransform.DOLocalRotate(new Vector3(0, 0, 20f), 0.2f).SetEase(Ease.OutQuad));
 
             uiSequence.Append(_rectTransform.DOAnchorPos(originalPosition, 0.3f).SetEase(Ease.InOutQuad));
             uiSequence.Join(_rectTransform.DOLocalRotate(originalRotation, 0.3f).SetEase(Ease.InOutQuad));
-
 
 
             uiSequence.OnComplete(() =>
@@ -96,7 +99,7 @@ namespace Assets.Scripts.Boosters
             //SET CAM FOCUS
             _camera.FocusOnPos(worldPos);
             //PLAY ANIMATION
-            HandleAnimation(onComplete, intWorldPos, offset, direction);
+            HandleAnimation(onComplete, worldPos, intWorldPos, offset, direction);
 
             //SetupBaseTile(intWorldPos, offset, direction);
         }

@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -27,6 +28,10 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public GameObject bodyPrefab;
     public GameObject tailPrefab;
     public GameObject dotPrefab;
+
+    //public GameObject magnifier;
+    //public GameObject eraser;
+
 
     public Image glowHit;
     public float fadeInDuration = 0.05f; 
@@ -93,6 +98,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         cameraModifier.Init(this, _boardWidth, _boardHeight, spacing);
         cameraModifier.FitCamera();
         Locator.Register<ICamera>(cameraModifier);
+
+        //_uiManager.ShowUI(boosterBar);
     }
 
     private void OnEnable()
@@ -125,7 +132,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void Update()
     {
-        if (!_controller.IsWinOrLose())
+        if (!_controller.IsBgInteractionBlocked())
         {
             HandleZoom();
             if (!IsSecondTouched())
@@ -139,8 +146,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
                 
         }
     }
-
-
 
     private bool IsSecondTouched()
     {
@@ -203,14 +208,11 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void GlowHitAnimation()
     {
-        //Debug.Log("++++++");
-        //glowHit = GetComponent<Image>();
         if (_isGlowing)
         {
             StopCoroutine(_glowing);
         }
         _glowing = StartCoroutine(PlayGlowHitAnimation());
-        //Debug.Log("________");
     }
 
     private IEnumerator PlayGlowHitAnimation()
@@ -272,35 +274,14 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         }
     }
 
-    private void HandlePressedEnd(InputAction.CallbackContext context)
-    {
-        _isHolded = false;
-    }
-
-    private void HandlePressedStart(InputAction.CallbackContext context)
-    {
-        _isHolded = true;
-    }
-
-    private void HandleSufInput(InputAction.CallbackContext context)
-    {
-        if (_isHolded)
-        {
-            if (_currentPos == null)
-            {
-                _currentPos = context.ReadValue<Vector2>();
-                return;
-            }
-            var movedPosition = (context.ReadValue<Vector2>() - _currentPos).normalized;
-            //cameraModifier.transform.position = movedPosition * 4f;
-            Debug.Log($"{movedPosition}");
-        }
-    }
-
     private void HandlePlayZoneClicked(InputAction.CallbackContext context)
     {
         if (_isHolded)
             return;
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
         var screenPos = _inputActions.UI.Position.ReadValue<Vector2>();
         //Debug.Log($"{screenPos.x}/{screenPos.y}");
         OnInteractAt?.Invoke(camera.ScreenToWorldPoint(screenPos));
@@ -397,11 +378,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         float exitDistance = camera.orthographicSize * 2f * camera.aspect + exitPadding;
         int n = originalPath.Length;
-        //float totalLength = (n - 1) * spacing;
-        //for (int i = 0; i < cumulativeLength.Length; i++)
-        //{
-        //    Debug.Log(cumulativeLength[i]);
-        //}
 
         float totalLength = cumulativeLength[^1];
         float targetTravel = totalLength + exitDistance;
@@ -470,50 +446,3 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //FUNC THAT NO MORE USED
-    //private Vector3 PositionBehindHead(Vector3[] path, Vector3 exitDir, float distanceFromInitHead)
-    //{
-    //    //out of gameplay
-    //    if (distanceFromInitHead <= 0f)
-    //        return path[0] - exitDir * distanceFromInitHead;
-
-    //    int loIndex = Mathf.Min((int)(distanceFromInitHead / spacing), path.Length - 2);
-    //    //Debug.Log(loIndex);
-    //    float t = (distanceFromInitHead - loIndex * spacing) / spacing;
-    //    return Vector3.Lerp(path[loIndex], path[loIndex + 1], t);
-    //}
-
-    //private Vector3 DirectionToVector(Direction dir)
-    //{
-    //    switch (dir)
-    //    {
-    //        case Direction.RIGHT:
-    //            return Vector3.right;
-    //        case Direction.LEFT:
-    //            return Vector3.left;
-    //        case Direction.UP:
-    //            return Vector3.up;
-    //        case Direction.DOWN:
-    //            return Vector3.down;
-    //        default:
-    //            return Vector3.left;
-    //    }
-    //}
