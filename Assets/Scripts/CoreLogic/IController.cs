@@ -56,5 +56,6 @@ namespace Assets.Scripts.CoreLogic
         public void ExitEraserMode();
         public bool IsEraserModeTrue();
         public void LoadConfig();
+        public void LoadPlayerData();
     }
 }

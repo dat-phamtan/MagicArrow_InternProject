@@ -19,6 +19,7 @@ namespace Assets.Scripts.CoreLogic
     public enum Direction { LEFT, RIGHT, UP, DOWN, LEFTUP, LEFTDOWN, RIGHTUP, RIGHTDOWN }
     public class ArrowController : IController
     {
+        private PlayerData _playerData;
         private BoardData _configData;
         private readonly IConfig _config;
         private readonly IInput _input;
@@ -236,6 +237,10 @@ namespace Assets.Scripts.CoreLogic
         {
             _configData = _config.Load();
             //_numArrow = _configData.Arrows.Length;
+        }
+        public void LoadPlayerData()
+        {
+            
         }
 
 
