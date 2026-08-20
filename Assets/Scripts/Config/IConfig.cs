@@ -8,6 +8,6 @@ namespace Assets.Scripts.Config
 {
     public interface IConfig
     {
-        public ConfigData Load();
+        public BoardData Load();
     }
 }

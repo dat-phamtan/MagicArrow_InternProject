@@ -14,8 +14,17 @@ public class BarTopManager : MonoBehaviour
     public int yPosShow = -200;
     public int yPosHide = 300;
     public GameObject levelNum;
-    public Button pauseButton;
+    public Button pauseBtn;
+
+    //pause pannel
     public GameObject pausePopup;
+    public Button resumeBtn;
+    public Button playAgainBtn;
+    public Button returnHomeBtn;
+    public Button soundEffectBtn;
+    public Button musicBtn;
+    public Button vibrateBtn;
+    public Button lightModeBtn;
     public GameObject blackBg;
     public GameObject topBar;
 
@@ -27,7 +36,8 @@ public class BarTopManager : MonoBehaviour
 
     private void OnEnable()
     {
-        pauseButton.onClick.AddListener(() => { HandlePauseClicked(); });
+        pauseBtn.onClick.AddListener(() => { HandlePauseClicked(); });
+        resumeBtn.onClick.AddListener(() => { HandleResume(); });
     }
 
     public void Start()
@@ -45,9 +55,23 @@ public class BarTopManager : MonoBehaviour
         
     }
 
+    private void HandlePauseClicked()
+    {
+        _uiManager.PlayJumpInAnimation(pausePopup);
+        _controller.BlockInteraction();
+        blackBg.SetActive(true);
+    }
+
+    private void HandleResume()
+    {
+        _uiManager.PlayJumpOutAnimation(pausePopup);
+        _controller.UnblockInteraction();
+        blackBg.SetActive(false);
+    }
+
     private void HandleBusyChanged(bool isBusy)
     {
-        pauseButton.interactable = !isBusy;
+        pauseBtn.interactable = !isBusy;
     }
 
     private void PositionInit() 
@@ -64,13 +88,6 @@ public class BarTopManager : MonoBehaviour
     private void HandleShowBarTop()
     {
         _uiManager.PlaySlideInAnimation(topBar, _basePos);
-    }
-
-    private void HandlePauseClicked()
-    {
-        _controller.BlockInteraction();
-        pausePopup.SetActive(true);
-        blackBg.SetActive(true);
     }
 
     private void HandleLoseHeart()

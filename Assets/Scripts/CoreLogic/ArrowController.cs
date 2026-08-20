@@ -19,7 +19,7 @@ namespace Assets.Scripts.CoreLogic
     public enum Direction { LEFT, RIGHT, UP, DOWN, LEFTUP, LEFTDOWN, RIGHTUP, RIGHTDOWN }
     public class ArrowController : IController
     {
-        private ConfigData _configData;
+        private BoardData _configData;
         private readonly IConfig _config;
         private readonly IInput _input;
         private readonly IUIManager _uiManager;
@@ -67,7 +67,7 @@ namespace Assets.Scripts.CoreLogic
         {
             return _boardMatrix;
         }
-        public ConfigData GetConfigData()
+        public BoardData GetConfigData()
         {
             return _configData;
         }
@@ -232,7 +232,11 @@ namespace Assets.Scripts.CoreLogic
         {
             return _isWaitingForEraserBooster;
         }
-
+        public void LoadConfig()
+        {
+            _configData = _config.Load();
+            //_numArrow = _configData.Arrows.Length;
+        }
 
 
 
@@ -281,12 +285,6 @@ namespace Assets.Scripts.CoreLogic
         {
             _eventHandler = eventHandler;
             _popupManager = popupManager;
-        }
-
-        private void LoadConfig()
-        {
-            _configData = _config.Load();
-            //_numArrow = _configData.Arrows.Length;
         }
 
         private void InputInit()

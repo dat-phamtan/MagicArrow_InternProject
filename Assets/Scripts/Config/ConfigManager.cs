@@ -15,28 +15,13 @@ namespace Assets.Scripts.Config
             _storage = storage;
         }
 
-        public ConfigData Load()
+        public BoardData Load()
         {
-            return _storage.Load<ConfigData>("Config.json") ?? CreateComplexMockConfig();
+            return _storage.Load<BoardData>("Config.json") ?? CreateComplexMockConfig();
         }
 
-        //private ConfigData CreateComplexMockConfig()
-        //{
-        //    const int width = 10;
-        //    const int height = 10;
-
-        //    List<Arrow> arrows = new List<Arrow>();
-        //    arrows.Add(BuildArrow(width, new (int, int)[] { (6, 0), (5, 0), (5, 1), (4, 1), (3, 1) })); 
-
-
-
-        //    return new ConfigData(width, height, arrows.ToArray());
-        //}
-
-        // Board 10x10 = 100 ô. index = y * BoardWidth + x
-        // Mỗi hàng (row) là 1 mũi tên ngang dài 10 ô, đầu mũi tên nằm ở cột cuối (x = 9),
-        // hướng từ trái (x=0) sang phải (x=9). Toàn bộ 10 hàng => phủ đúng 100 ô, không chồng lấn.
-        private ConfigData CreateComplexMockConfig()
+ 
+        private BoardData CreateComplexMockConfig()
         {
             const int width = 10;
             const int height = 10;
@@ -99,7 +84,7 @@ namespace Assets.Scripts.Config
             // ==========================================
             ShuffleList(arrows);
 
-            return new ConfigData(width, height, arrows.ToArray());
+            return new BoardData(width, height, arrows.ToArray());
         }
 
         /// <summary>

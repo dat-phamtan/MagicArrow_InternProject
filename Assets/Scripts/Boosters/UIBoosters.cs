@@ -75,7 +75,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     private void HandleExit()
     {
         HideEraserPopup();
-        _controller.ShowGameSceneUI();
+        _controller.ExitEraserMode();
     }
 
     private void HandleEraserOnClicked()

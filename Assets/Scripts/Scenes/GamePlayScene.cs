@@ -56,7 +56,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     //private IArrowAssember _arrowAssember;
     private InputSystem_Actions _inputActions;
 
-    private ConfigData _configData;
+    private BoardData _configData;
     private Dictionary<int, GameObject> _arrowRoots;
     private Dictionary<int, ArrowMeshBuilder> _arrowBuilders;
     private Dictionary<int, Vector3[]> _arrowPaths;

@@ -32,7 +32,7 @@ namespace Assets.Scripts.CoreLogic
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager);
         public List<int> GetArrowMatrix();
         public PartType GetArrowTypeAtPosition(Position pos);
-        public ConfigData GetConfigData();
+        public BoardData GetConfigData();
         public Direction GetDirectionAtPosition(Position pos);
         public Direction GetDirectionAtBoardIndex(int boardIndex);
         public void DiableArrow(int configIndex);
@@ -55,5 +55,6 @@ namespace Assets.Scripts.CoreLogic
         public void EnterEraserMode();
         public void ExitEraserMode();
         public bool IsEraserModeTrue();
+        public void LoadConfig();
     }
 }
