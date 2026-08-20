@@ -13,17 +13,20 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Threading;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem.Controls;
 
 public class LoadingScene : MonoBehaviour
 {
-    public float spacing = 1f;
+    public float boardSpacing = 1f;
     public float maximumFakeLoading = 0.9f;
     public float textDuration = 1f;
     public float loadingPerFrame = 0.05f;
+    public float loadingBoost = 0.01f;
     public Slider slider;
     public TextMeshProUGUI loadingText;
     private int _numdots = 0;
     private bool _isDone = false;
+    private bool _isLoadCompleted = false;
 
     public void Awake()
     {
@@ -47,11 +50,13 @@ public class LoadingScene : MonoBehaviour
         while (op.progress < 0.9f)
             await UniTask.Yield(PlayerLoopTiming.Update, token);
 
+
+        await UniTask.Delay(2000, cancellationToken: token);
+        _isLoadCompleted = true;
         while (slider.value < maximumFakeLoading)
         {
-            loadingPerFrame += 0.01f;
+            await UniTask.Yield(PlayerLoopTiming.Update, token);
         }
-        //await UniTask.Delay(2000, cancellationToken: token);
         _isDone = true;
         slider.value = 1f;
         loadingText.text = "Completed";
@@ -65,6 +70,8 @@ public class LoadingScene : MonoBehaviour
         while (!_isDone)
         {
             token.ThrowIfCancellationRequested();
+            if (_isLoadCompleted)
+                loadingPerFrame += loadingBoost;
             duration += Time.deltaTime;
             if (slider.value < maximumFakeLoading)
                 slider.value += loadingPerFrame * Time.deltaTime;
@@ -94,9 +101,9 @@ public class LoadingScene : MonoBehaviour
     {
         IStorage storage = new LocalStorage();
         IConfig config = new ConfigManager(storage);
-        IInput input = new PlayerInput(spacing);
-        IController controller = new ArrowController(config, input, spacing);
-        IUIManager uiManager = new UIManager(controller, input, spacing);
+        IInput input = new PlayerInput(boardSpacing);
+        IController controller = new ArrowController(config, storage, input, boardSpacing);
+        IUIManager uiManager = new UIManager(controller, input, boardSpacing);
         IBoostersManager boosterManager = new BoostersManager(controller);
 
         Locator.Register(storage);

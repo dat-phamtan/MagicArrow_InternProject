@@ -2,6 +2,7 @@
 using Assets.Scripts.Config;
 using Assets.Scripts.Data;
 using Assets.Scripts.Input;
+using Assets.Scripts.IO;
 using Assets.Scripts.Scenes;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
@@ -22,6 +23,7 @@ namespace Assets.Scripts.CoreLogic
         private PlayerData _playerData;
         private BoardData _configData;
         private readonly IConfig _config;
+        private readonly IStorage _storage;
         private readonly IInput _input;
         private readonly IUIManager _uiManager;
         private IEventHandler _eventHandler;
@@ -58,9 +60,10 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnHideEraserPopup;
 
         // implement interface
-        public ArrowController(IConfig config, IInput input, float spacing)
+        public ArrowController(IConfig config, IStorage storage, IInput input, float spacing)
         {
             _config = config;
+            _storage = storage;
             _input = input;
             _spacing = spacing;
         }
@@ -238,9 +241,13 @@ namespace Assets.Scripts.CoreLogic
             _configData = _config.Load();
             //_numArrow = _configData.Arrows.Length;
         }
+        public PlayerData GetPlayerData()
+        {
+            return _playerData;
+        }
         public void LoadPlayerData()
         {
-            
+            _playerData = _storage.Load<PlayerData>("PlayerData");
         }
 
 
