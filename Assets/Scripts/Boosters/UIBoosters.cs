@@ -88,12 +88,12 @@ public class UIBooster : MonoBehaviour, IBoosterAction
 
     private void ShowEraserPopup()
     {
-        _uiManager.PlaySlideInAnimation(eraserPopup, _eraserPopupBasePos);
+        _uiManager.MoveInAnimation(eraserPopup, _eraserPopupBasePos);
     }
 
     private void HideEraserPopup()
     {
-        _uiManager.PlaySlideOutAnimation(eraserPopup, _eraserPopupHidePos);
+        _uiManager.MoveOutAnimation(eraserPopup, _eraserPopupHidePos);
     }
 
     private void HandleShowBoosters()
@@ -110,7 +110,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     {
         for (int i = 0; i < boosters.Length; i++)
         {
-            _uiManager.PlayJumpInAnimation(boosters[i]);
+            _uiManager.JumpInAnimation(boosters[i]);
             yield return null;
         }
     }
@@ -119,7 +119,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     {
         for (int i = boosters.Length - 1; i >= 0; i--)
         {
-            _uiManager.PlayJumpOutAnimation(boosters[i]);
+            _uiManager.JumpOutAnimation(boosters[i]);
             yield return null;
         }
     }

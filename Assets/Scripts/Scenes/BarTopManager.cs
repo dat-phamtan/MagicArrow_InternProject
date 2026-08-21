@@ -57,14 +57,14 @@ public class BarTopManager : MonoBehaviour
 
     private void HandlePauseClicked()
     {
-        _uiManager.PlayJumpInAnimation(pausePopup);
+        _uiManager.JumpInAnimation(pausePopup);
         _controller.BlockInteraction();
         blackBg.SetActive(true);
     }
 
     private void HandleResume()
     {
-        _uiManager.PlayJumpOutAnimation(pausePopup);
+        _uiManager.JumpOutAnimation(pausePopup);
         _controller.UnblockInteraction();
         blackBg.SetActive(false);
     }
@@ -82,12 +82,12 @@ public class BarTopManager : MonoBehaviour
 
     private void HandleHideBarTop()
     {
-        _uiManager.PlaySlideOutAnimation(topBar, _hidePos);
+        _uiManager.MoveOutAnimation(topBar, _hidePos);
     }
 
     private void HandleShowBarTop()
     {
-        _uiManager.PlaySlideInAnimation(topBar, _basePos);
+        _uiManager.MoveInAnimation(topBar, _basePos);
     }
 
     private void HandleLoseHeart()

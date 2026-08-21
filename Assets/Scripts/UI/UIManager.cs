@@ -46,7 +46,7 @@ namespace Assets.Scripts.UI
             _input.HandleInput(pos);
         }
 
-        public void PlayJumpInAnimation(GameObject obj)
+        public void JumpInAnimation(GameObject obj)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();
@@ -66,7 +66,7 @@ namespace Assets.Scripts.UI
             canvasGroup.DOFade(1f, boostersAnimation).SetEase(Ease.OutQuad);
         }
         
-        public void PlayJumpOutAnimation(GameObject obj)
+        public void JumpOutAnimation(GameObject obj)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();
@@ -84,7 +84,7 @@ namespace Assets.Scripts.UI
             });
         }
 
-        public void PlaySlideInAnimation(GameObject obj, Vector2 to)
+        public void MoveInAnimation(GameObject obj, Vector2 to)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();
@@ -100,7 +100,7 @@ namespace Assets.Scripts.UI
             rectTransform.DOAnchorPos(to, barsAnimation).SetEase(Ease.OutBack);
         }
 
-        public void PlaySlideOutAnimation(GameObject obj, Vector2 to)
+        public void MoveOutAnimation(GameObject obj, Vector2 to)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();

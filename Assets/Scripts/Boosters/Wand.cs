@@ -41,7 +41,7 @@ namespace Assets.Scripts.Boosters
 
         public void HandleAnimation(Action onComplete)
         {
-            _uiManager.PlayJumpInAnimation(_wandAnimation);
+            _uiManager.JumpInAnimation(_wandAnimation);
             Sequence uiSequence = DOTween.Sequence();
 
             uiSequence.Append(_rectTransform.DOPunchRotation(_vecPunchRotate, 1.5f, 10, 1f));
@@ -49,7 +49,7 @@ namespace Assets.Scripts.Boosters
             {
                 _controller.MoveSomeArrow(_numMovedArrow);
                 onComplete?.Invoke();
-                _uiManager.PlayJumpOutAnimation(_wandAnimation);
+                _uiManager.JumpOutAnimation(_wandAnimation);
             });
             uiSequence.Append(_rectTransform.DOLocalRotate(Vector3.zero, 0.3f).SetEase(Ease.OutCubic));
         }

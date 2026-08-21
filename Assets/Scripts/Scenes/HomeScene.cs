@@ -2,37 +2,35 @@ using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
-using System.Collections.Generic;
+using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
-public class HomeScene : MonoBehaviour, IEndDragHandler
+public class HomeScene : MonoBehaviour
 {
     public TextMeshProUGUI coinValue;
     public TextMeshProUGUI heartValue;
     public TextMeshProUGUI starValue;
     public TextMeshProUGUI heartRegenTime;
-    public GameObject currentLevel;
 
-    public Transform contentTransform;
-    public GameObject grayPodium;
-    public GameObject greenPodium;
-    public GameObject orangePodium;
+
+    public GameObject greenBtn;
+    public GameObject orangeBtn;
+
+    public GameObject redLabel;
+    public GameObject blueLabel;
+    public GameObject purpleLabel;
+    public TextMeshProUGUI stateText;
 
     public float levelSpacing = 50f;
 
     public GameObject levels;
     public RectTransform snapTarget;
-
-    private int maxNumStar = 3;
-    private int _numLevel;
+    
     private InputSystem_Actions _inputActions;
     private IController _controller;
     private IHomeUI _homeUI;
     private PlayerData _playerData;
-    private Coroutine _snapCoroutine;
 
 
     public void Awake()
@@ -55,60 +53,112 @@ public class HomeScene : MonoBehaviour, IEndDragHandler
         _controller = Locator.Get<IController>();
         _homeUI = Locator.Get<IHomeUI>();
         _playerData = _controller.GetPlayerData();
-        _numLevel = _playerData.CurrentLevelsData.Length;
+
+        _homeUI.OnSnappedAt += HandleSnapped;
 
         coinValue.text = _playerData.Gold.ToString();
         heartValue.text = _playerData.Heart.ToString();
         starValue.text = _playerData.Star.ToString();
         heartRegenTime.text = _playerData.RegenHour.ToString() + ":" + _playerData.RegenMinute.ToString();
 
-        _homeUI.ScrollSnapInit(levels, snapTarget);
-        GenerateLevelList();
+        HandleSnapped(_playerData.CurrentLevelId);
 
     }
 
-    public void OnEndDrag(PointerEventData eventData)
+    private void HandleSnapped(int index)
     {
-        if (_snapCoroutine != null)
-            StopCoroutine(_snapCoroutine);
-        _snapCoroutine = StartCoroutine(_homeUI.Snap());
-    }
-
-    void GenerateLevelList()
-    {
-        var levelData = _playerData.CurrentLevelsData;
-        for (int i = _numLevel - 1; i >= 0; i--)
+        if (index >= _playerData.CurrentLevelId)
         {
-            GameObject currentPrefab = levelData[i].LevelState switch
-            {
-                LevelState.UNPLAYED => grayPodium,
-                LevelState.COMPLETED => greenPodium,
-                LevelState.NOTCOMLETED => orangePodium,
-                _ => greenPodium,
-            };
+            HandleUnplayLevelSnapped();
+            return;
+        }  
 
-            var newLevelItem = Instantiate(currentPrefab, contentTransform);
-            newLevelItem.name = "Level_" + (i + 1);
-            _homeUI.RegisterItem(newLevelItem.GetComponent<RectTransform>());
+        var snappedLevelData = _playerData.CurrentLevelsData[index];
+        if (snappedLevelData.LevelState == LevelState.COMPLETED)
+        {
+            greenBtn.SetActive(true);
+            orangeBtn.SetActive(false);
+            var texts = greenBtn.GetComponentsInChildren<TextMeshProUGUI>();
+            texts[0].text = "Replay";
+            texts[1].text = "Level " + snappedLevelData.LevelId.ToString();
+        }
+        else
+        {
+            orangeBtn.SetActive(true);
+            greenBtn.SetActive(false);
+            var texts = orangeBtn.GetComponentsInChildren<TextMeshProUGUI>();
+            texts[0].text = "Replay";
+            texts[1].text = "Level " + snappedLevelData.LevelId.ToString();
+        }
 
-            var text = newLevelItem.GetComponentInChildren<TextMeshProUGUI>();
-            text.text = levelData[i].LevelId.ToString();
+        HandleLabel(snappedLevelData.Hardness, snappedLevelData.LevelState);
+    }
 
-            if (levelData[i].LevelState == LevelState.UNPLAYED)
-                continue;
+    private void HandleUnplayLevelSnapped()
+    {
+        greenBtn.SetActive(true);
+        orangeBtn.SetActive(false);
+        var texts = greenBtn.GetComponentsInChildren<TextMeshProUGUI>();
+        texts[0].text = "Play";
+        texts[1].text = "Level " + _playerData.CurrentLevelId.ToString();
+        
+    }
 
-            var stars = newLevelItem.GetComponentsInChildren<Image>();
-            List<Image> fillStars = new();
-            for (int j = 0; j < stars.Length; j++)
-                if (stars[j].CompareTag("FillStar"))
-                    fillStars.Add(stars[j]);
+    private void HandleLabel(Hardness hardness, LevelState levelState)
+    {
+        HandleLabelBar(hardness, levelState);
+        HandleLabelText(hardness, levelState);
+    }
 
-            for (int k = 0; k < maxNumStar - levelData[i].Star; k++)
-            {
-                fillStars[k].enabled = false;
-            }
+    private void HandleLabelBar(Hardness hardness, LevelState levelState)
+    {
+        switch (hardness)
+        {
+            case Hardness.SUPERHARD:
+                purpleLabel.SetActive(true);
+                redLabel.SetActive(false);
+                blueLabel.SetActive(false);
+                break;
+            case Hardness.HARD:
+                redLabel.SetActive(true);
+                purpleLabel.SetActive(false);
+                blueLabel.SetActive(false);
+                break;
+            case Hardness.NORMAL:
+                if (levelState == LevelState.NOTCOMLETED)
+                {
+                    blueLabel.SetActive(false);
+                    redLabel.SetActive(false);
+                    purpleLabel.SetActive(false);
+                    break;
+                }
+                blueLabel.SetActive(true);
+                redLabel.SetActive(false);
+                purpleLabel.SetActive(false);
+                break;
         }
     }
 
+    private void HandleLabelText(Hardness hardness, LevelState levelState)
+    {
+        switch (hardness)
+        {
+            case Hardness.SUPERHARD:
+                stateText.text = "Super Hard";
+                break;
+            case Hardness.HARD:
+                stateText.text = "Hard";
+                break;
+            case Hardness.NORMAL:
+                if (levelState == LevelState.NOTCOMLETED)
+                {
+                    stateText.text = "";
+                    break;
+                }
+                stateText.text = "Completed";
+                break;
+        }
+    }
 
+    
 }
