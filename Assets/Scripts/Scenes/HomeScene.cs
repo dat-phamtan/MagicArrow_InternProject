@@ -67,13 +67,18 @@ public class HomeScene : MonoBehaviour
 
     private void HandleSnapped(int index)
     {
+        //Debug.Log(index);
+        var snappedLevelData = new LevelData();
+       
         if (index >= _playerData.CurrentLevelId)
         {
+            snappedLevelData = GetLevelDataAt(_playerData.CurrentLevelId);
             HandleUnplayLevelSnapped();
+            HandleLabel(snappedLevelData.Hardness, snappedLevelData.LevelState);
             return;
-        }  
+        }
+        snappedLevelData = GetLevelDataAt(index);
 
-        var snappedLevelData = _playerData.CurrentLevelsData[index];
         if (snappedLevelData.LevelState == LevelState.COMPLETED)
         {
             greenBtn.SetActive(true);
@@ -94,6 +99,14 @@ public class HomeScene : MonoBehaviour
         HandleLabel(snappedLevelData.Hardness, snappedLevelData.LevelState);
     }
 
+    private LevelData GetLevelDataAt(int index)
+    {
+        for (int i = 0; i < _playerData.CurrentLevelsData.Length; i++)
+            if (_playerData.CurrentLevelsData[i].LevelId == index)
+                return _playerData.CurrentLevelsData[i];
+        return _playerData.CurrentLevelsData[0];
+    }
+
     private void HandleUnplayLevelSnapped()
     {
         greenBtn.SetActive(true);
@@ -101,7 +114,6 @@ public class HomeScene : MonoBehaviour
         var texts = greenBtn.GetComponentsInChildren<TextMeshProUGUI>();
         texts[0].text = "Play";
         texts[1].text = "Level " + _playerData.CurrentLevelId.ToString();
-        
     }
 
     private void HandleLabel(Hardness hardness, LevelState levelState)
