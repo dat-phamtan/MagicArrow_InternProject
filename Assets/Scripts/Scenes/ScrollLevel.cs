@@ -59,9 +59,13 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
                 _ => greenPodium,
             };
 
-            Debug.Log($"{levelData[i].LevelId}--{_playerData.CurrentLevelId}");
+            
             if (levelData[i].LevelId == _playerData.CurrentLevelId)
+            {
+                Debug.Log($"{levelData[i].LevelId}--{_playerData.CurrentLevelId}");
                 currentPrefab = currentPodium;
+            }
+                
 
             var newLevelItem = Instantiate(currentPrefab, contentTransform);
             newLevelItem.name = "Level_" + (i + 1);
