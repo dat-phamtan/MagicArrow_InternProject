@@ -22,11 +22,14 @@ public class LoadingScene : MonoBehaviour
     public float textDuration = 1f;
     public float loadingPerFrame = 0.05f;
     public float loadingBoost = 0.01f;
+    public int completedDelayDurartion = 100;
     public Slider slider;
     public TextMeshProUGUI loadingText;
-    private int _numdots = 0;
+
+    private int _numDots = 0;
     private bool _isDone = false;
     private bool _isLoadCompleted = false;
+    private int _maximumNumDots = 3;
 
     public void Awake()
     {
@@ -47,11 +50,11 @@ public class LoadingScene : MonoBehaviour
 
         var op = SceneManager.LoadSceneAsync("Home");
         op.allowSceneActivation = false;
-        while (op.progress < 0.9f)
+        while (op.progress < maximumFakeLoading)
             await UniTask.Yield(PlayerLoopTiming.Update, token);
 
 
-        await UniTask.Delay(2000, cancellationToken: token);
+        //await UniTask.Delay(2000, cancellationToken: token);
         _isLoadCompleted = true;
         while (slider.value < maximumFakeLoading)
         {
@@ -60,7 +63,7 @@ public class LoadingScene : MonoBehaviour
         _isDone = true;
         slider.value = 1f;
         loadingText.text = "Completed";
-        await UniTask.Delay(100, cancellationToken: token);
+        await UniTask.Delay(completedDelayDurartion, cancellationToken: token);
         op.allowSceneActivation = true;
     }
 
@@ -76,15 +79,15 @@ public class LoadingScene : MonoBehaviour
             if (slider.value < maximumFakeLoading)
                 slider.value += loadingPerFrame * Time.deltaTime;
 
-            if (_numdots > 3)
+            if (_numDots > _maximumNumDots)
             {
                 loadingText.text = "Loading";
-                _numdots = 0;
+                _numDots = 0;
             }
             if (duration > textDuration)
             {
                 loadingText.text += ".";
-                _numdots++;
+                _numDots++;
                 duration = 0f;
             }
             await UniTask.Yield(PlayerLoopTiming.Update, token);
@@ -105,6 +108,7 @@ public class LoadingScene : MonoBehaviour
         IController controller = new ArrowController(config, storage, input, boardSpacing);
         IUIManager uiManager = new UIManager(controller, input, boardSpacing);
         IBoostersManager boosterManager = new BoostersManager(controller);
+        IHomeUI homeUI = new HomeUI();
 
         Locator.Register(storage);
         Locator.Register(config);
@@ -112,5 +116,6 @@ public class LoadingScene : MonoBehaviour
         Locator.Register(controller);
         Locator.Register(uiManager);
         Locator.Register(boosterManager);
+        Locator.Register(homeUI);
     }
 }
