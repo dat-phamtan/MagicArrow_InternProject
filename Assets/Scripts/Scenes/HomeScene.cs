@@ -5,6 +5,8 @@ using Assets.Scripts.Utility;
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class HomeScene : MonoBehaviour
 {
@@ -31,6 +33,7 @@ public class HomeScene : MonoBehaviour
     private IController _controller;
     private IHomeUI _homeUI;
     private PlayerData _playerData;
+    private int _currentIndex = -1;
 
 
     public void Awake()
@@ -62,16 +65,17 @@ public class HomeScene : MonoBehaviour
         heartRegenTime.text = _playerData.RegenHour.ToString() + ":" + _playerData.RegenMinute.ToString();
 
         HandleSnapped(_playerData.CurrentLevelId);
-
     }
 
     private void HandleSnapped(int index)
     {
         //Debug.Log(index);
+        _currentIndex = index;
         var snappedLevelData = new LevelData();
        
         if (index >= _playerData.CurrentLevelId)
         {
+            _currentIndex = _playerData.CurrentLevelId;
             snappedLevelData = GetLevelDataAt(_playerData.CurrentLevelId);
             HandleUnplayLevelSnapped();
             HandleLabel(snappedLevelData.Hardness, snappedLevelData.LevelState);
@@ -82,6 +86,7 @@ public class HomeScene : MonoBehaviour
         if (snappedLevelData.LevelState == LevelState.COMPLETED)
         {
             greenBtn.SetActive(true);
+            greenBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
             orangeBtn.SetActive(false);
             var texts = greenBtn.GetComponentsInChildren<TextMeshProUGUI>();
             texts[0].text = "Replay";
@@ -90,6 +95,7 @@ public class HomeScene : MonoBehaviour
         else
         {
             orangeBtn.SetActive(true);
+            orangeBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
             greenBtn.SetActive(false);
             var texts = orangeBtn.GetComponentsInChildren<TextMeshProUGUI>();
             texts[0].text = "Replay";
@@ -110,6 +116,7 @@ public class HomeScene : MonoBehaviour
     private void HandleUnplayLevelSnapped()
     {
         greenBtn.SetActive(true);
+        greenBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
         orangeBtn.SetActive(false);
         var texts = greenBtn.GetComponentsInChildren<TextMeshProUGUI>();
         texts[0].text = "Play";
@@ -172,5 +179,11 @@ public class HomeScene : MonoBehaviour
         }
     }
 
+    private void HandleHomeBtnClicked()
+    {
+        var levelData = GetLevelDataAt(_currentIndex);
+        _controller.LoadBoardData(levelData.BoardData);
+        SceneManager.LoadSceneAsync("Transition");
+    }
     
 }

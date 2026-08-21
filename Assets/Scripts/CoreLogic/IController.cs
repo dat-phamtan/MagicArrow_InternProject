@@ -55,7 +55,7 @@ namespace Assets.Scripts.CoreLogic
         public void EnterEraserMode();
         public void ExitEraserMode();
         public bool IsEraserModeTrue();
-        public void LoadConfig();
+        public void LoadBoardData(BoardData boardData);
         public PlayerData GetPlayerData();
         public void LoadPlayerData();
     }

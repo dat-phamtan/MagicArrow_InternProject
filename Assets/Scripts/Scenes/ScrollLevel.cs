@@ -61,14 +61,13 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
 
             
             if (levelData[i].LevelId == _playerData.CurrentLevelId)
-            {
-                Debug.Log($"{levelData[i].LevelId}--{_playerData.CurrentLevelId}");
                 currentPrefab = currentPodium;
-            }
                 
 
             var newLevelItem = Instantiate(currentPrefab, contentTransform);
             newLevelItem.name = "Level_" + (i + 1);
+            newLevelItem.GetComponentInChildren<Button>();
+            
             _homeUI.RegisterItem(levelData[i].LevelId, newLevelItem.GetComponent<RectTransform>());
 
             var text = newLevelItem.GetComponentInChildren<TextMeshProUGUI>();
@@ -88,5 +87,10 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
                 fillStars[k].enabled = false;
             }
         }
+    }
+    
+    private void RegisterPodiumHandler(GameObject item)
+    {
+        
     }
 }

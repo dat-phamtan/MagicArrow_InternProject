@@ -236,10 +236,9 @@ namespace Assets.Scripts.CoreLogic
         {
             return _isWaitingForEraserBooster;
         }
-        public void LoadConfig()
+        public void LoadBoardData(BoardData boardData)
         {
-            _configData = _config.Load();
-            //_numArrow = _configData.Arrows.Length;
+            _configData = boardData;
         }
         public PlayerData GetPlayerData()
         {
@@ -256,7 +255,7 @@ namespace Assets.Scripts.CoreLogic
         // logic
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager)
         {
-            LoadConfig();
+            //LoadBoardData();
             InputInit();
             EventHandlerInit(eventHandler, popupManager);
             MatrixesInit();
