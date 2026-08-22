@@ -40,7 +40,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
 
     private IBooster _booster;
     private IBoostersManager _boostersManager;
-    private IUIManager _uiManager;
+    private IGamePlayUI _uiManager;
     private IController _controller;
     private Vector2 _eraserPopupBasePos;
     private Vector2 _eraserPopupHidePos;
@@ -61,7 +61,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     {
         _boostersManager = Locator.Get<IBoostersManager>();
         _controller = Locator.Get<IController>();
-        _uiManager = Locator.Get<IUIManager>();
+        _uiManager = Locator.Get<IGamePlayUI>();
         _boostersManager.Init(this);
         _controller.OnHideBoosters += HandleHideBoosters;
         _controller.OnShowBoosters += HandleShowBoosters;

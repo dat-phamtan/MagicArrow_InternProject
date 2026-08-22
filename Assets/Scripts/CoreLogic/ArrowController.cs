@@ -3,7 +3,7 @@ using Assets.Scripts.Config;
 using Assets.Scripts.Data;
 using Assets.Scripts.Input;
 using Assets.Scripts.IO;
-using Assets.Scripts.Scenes;
+using Assets.Scripts.Scenes.Helper;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
 using System;
@@ -25,7 +25,7 @@ namespace Assets.Scripts.CoreLogic
         private readonly IConfig _config;
         private readonly IStorage _storage;
         private readonly IInput _input;
-        private readonly IUIManager _uiManager;
+        private readonly IGamePlayUI _uiManager;
         private IEventHandler _eventHandler;
         private IPopUpManager _popupManager;
         //private IBoostersManager _boostersManager = Locator.Get<IBoostersManager>();

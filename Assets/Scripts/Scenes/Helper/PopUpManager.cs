@@ -1,5 +1,5 @@
 using Assets.Scripts.CoreLogic;
-using Assets.Scripts.Scenes;
+using Assets.Scripts.Scenes.Helper;
 using Assets.Scripts.UI;
 using System;
 using TMPro;

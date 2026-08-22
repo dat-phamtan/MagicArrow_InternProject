@@ -12,7 +12,7 @@ using Vector3 = UnityEngine.Vector3;
 
 namespace Assets.Scripts.UI
 {
-    public class UIManager : IUIManager
+    public class GamePlayUI : IGamePlayUI
     {
         public float boostersAnimation = 0.3f;
         public float barsAnimation = 1f;
@@ -28,7 +28,7 @@ namespace Assets.Scripts.UI
         private Dictionary<int, Vector3[]> _curvedPath;
         private Dictionary<int, float[]> _cumulativeLength;
 
-        public UIManager(IController controller, IInput input, float spacing)
+        public GamePlayUI(IController controller, IInput input, float spacing)
         {
             _input = input;
             _controller = controller;

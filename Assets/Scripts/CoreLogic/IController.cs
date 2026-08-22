@@ -1,7 +1,7 @@
 ﻿using Assets.Scripts.Config;
 using Assets.Scripts.Data;
 using Assets.Scripts.Input;
-using Assets.Scripts.Scenes;
+using Assets.Scripts.Scenes.Helper;
 using Assets.Scripts.UI;
 using System;
 using System.Collections.Generic;

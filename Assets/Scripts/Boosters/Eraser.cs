@@ -10,10 +10,10 @@ namespace Assets.Scripts.Boosters
 {
     public class Eraser : IBooster
     {
-        private IUIManager _uiManager;
+        private IGamePlayUI _uiManager;
         public Eraser()
         {
-            _uiManager = Locator.Get<IUIManager>();
+            _uiManager = Locator.Get<IGamePlayUI>();
         }
 
         public void OnClick(IController controller, Action onComplete)

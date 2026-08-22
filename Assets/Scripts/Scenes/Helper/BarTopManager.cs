@@ -31,7 +31,7 @@ public class BarTopManager : MonoBehaviour
     private Vector2 _basePos;
     private Vector2 _hidePos;
     private IController _controller;
-    private IUIManager _uiManager;
+    private IGamePlayUI _uiManager;
     private IBoostersManager _boostersManager;
 
     private void OnEnable()
@@ -43,7 +43,7 @@ public class BarTopManager : MonoBehaviour
     public void Start()
     {
         _controller = Locator.Get<IController>();
-        _uiManager = Locator.Get<IUIManager>();
+        _uiManager = Locator.Get<IGamePlayUI>();
         _boostersManager = Locator.Get<IBoostersManager>();
         _controller.OnLoseHeart += HandleLoseHeart;
         _controller.OnReset += HandleReset;

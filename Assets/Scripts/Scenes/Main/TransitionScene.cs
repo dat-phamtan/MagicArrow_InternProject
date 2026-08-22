@@ -7,7 +7,7 @@ using Assets.Scripts.Utility;
 public class TransitionScene : MonoBehaviour
 {
     public GameObject logo;
-    private IUIManager _uiManager;
+    private IGamePlayUI _uiManager;
 
     //private async UniTaskVoid Start()
     //{
@@ -26,7 +26,7 @@ public class TransitionScene : MonoBehaviour
     private void Start()
     {
         var token = this.GetCancellationTokenOnDestroy();
-        _uiManager = Locator.Get<IUIManager>();
+        _uiManager = Locator.Get<IGamePlayUI>();
         _uiManager.JumpInAnimation(logo);
         var op = SceneManager.LoadSceneAsync("GamePlay");
 

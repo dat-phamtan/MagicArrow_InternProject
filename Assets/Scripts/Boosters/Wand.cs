@@ -17,7 +17,7 @@ namespace Assets.Scripts.Boosters
         private float _animationDuration = 1f;
         private int _numMovedArrow = 3;
         private IController _controller;
-        private IUIManager _uiManager;
+        private IGamePlayUI _uiManager;
         private GameObject _wandAnimation;
         private Image _wandImage;
         private RectTransform _rectTransform;
@@ -27,7 +27,7 @@ namespace Assets.Scripts.Boosters
         public Wand(GameObject wandAnimation)
         {
             _controller = Locator.Get<IController>();
-            _uiManager = Locator.Get<IUIManager>();
+            _uiManager = Locator.Get<IGamePlayUI>();
             _wandAnimation = wandAnimation;
             _rectTransform = _wandAnimation.GetComponent<RectTransform>();
             _vecPunchRotate = new Vector3(0, 0, 5f);

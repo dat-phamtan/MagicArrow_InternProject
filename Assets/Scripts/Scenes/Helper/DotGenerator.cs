@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace Assets.Scripts.Scenes
+namespace Assets.Scripts.Scenes.Helper
 {
     public class DotGenerator
     {

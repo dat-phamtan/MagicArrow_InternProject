@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.UI
 {
-    public interface IUIManager
+    public interface IGamePlayUI
     {
         public void Init(IEventHandler eventHandler);
         public void JumpInAnimation(GameObject obj);

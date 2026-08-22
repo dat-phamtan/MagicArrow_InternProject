@@ -51,7 +51,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     //private Tile _generatedCirleTile;
 
     private IController _controller;
-    private IUIManager _uiManager;
+    private IGamePlayUI _uiManager;
 
     //private IArrowAssember _arrowAssember;
     private InputSystem_Actions _inputActions;
@@ -73,7 +73,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private void Awake()
     {
         _controller = Locator.Get<IController>();
-        _uiManager = Locator.Get<IUIManager>();
+        _uiManager = Locator.Get<IGamePlayUI>();
 
         //_arrowAssember = new ArrowAssembler();
         _inputActions = new InputSystem_Actions();

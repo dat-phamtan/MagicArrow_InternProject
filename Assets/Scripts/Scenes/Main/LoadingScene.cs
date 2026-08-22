@@ -106,7 +106,7 @@ public class LoadingScene : MonoBehaviour
         IConfig config = new ConfigManager(storage);
         IInput input = new PlayerInput(boardSpacing);
         IController controller = new ArrowController(config, storage, input, boardSpacing);
-        IUIManager uiManager = new UIManager(controller, input, boardSpacing);
+        IGamePlayUI uiManager = new GamePlayUI(controller, input, boardSpacing);
         IBoostersManager boosterManager = new BoostersManager(controller);
         IHomeUI homeUI = new HomeUI();
 
