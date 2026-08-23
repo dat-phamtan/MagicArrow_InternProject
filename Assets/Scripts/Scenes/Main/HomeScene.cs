@@ -183,6 +183,7 @@ public class HomeScene : MonoBehaviour
     {
         var levelData = GetLevelDataAt(_currentIndex);
         _controller.LoadBoardData(levelData.BoardData);
+        Debug.Log(levelData);
         SceneManager.LoadSceneAsync("Transition");
     }
     
