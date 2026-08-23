@@ -86,16 +86,13 @@ public class DotRenderer : MonoBehaviour
     {
         targetTilemap.SetTile(pos, _dotTile);
         targetTilemap.SetTileFlags(pos, TileFlags.None);
-
-        var matrix = Matrix4x4.TRS(offset, Quaternion.identity, new Vector3(1f, 1f, 1f));
-        targetTilemap.SetTransformMatrix(pos, matrix);
-        ApplyTileVisual(pos, baseScale, baseColor);
+        ApplyTileVisual(pos, offset, baseScale, baseColor);
     }
 
-    private void ApplyTileVisual(Vector3Int pos, float scale, Color color)
+    private void ApplyTileVisual(Vector3Int pos, Vector3 offset, float scale, Color color)
     {
         targetTilemap.SetColor(pos, color);
-        targetTilemap.SetTransformMatrix(pos, Matrix4x4.Scale(Vector3.one * scale));
+        targetTilemap.SetTransformMatrix(pos, Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one * scale));
         _currentScale[pos] = scale;
         _currentColor[pos] = color;
     }
@@ -126,8 +123,8 @@ public class DotRenderer : MonoBehaviour
 
             targetTilemap.SetColor(pos, currentColor);
 
-            Matrix4x4 matrix = Matrix4x4.Scale(new Vector3(currentScale, currentScale, 1f));
-            //Matrix4x4 matrix = Matrix4x4.TRS(offset, Quaternion.identity, new Vector3(currentScale, currentScale, 1f));
+            //Matrix4x4 matrix = Matrix4x4.Scale(new Vector3(currentScale, currentScale, 1f));
+            Matrix4x4 matrix = Matrix4x4.TRS(offset, Quaternion.identity, new Vector3(currentScale, currentScale, 1f));
             targetTilemap.SetTransformMatrix(pos, matrix);
 
             elapsedTime += Time.deltaTime;
