@@ -36,8 +36,8 @@ public class BarTopManager : MonoBehaviour
 
     private void OnEnable()
     {
-        pauseBtn.onClick.AddListener(() => { HandlePauseClicked(); });
-        resumeBtn.onClick.AddListener(() => { HandleResume(); });
+        pauseBtn.onClick.AddListener(HandlePauseClicked);
+        resumeBtn.onClick.AddListener(HandleResume);
     }
 
     public void Start()
@@ -53,6 +53,23 @@ public class BarTopManager : MonoBehaviour
         PositionInit();
         HandleShowBarTop();
         
+    }
+
+    private void OnDisable()
+    {
+        pauseBtn.onClick.RemoveListener(HandlePauseClicked);
+        resumeBtn.onClick.RemoveListener(HandleResume);
+
+        if (_controller != null)
+        {
+            _controller.OnLoseHeart -= HandleLoseHeart;
+            _controller.OnReset -= HandleReset;
+            _controller.OnShowBarTop -= HandleShowBarTop;
+            _controller.OnHideBarTop -= HandleHideBarTop;
+        }
+
+        if (_boostersManager != null)
+            _boostersManager.OnBoosterBusyChanged -= HandleBusyChanged;
     }
 
     private void HandlePauseClicked()

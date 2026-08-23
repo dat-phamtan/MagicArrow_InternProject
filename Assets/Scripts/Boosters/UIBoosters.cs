@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using static UnityEngine.ParticleSystem;
 
 public class UIBooster : MonoBehaviour, IBoosterAction
 {
@@ -33,7 +34,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     public Image magnifierImage;
     public Image rulerImage;
 
-    public GameObject particle;
+    //public GameObject particle;
 
     public Tilemap magnifierTilemap;
     public Tilemap rulerTilemap;
@@ -45,15 +46,25 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     private Vector2 _eraserPopupBasePos;
     private Vector2 _eraserPopupHidePos;
 
+    private IBooster _magnifierBooster;
+    private IBooster _eraserBooster;
+    private IBooster _wandBooster;
+    private IBooster _rulerBooster;
+
     public event Action<IBooster> OnBoosterClicked;
 
     private void OnEnable()
     {
-        
-        magnifier.onClick.AddListener(() => { OnBoosterClicked(new Magnifier(magnifierTilemap, magnifierImage, particle)); });
+
+        _magnifierBooster ??= new Magnifier(magnifierTilemap, magnifierImage);
+        _rulerBooster ??= new Ruler(rulerTilemap, rulerImage);
+        _wandBooster ??= new Wand(wandAnimation);
+        _eraserBooster ??= new Eraser();
+
+        magnifier.onClick.AddListener(() => OnBoosterClicked?.Invoke(_magnifierBooster));
         eraser.onClick.AddListener(HandleEraserOnClicked);
-        wand.onClick.AddListener(() => { OnBoosterClicked(new Wand(wandAnimation)); });
-        ruler.onClick.AddListener(() => { OnBoosterClicked(new Ruler(rulerTilemap, rulerImage)); });
+        wand.onClick.AddListener(() => OnBoosterClicked?.Invoke(_wandBooster));
+        ruler.onClick.AddListener(() => OnBoosterClicked?.Invoke(_rulerBooster));
         eraserPopupExit.onClick.AddListener(HandleExit);
     }
 
@@ -82,7 +93,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     {
         if (_controller.IsEraserModeTrue())
             return;
-        OnBoosterClicked?.Invoke(new Eraser());
+        OnBoosterClicked?.Invoke(_eraserBooster);
         ShowEraserPopup();
     }
 

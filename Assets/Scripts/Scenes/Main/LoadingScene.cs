@@ -14,6 +14,7 @@ using UnityEngine.UI;
 using System.Threading;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem.Controls;
+using Assets.Scripts.Ultility;
 
 public class LoadingScene : MonoBehaviour
 {
@@ -109,6 +110,7 @@ public class LoadingScene : MonoBehaviour
         IGamePlayUI uiManager = new GamePlayUI(controller, input, boardSpacing);
         IBoostersManager boosterManager = new BoostersManager(controller);
         IHomeUI homeUI = new HomeUI();
+        //ICamera camera = new Cam
 
         Locator.Register(storage);
         Locator.Register(config);

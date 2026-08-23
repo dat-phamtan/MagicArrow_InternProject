@@ -29,10 +29,10 @@ namespace Assets.Scripts.Boosters
         private Vector3 originalRotation;
 
 
-        public Magnifier(Tilemap tilemap, Image image, GameObject particle)
+        public Magnifier(Tilemap tilemap, Image image)
         {
             _tilemap = tilemap;
-            _particle = particle.GetComponent<Transform>();
+            //_particle = particle.GetComponent<Transform>();
             ClickedAnimationInit(image);
             _lineTile = CreateLineTile(_lineLength, _lineWidth);
             _controller = Locator.Get<IController>();

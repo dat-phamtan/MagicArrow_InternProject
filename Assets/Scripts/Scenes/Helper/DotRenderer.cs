@@ -37,6 +37,7 @@ public class DotRenderer : MonoBehaviour
     private void OnDisable()
     {
         _controller.OnMoveArrowSuccess -= HandleSpawnDots;
+        _controller.OnRerenderBoard -= ResetTileMap;
     }
 
     private void HandleSpawnDots(int interactedConfigIndex)
@@ -133,10 +134,6 @@ public class DotRenderer : MonoBehaviour
 
         SetupBaseTile(pos, offset);
     }
-
-    
-
-    
 
     private Tile CreateCircleTile(int resolution)
     {
