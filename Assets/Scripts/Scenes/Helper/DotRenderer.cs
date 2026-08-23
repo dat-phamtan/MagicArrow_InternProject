@@ -20,11 +20,10 @@ public class DotRenderer : MonoBehaviour
     public float chainStepDelay = 0.11f;
 
     private IController _controller;
-
-
     private Tile _dotTile;
     private readonly Dictionary<Vector3Int, float> _currentScale = new();
     private readonly Dictionary<Vector3Int, Color> _currentColor = new();
+    //private 
 
     private void Start()
     {
@@ -62,6 +61,7 @@ public class DotRenderer : MonoBehaviour
             targetTilemap.SetColor(pos, currentColor);
 
             Matrix4x4 matrix = Matrix4x4.Scale(new Vector3(currentScale, currentScale, 1f));
+            //Matrix4x4 matrix = Matrix4x4.TRS(offset, Quaternion.identity, new Vector3(currentScale, currentScale, 1f));
             targetTilemap.SetTransformMatrix(pos, matrix);
 
             elapsedTime += Time.deltaTime;
