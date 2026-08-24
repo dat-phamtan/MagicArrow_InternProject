@@ -97,7 +97,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         popUpManager.Init(_controller, this);
         cameraModifier.Init(this, _boardWidth, _boardHeight, spacing);
         cameraModifier.FitCamera();
-        Locator.Register<ICamera>(cameraModifier);
+        //Locator.Register<ICamera>(cameraModifier);
 
         //_uiManager.ShowUI(boosterBar);
     }

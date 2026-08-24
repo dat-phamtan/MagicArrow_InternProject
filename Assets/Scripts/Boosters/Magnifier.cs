@@ -41,6 +41,12 @@ namespace Assets.Scripts.Boosters
             _camera = Locator.Get<ICamera>();
         }
 
+        public void Dispose()
+        {
+            _controller.OnArrowClicked -= HandleDisableLine;
+            _controller.OnReset -= OnReset;
+        }
+
         private void ClickedAnimationInit(Image image)
         {
             _rectTransform = image.GetComponent<RectTransform>();

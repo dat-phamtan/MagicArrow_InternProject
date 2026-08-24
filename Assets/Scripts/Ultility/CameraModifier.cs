@@ -28,6 +28,10 @@ public class CameraModifier : MonoBehaviour, ICamera
     private bool _isPanning = false;
     private bool _isFocusing = false;
 
+    private void Awake()
+    {
+        Locator.Register<ICamera>(this);
+    }
 
     private void Update()
     {

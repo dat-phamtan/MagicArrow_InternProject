@@ -8,5 +8,6 @@ namespace Assets.Scripts.Boosters
     public interface IBooster
     {
         public void OnClick(IController controller, Action onComplete);
+        public void Dispose();
     }
 }

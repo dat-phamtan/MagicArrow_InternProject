@@ -39,6 +39,8 @@ namespace Assets.Scripts.Boosters
             HandleAnimation(onComplete);
         }
 
+        public void Dispose() { }
+
         public void HandleAnimation(Action onComplete)
         {
             _uiManager.JumpInAnimation(_wandAnimation);

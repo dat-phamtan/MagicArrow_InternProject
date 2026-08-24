@@ -36,6 +36,12 @@ namespace Assets.Scripts.Boosters
             _controller.OnReset += OnReset;
         }
 
+        public void Dispose()
+        {
+            _controller.OnArrowClicked -= HandleDisableLines;
+            _controller.OnReset -= OnReset;
+        }
+
         private void ClickedAnimationInit(Image image)
         {
             _rectTransform = image.GetComponent<RectTransform>();

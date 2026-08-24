@@ -27,5 +27,7 @@ namespace Assets.Scripts.Boosters
             controller.EnterEraserMode();
             onComplete?.Invoke();
         }
+
+        public void Dispose() { }
     }
 }

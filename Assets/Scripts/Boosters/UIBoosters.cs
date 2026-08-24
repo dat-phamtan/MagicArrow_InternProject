@@ -68,6 +68,18 @@ public class UIBooster : MonoBehaviour, IBoosterAction
         eraserPopupExit.onClick.AddListener(HandleExit);
     }
 
+    private void OnDisable()
+    {
+        _controller.OnHideBoosters -= HandleHideBoosters;
+        _controller.OnShowBoosters -= HandleShowBoosters;
+        _controller.OnHideEraserPopup -= HideEraserPopup;
+        _boostersManager.OnBoosterBusyChanged -= HandleBusyChanged;
+        _magnifierBooster?.Dispose();
+        _rulerBooster?.Dispose();
+        _wandBooster?.Dispose();
+        _eraserBooster?.Dispose();
+    }
+
     private void Start()
     {
         _boostersManager = Locator.Get<IBoostersManager>();
@@ -133,11 +145,6 @@ public class UIBooster : MonoBehaviour, IBoosterAction
             _uiManager.JumpOutAnimation(boosters[i]);
             yield return null;
         }
-    }
-
-    private void OnDisable() 
-    {
-        _boostersManager.OnBoosterBusyChanged -= HandleBusyChanged;
     }
 
     private void HandleBusyChanged(bool isBusy)
