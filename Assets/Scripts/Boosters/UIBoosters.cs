@@ -72,7 +72,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
     {
         _controller.OnHideBoosters -= HandleHideBoosters;
         _controller.OnShowBoosters -= HandleShowBoosters;
-        _controller.OnHideEraserPopup -= HideEraserPopup;
+        _controller.OnHideEraserPopup -= HideEraserPopup;       
         _boostersManager.OnBoosterBusyChanged -= HandleBusyChanged;
         _magnifierBooster?.Dispose();
         _rulerBooster?.Dispose();

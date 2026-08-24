@@ -77,7 +77,7 @@ namespace Assets.Scripts.UI
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
             
-            rectTransform.DOScale(Vector3.zero, boostersAnimation).SetEase(Ease.InBack);
+            rectTransform.DOScale(Vector3.zero, boostersAnimation).SetEase(Ease.OutCubic);
             canvasGroup.DOFade(0f, boostersAnimation).SetEase(Ease.InQuad).OnComplete(() =>
             {
                 obj.SetActive(false);

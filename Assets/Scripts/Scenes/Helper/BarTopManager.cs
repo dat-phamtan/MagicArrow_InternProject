@@ -5,6 +5,7 @@ using Assets.Scripts.Utility;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class BarTopManager : MonoBehaviour
@@ -18,26 +19,47 @@ public class BarTopManager : MonoBehaviour
 
     //pause pannel
     public GameObject pausePopup;
-    public Button resumeBtn;
-    public Button playAgainBtn;
-    public Button returnHomeBtn;
+    public GameObject restartPopup;
+    public GameObject restartRequestUI;
+    public GameObject restartConfirmUI;
+    public GameObject quitPopup;
+    public GameObject blackBg;
+    public GameObject topBar;
+
+    public Button[] popupTurnOffBtn;
+    public Button[] resumeBtn;
+    public Button restartBtn1;
+    public Button restartBtn2;
+    public Button restartBtn3;
+    public Button quitBtn1;
+    public Button quitBtn2;
+    public Button quitBtn3;
+
     public Button soundEffectBtn;
     public Button musicBtn;
     public Button vibrateBtn;
     public Button lightModeBtn;
-    public GameObject blackBg;
-    public GameObject topBar;
+    
 
     private Vector2 _basePos;
     private Vector2 _hidePos;
     private IController _controller;
     private IGamePlayUI _uiManager;
     private IBoostersManager _boostersManager;
+    private bool _isRestartConfirmed = false;
+    private bool _isQuitConfirmed; 
 
     private void OnEnable()
     {
         pauseBtn.onClick.AddListener(HandlePauseClicked);
-        resumeBtn.onClick.AddListener(HandleResume);
+        restartBtn1.onClick.AddListener(HandlePlayAgainRequest);
+        restartBtn2.onClick.AddListener(HandlePlayAgain);
+        restartBtn3.onClick.AddListener(HandlePlayAgain);
+        quitBtn1.onClick.AddListener(HandleQuit);
+        foreach (var resume in resumeBtn)
+            resume.onClick.AddListener(HandleResume);
+        foreach (var exit in popupTurnOffBtn)
+            exit.onClick.AddListener(HandleResume);
     }
 
     public void Start()
@@ -58,7 +80,14 @@ public class BarTopManager : MonoBehaviour
     private void OnDisable()
     {
         pauseBtn.onClick.RemoveListener(HandlePauseClicked);
-        resumeBtn.onClick.RemoveListener(HandleResume);
+        restartBtn1.onClick.RemoveListener(HandlePlayAgainRequest);
+        restartBtn2.onClick.RemoveListener(HandlePlayAgain);
+        restartBtn3.onClick.RemoveListener(HandlePlayAgain);
+        quitBtn1.onClick.RemoveListener(HandleQuit);
+        foreach (var resume in resumeBtn)
+            resume.onClick.RemoveListener(HandleResume);
+        foreach (var exit in popupTurnOffBtn)
+            exit.onClick.RemoveListener(HandleResume);
 
         if (_controller != null)
         {
@@ -81,9 +110,43 @@ public class BarTopManager : MonoBehaviour
 
     private void HandleResume()
     {
+        _isRestartConfirmed = false;
         _uiManager.JumpOutAnimation(pausePopup);
+        if (restartPopup.activeInHierarchy)
+            _uiManager.JumpOutAnimation(restartPopup);
+        if (quitPopup.activeInHierarchy)
+            _uiManager.JumpOutAnimation(quitPopup);
         _controller.UnblockInteraction();
         blackBg.SetActive(false);
+    }
+
+    private void HandlePlayAgainRequest()
+    {
+        _uiManager.JumpOutAnimation(pausePopup);
+        _uiManager.JumpInAnimation(restartPopup);
+    }
+
+    private void HandlePlayAgain()
+    {
+        if (!_isRestartConfirmed)
+        {
+            _uiManager.JumpOutAnimation(restartRequestUI);
+            restartRequestUI.SetActive(false);
+            restartConfirmUI.SetActive(true);
+            _uiManager.JumpInAnimation(restartConfirmUI);
+            _isRestartConfirmed = true;
+        }
+        else
+        {
+            _isRestartConfirmed = false;
+            var op = SceneManager.LoadSceneAsync("Transition");
+        }
+    }
+
+    private void HandleQuit()
+    {
+        _uiManager.JumpOutAnimation(pausePopup);
+        _uiManager.JumpInAnimation(quitPopup);
     }
 
     private void HandleBusyChanged(bool isBusy)
