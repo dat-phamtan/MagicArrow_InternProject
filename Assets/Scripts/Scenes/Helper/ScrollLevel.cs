@@ -35,8 +35,18 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
         _controller = Locator.Get<IController>();
         _playerData = _controller.GetPlayerData();
         _numLevel = _playerData.CurrentLevelsData.Length;
+        _homeUI.ClearItem();
         _homeUI.ScrollSnapInit(GetComponent<ScrollRect>(), snapTarget, snapDuration, velocityThreshold);
         GenerateLevelList();
+    }
+
+    private void OnDestroy()
+    {
+        if (_snapCoroutine != null)
+            StopCoroutine(_snapCoroutine);
+
+        if (_homeUI != null)
+            _homeUI.ClearItem();
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -87,10 +97,5 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
                 fillStars[k].enabled = false;
             }
         }
-    }
-    
-    private void RegisterPodiumHandler(GameObject item)
-    {
-        
     }
 }

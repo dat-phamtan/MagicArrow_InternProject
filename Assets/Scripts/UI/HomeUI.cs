@@ -28,6 +28,7 @@ namespace Assets.Scripts.UI
                                     float snapDuration = 0.3f, 
                                     float velocityThreshold = 20f)
         {
+            _content?.DOKill();
             //_levels = levels;
             _snapTarget = snapTarget;
             _snapDuration = snapDuration;
@@ -35,6 +36,7 @@ namespace Assets.Scripts.UI
 
             _scrollRect = levels;
             _content = _scrollRect.content;
+            ClearItem();
         }
 
         public void RegisterItem(int index, RectTransform item)
@@ -74,8 +76,15 @@ namespace Assets.Scripts.UI
             float minDist = float.MaxValue;
             float targetLocalY = GetRectTransformLocalY(_snapTarget);
 
-            for (int i = 0; i < _items.Count; i++)
+            for (int i = _items.Count - 1; i >= 0; i--)
             {
+                if (_items[i] == null)
+                {
+                    _items.RemoveAt(i);
+                    _itemsIndices.RemoveAt(i);
+                    continue;
+                }
+
                 float itemLocalY = GetRectTransformLocalY(_items[i]);
                 float dist = Mathf.Abs(itemLocalY - targetLocalY);
                 if (dist < minDist)
@@ -85,6 +94,10 @@ namespace Assets.Scripts.UI
                     nearestIndex = _itemsIndices[i];
                 }
             }
+
+            if (nearest == null)
+                return;
+
             OnSnappedAt?.Invoke(nearestIndex);
 
             float nearestLocalY = GetRectTransformLocalY(nearest);
