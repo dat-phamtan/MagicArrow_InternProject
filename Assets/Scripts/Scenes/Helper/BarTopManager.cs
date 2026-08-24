@@ -20,8 +20,7 @@ public class BarTopManager : MonoBehaviour
     //pause pannel
     public GameObject pausePopup;
     public GameObject restartPopup;
-    public GameObject restartRequestUI;
-    public GameObject restartConfirmUI;
+    public GameObject restartConfirmPopup;
     public GameObject quitPopup;
     public GameObject blackBg;
     public GameObject topBar;
@@ -53,7 +52,7 @@ public class BarTopManager : MonoBehaviour
     {
         pauseBtn.onClick.AddListener(HandlePauseClicked);
         restartBtn1.onClick.AddListener(HandlePlayAgainRequest);
-        restartBtn2.onClick.AddListener(HandlePlayAgain);
+        restartBtn2.onClick.AddListener(HandlePlayAgainConfirm);
         restartBtn3.onClick.AddListener(HandlePlayAgain);
         quitBtn1.onClick.AddListener(HandleQuit);
         foreach (var resume in resumeBtn)
@@ -81,7 +80,7 @@ public class BarTopManager : MonoBehaviour
     {
         pauseBtn.onClick.RemoveListener(HandlePauseClicked);
         restartBtn1.onClick.RemoveListener(HandlePlayAgainRequest);
-        restartBtn2.onClick.RemoveListener(HandlePlayAgain);
+        restartBtn2.onClick.RemoveListener(HandlePlayAgainConfirm);
         restartBtn3.onClick.RemoveListener(HandlePlayAgain);
         quitBtn1.onClick.RemoveListener(HandleQuit);
         foreach (var resume in resumeBtn)
@@ -126,21 +125,15 @@ public class BarTopManager : MonoBehaviour
         _uiManager.JumpInAnimation(restartPopup);
     }
 
+    private void HandlePlayAgainConfirm()
+    {
+        restartConfirmPopup.SetActive(true);
+        restartPopup.SetActive(false);
+    }
+
     private void HandlePlayAgain()
     {
-        if (!_isRestartConfirmed)
-        {
-            _uiManager.JumpOutAnimation(restartRequestUI);
-            restartRequestUI.SetActive(false);
-            restartConfirmUI.SetActive(true);
-            _uiManager.JumpInAnimation(restartConfirmUI);
-            _isRestartConfirmed = true;
-        }
-        else
-        {
-            _isRestartConfirmed = false;
-            var op = SceneManager.LoadSceneAsync("Transition");
-        }
+        SceneManager.LoadSceneAsync("Transition");
     }
 
     private void HandleQuit()
