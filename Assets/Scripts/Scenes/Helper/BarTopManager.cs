@@ -111,6 +111,8 @@ public class BarTopManager : MonoBehaviour
     {
         _isRestartConfirmed = false;
         _uiManager.JumpOutAnimation(pausePopup);
+        if (restartConfirmPopup.activeInHierarchy)
+            _uiManager.JumpOutAnimation(restartConfirmPopup);
         if (restartPopup.activeInHierarchy)
             _uiManager.JumpOutAnimation(restartPopup);
         if (quitPopup.activeInHierarchy)
@@ -122,17 +124,18 @@ public class BarTopManager : MonoBehaviour
     private void HandlePlayAgainRequest()
     {
         _uiManager.JumpOutAnimation(pausePopup);
-        _uiManager.JumpInAnimation(restartPopup);
+        _uiManager.JumpInAnimation(restartConfirmPopup);
     }
 
     private void HandlePlayAgainConfirm()
     {
-        restartConfirmPopup.SetActive(true);
-        restartPopup.SetActive(false);
+        restartPopup.SetActive(true);
+        restartConfirmPopup.SetActive(false);
     }
 
     private void HandlePlayAgain()
     {
+        _uiManager.JumpInAnimation(restartPopup);
         SceneManager.LoadSceneAsync("Transition");
     }
 
