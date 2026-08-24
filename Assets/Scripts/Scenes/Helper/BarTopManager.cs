@@ -21,6 +21,7 @@ public class BarTopManager : MonoBehaviour
     public GameObject pausePopup;
     public GameObject restartPopup;
     public GameObject restartConfirmPopup;
+    public GameObject quitConfirmPopup;
     public GameObject quitPopup;
     public GameObject blackBg;
     public GameObject topBar;
@@ -54,7 +55,9 @@ public class BarTopManager : MonoBehaviour
         restartBtn1.onClick.AddListener(HandlePlayAgainRequest);
         restartBtn2.onClick.AddListener(HandlePlayAgainConfirm);
         restartBtn3.onClick.AddListener(HandlePlayAgain);
-        quitBtn1.onClick.AddListener(HandleQuit);
+        quitBtn1.onClick.AddListener(HandleQuitRequest);
+        quitBtn2.onClick.AddListener(HandleQuitConfirm);
+        quitBtn3.onClick.AddListener(HandleQuit);
         foreach (var resume in resumeBtn)
             resume.onClick.AddListener(HandleResume);
         foreach (var exit in popupTurnOffBtn)
@@ -82,7 +85,9 @@ public class BarTopManager : MonoBehaviour
         restartBtn1.onClick.RemoveListener(HandlePlayAgainRequest);
         restartBtn2.onClick.RemoveListener(HandlePlayAgainConfirm);
         restartBtn3.onClick.RemoveListener(HandlePlayAgain);
-        quitBtn1.onClick.RemoveListener(HandleQuit);
+        quitBtn1.onClick.RemoveListener(HandleQuitRequest);
+        quitBtn2.onClick.RemoveListener(HandleQuitConfirm);
+        quitBtn3.onClick.RemoveListener(HandleQuit);
         foreach (var resume in resumeBtn)
             resume.onClick.RemoveListener(HandleResume);
         foreach (var exit in popupTurnOffBtn)
@@ -109,14 +114,16 @@ public class BarTopManager : MonoBehaviour
 
     private void HandleResume()
     {
-        _isRestartConfirmed = false;
-        _uiManager.JumpOutAnimation(pausePopup);
-        if (restartConfirmPopup.activeInHierarchy)
-            _uiManager.JumpOutAnimation(restartConfirmPopup);
+        if (pausePopup.activeInHierarchy)
+            _uiManager.JumpOutAnimation(pausePopup);
         if (restartPopup.activeInHierarchy)
             _uiManager.JumpOutAnimation(restartPopup);
+        if (restartConfirmPopup.activeInHierarchy)
+            _uiManager.JumpOutAnimation(restartConfirmPopup);
         if (quitPopup.activeInHierarchy)
             _uiManager.JumpOutAnimation(quitPopup);
+        if (quitConfirmPopup.activeInHierarchy)
+            _uiManager.JumpOutAnimation(quitConfirmPopup);
         _controller.UnblockInteraction();
         blackBg.SetActive(false);
     }
@@ -135,14 +142,26 @@ public class BarTopManager : MonoBehaviour
 
     private void HandlePlayAgain()
     {
-        _uiManager.JumpInAnimation(restartPopup);
+        _uiManager.JumpOutAnimation(restartPopup);
         SceneManager.LoadSceneAsync("Transition");
+    }
+
+    private void HandleQuitRequest()
+    {
+        _uiManager.JumpOutAnimation(pausePopup);
+        _uiManager.JumpInAnimation(quitConfirmPopup);
+    }
+
+    private void HandleQuitConfirm()
+    {
+        quitPopup.SetActive(true);
+        quitConfirmPopup.SetActive(false);
     }
 
     private void HandleQuit()
     {
-        _uiManager.JumpOutAnimation(pausePopup);
-        _uiManager.JumpInAnimation(quitPopup);
+        _uiManager.JumpOutAnimation(quitPopup);
+        SceneManager.LoadSceneAsync("Home");
     }
 
     private void HandleBusyChanged(bool isBusy)
