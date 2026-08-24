@@ -46,7 +46,7 @@ namespace Assets.Scripts.UI
             _input.HandleInput(pos);
         }
 
-        public void JumpInAnimation(GameObject obj)
+        public void JumpInAnimation(GameObject obj, Action onComplete = null)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();
@@ -63,10 +63,10 @@ namespace Assets.Scripts.UI
             canvasGroup.blocksRaycasts = true;
 
             rectTransform.DOScale(Vector3.one, boostersAnimation).SetEase(Ease.OutBack);
-            canvasGroup.DOFade(1f, boostersAnimation).SetEase(Ease.OutQuad);
+            canvasGroup.DOFade(1f, boostersAnimation).SetEase(Ease.OutQuad).OnComplete(() => { onComplete?.Invoke(); });
         }
         
-        public void JumpOutAnimation(GameObject obj)
+        public void JumpOutAnimation(GameObject obj, Action onComplete = null)
         {
             var canvasGroup = obj.GetComponent<CanvasGroup>();
             var rectTransform = obj.GetComponent<RectTransform>();
@@ -81,6 +81,7 @@ namespace Assets.Scripts.UI
             canvasGroup.DOFade(0f, boostersAnimation).SetEase(Ease.InQuad).OnComplete(() =>
             {
                 obj.SetActive(false);
+                onComplete?.Invoke();
             });
         }
 

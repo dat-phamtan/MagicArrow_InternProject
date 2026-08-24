@@ -145,8 +145,12 @@ public class BarTopManager : MonoBehaviour
 
     private void HandlePlayAgain()
     {
-        _uiManager.JumpOutAnimation(restartPopup);
-        SceneManager.LoadSceneAsync("Transition");
+        //_uiManager.JumpOutAnimation(restartPopup);
+        blackBg.SetActive(false);
+        _uiManager.JumpOutAnimation(restartPopup, () =>
+        {
+            SceneManager.LoadSceneAsync("Transition");
+        });
     }
 
     private void HandleQuitRequest()
@@ -165,8 +169,12 @@ public class BarTopManager : MonoBehaviour
 
     private void HandleQuit()
     {
-        _uiManager.JumpOutAnimation(quitPopup);
-        SceneManager.LoadSceneAsync("Home");
+        //_uiManager.JumpOutAnimation(quitPopup);
+        blackBg.SetActive(false);
+        _uiManager.JumpOutAnimation(quitPopup, () =>
+        {
+            SceneManager.LoadSceneAsync("Home");
+        });
     }
 
     private void HandleBusyChanged(bool isBusy)
