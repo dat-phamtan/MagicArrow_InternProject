@@ -43,6 +43,8 @@ public class LoadingScene : MonoBehaviour
     {
         var token = this.GetCancellationTokenOnDestroy();
         _ = FakeLoading(token);
+
+        await DataHelper.CheckFileExist();
         ServicesInit();
 
         await UniTask.SwitchToThreadPool();
