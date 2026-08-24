@@ -67,6 +67,8 @@ public class HomeScene : MonoBehaviour
         languageBtn.onClick.RemoveListener(HandleShowLanguage);
         foreach (var exit in exitBtns)
             exit.onClick.RemoveListener(HandleExit);
+        if (_homeUI != null)
+            _homeUI.OnSnappedAt -= HandleSnapped;
     }
 
     public void Start()
@@ -77,6 +79,8 @@ public class HomeScene : MonoBehaviour
         _playerData = _controller.GetPlayerData();
 
         _homeUI.OnSnappedAt += HandleSnapped;
+        greenBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
+        orangeBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
 
         coinValue.text = _playerData.Gold.ToString();
         heartValue.text = _playerData.Heart.ToString();
@@ -132,7 +136,7 @@ public class HomeScene : MonoBehaviour
         if (snappedLevelData.LevelState == LevelState.COMPLETED)
         {
             greenBtn.SetActive(true);
-            greenBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
+            //greenBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
             orangeBtn.SetActive(false);
             var texts = greenBtn.GetComponentsInChildren<TextMeshProUGUI>();
             texts[0].text = "Replay";
@@ -141,7 +145,7 @@ public class HomeScene : MonoBehaviour
         else
         {
             orangeBtn.SetActive(true);
-            orangeBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
+            //orangeBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
             greenBtn.SetActive(false);
             var texts = orangeBtn.GetComponentsInChildren<TextMeshProUGUI>();
             texts[0].text = "Replay";
@@ -162,8 +166,11 @@ public class HomeScene : MonoBehaviour
     private void HandleUnplayLevelSnapped()
     {
         greenBtn.SetActive(true);
-        greenBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
+        var btn = greenBtn.GetComponentInChildren<Button>();
+        btn.onClick.RemoveListener(HandleHomeBtnClicked);
+        btn.onClick.AddListener(HandleHomeBtnClicked);
         orangeBtn.SetActive(false);
+
         var texts = greenBtn.GetComponentsInChildren<TextMeshProUGUI>();
         texts[0].text = "Play";
         texts[1].text = "Level " + _playerData.CurrentLevelId.ToString();
@@ -229,7 +236,7 @@ public class HomeScene : MonoBehaviour
     {
         var levelData = GetLevelDataAt(_currentIndex);
         _controller.LoadBoardData(levelData.BoardData);
-        Debug.Log(levelData);
+        DG.Tweening.DOTween.KillAll();
         SceneManager.LoadSceneAsync("Transition");
     }
     
