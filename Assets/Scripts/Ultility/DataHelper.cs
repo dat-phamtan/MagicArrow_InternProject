@@ -12,7 +12,7 @@ namespace Assets.Scripts.Ultility
 {
     public static class DataHelper
     {
-        private const string CONFIG_FILE_NAME = "PlayerData.json";
+        private const string CONFIG_FILE_NAME = "PlayerData";
         public static async UniTask CheckFileExist()
         {
             string path = Path.Combine(Application.persistentDataPath, CONFIG_FILE_NAME);
@@ -20,15 +20,15 @@ namespace Assets.Scripts.Ultility
                 return;
 
             string sourcePath = Path.Combine(Application.streamingAssetsPath, CONFIG_FILE_NAME);
-        #if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
             using var request = UnityWebRequest.Get(sourcePath);
             await request.SendWebRequest();
             File.WriteAllBytes(path, request.downloadHandler.data);
-        #else
+#else
             if (File.Exists(sourcePath))
                 File.Copy(sourcePath, path);
             await UniTask.CompletedTask;
-        #endif
+#endif
         }
     }
 }
