@@ -136,8 +136,11 @@ public class BarTopManager : MonoBehaviour
 
     private void HandlePlayAgainConfirm()
     {
-        restartPopup.SetActive(true);
-        restartConfirmPopup.SetActive(false);
+        //restartPopup.SetActive(true);
+        //restartConfirmPopup.SetActive(false);
+        _uiManager.JumpOutAnimation(restartConfirmPopup);
+        _uiManager.JumpInAnimation(restartPopup);
+        
     }
 
     private void HandlePlayAgain()
@@ -154,8 +157,10 @@ public class BarTopManager : MonoBehaviour
 
     private void HandleQuitConfirm()
     {
-        quitPopup.SetActive(true);
-        quitConfirmPopup.SetActive(false);
+        //quitPopup.SetActive(true);
+        //quitConfirmPopup.SetActive(false);
+        _uiManager.JumpOutAnimation(quitConfirmPopup);
+        _uiManager.JumpInAnimation(quitPopup);
     }
 
     private void HandleQuit()

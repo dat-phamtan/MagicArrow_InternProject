@@ -4,6 +4,7 @@ using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
 using System;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -15,7 +16,6 @@ public class HomeScene : MonoBehaviour
     public TextMeshProUGUI starValue;
     public TextMeshProUGUI heartRegenTime;
 
-
     public GameObject greenBtn;
     public GameObject orangeBtn;
 
@@ -24,16 +24,26 @@ public class HomeScene : MonoBehaviour
     public GameObject purpleLabel;
     public TextMeshProUGUI stateText;
 
-    public float levelSpacing = 50f;
+    //setting
+    public Button settingBtn;
+    public GameObject blackBg;
+    public GameObject settingsPopup;
+    public GameObject languagePopup;
+    public Button languageBtn;
+    public Button[] exitBtns;
 
+
+    public float levelSpacing = 50f;
     public GameObject levels;
     public RectTransform snapTarget;
     
     private InputSystem_Actions _inputActions;
     private IController _controller;
     private IHomeUI _homeUI;
+    private IGamePlayUI _uiManager;
     private PlayerData _playerData;
     private int _currentIndex = -1;
+    private bool _isLangugePopup = false;
 
 
     public void Awake()
@@ -44,17 +54,26 @@ public class HomeScene : MonoBehaviour
     public void OnEnable()
     {
         _inputActions.Enable();
+        settingBtn.onClick.AddListener(HandleShowSettings);
+        languageBtn.onClick.AddListener(HandleShowLanguage);
+        foreach (var exit in exitBtns)
+            exit.onClick.AddListener(HandleExit);
     }
 
     public void OnDisable()
     {
         _inputActions.Disable();
+        settingBtn.onClick.RemoveListener(HandleShowSettings);
+        languageBtn.onClick.RemoveListener(HandleShowLanguage);
+        foreach (var exit in exitBtns)
+            exit.onClick.RemoveListener(HandleExit);
     }
 
     public void Start()
     {
         _controller = Locator.Get<IController>();
         _homeUI = Locator.Get<IHomeUI>();
+        _uiManager = Locator.Get<IGamePlayUI>();
         _playerData = _controller.GetPlayerData();
 
         _homeUI.OnSnappedAt += HandleSnapped;
@@ -65,6 +84,33 @@ public class HomeScene : MonoBehaviour
         heartRegenTime.text = _playerData.RegenHour.ToString() + ":" + _playerData.RegenMinute.ToString();
 
         HandleSnapped(_playerData.CurrentLevelId);
+    }
+
+    private void HandleExit()
+    {
+        if (_isLangugePopup)
+        {
+            _uiManager.JumpOutAnimation(languagePopup);
+            _isLangugePopup = false;
+            return;
+        }
+            
+        if (settingsPopup.activeInHierarchy)
+            _uiManager.JumpOutAnimation(settingsPopup);
+        blackBg.SetActive(false);
+    }
+
+    private void HandleShowSettings()
+    {
+        blackBg.SetActive(true);
+        _uiManager.JumpInAnimation(settingsPopup);
+    }
+
+    private void HandleShowLanguage()
+    {
+        //_uiManager.JumpOutAnimation(settingsPopup);
+        _uiManager.JumpInAnimation(languagePopup);
+        _isLangugePopup = true;
     }
 
     private void HandleSnapped(int index)
