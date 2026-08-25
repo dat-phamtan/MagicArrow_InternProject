@@ -1,20 +1,18 @@
 using Assets.Scripts.Boosters;
 using Assets.Scripts.Config;
 using Assets.Scripts.CoreLogic;
-using Assets.Scripts.Data;
 using Assets.Scripts.Input;
 using Assets.Scripts.IO;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
-using System.Collections;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Threading;
 using UnityEngine.SceneManagement;
-using UnityEngine.InputSystem.Controls;
 using Assets.Scripts.Ultility;
+using Assets.Scripts.Sound;
 
 public class LoadingScene : MonoBehaviour
 {
@@ -46,10 +44,10 @@ public class LoadingScene : MonoBehaviour
 
         await DataHelper.CheckFileExist();
         ServicesInit();
-
         await UniTask.SwitchToThreadPool();
         await LoadPlayerData();
         await UniTask.SwitchToMainThread();
+        SoundDataInit();
 
         var op = SceneManager.LoadSceneAsync("Home");
         op.allowSceneActivation = false;
@@ -60,9 +58,8 @@ public class LoadingScene : MonoBehaviour
         //await UniTask.Delay(2000, cancellationToken: token);
         _isLoadCompleted = true;
         while (slider.value < maximumFakeLoading)
-        {
             await UniTask.Yield(PlayerLoopTiming.Update, token);
-        }
+
         _isDone = true;
         slider.value = 1f;
         loadingText.text = "Completed";
@@ -101,6 +98,16 @@ public class LoadingScene : MonoBehaviour
     {
         var controller = Locator.Get<IController>();
         controller.LoadPlayerData();
+    }
+
+    private void SoundDataInit()
+    {
+        var controller = Locator.Get<IController>();
+        var soundManager = Locator.Get<ISoundManager>();
+        var storage = Locator.Get<IStorage>();
+        var settingData = controller.GetPlayerData().Setting;
+        soundManager.Init(storage, settingData);
+        soundManager.BindingEvents(controller);
     }
 
     private void ServicesInit()

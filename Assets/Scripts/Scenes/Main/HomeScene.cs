@@ -1,5 +1,6 @@
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
+using Assets.Scripts.Sound;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
 using System;
@@ -29,7 +30,10 @@ public class HomeScene : MonoBehaviour
     public GameObject blackBg;
     public GameObject settingsPopup;
     public GameObject languagePopup;
+
     public Button languageBtn;
+    public Button musicBtn;
+    public Button soundEffectBtn;
     public Button[] exitBtns;
 
 
@@ -41,6 +45,7 @@ public class HomeScene : MonoBehaviour
     private IController _controller;
     private IHomeUI _homeUI;
     private IGamePlayUI _uiManager;
+    private ISoundManager _soundManager;
     private PlayerData _playerData;
     private int _currentIndex = -1;
     private bool _isLangugePopup = false;
@@ -56,6 +61,8 @@ public class HomeScene : MonoBehaviour
         _inputActions.Enable();
         settingBtn.onClick.AddListener(HandleShowSettings);
         languageBtn.onClick.AddListener(HandleShowLanguage);
+        musicBtn.onClick.AddListener(HandleMusicBtnClicked);
+        soundEffectBtn.onClick.AddListener(HandleSfxBtnClicked);
         foreach (var exit in exitBtns)
             exit.onClick.AddListener(HandleExit);
     }
@@ -65,6 +72,8 @@ public class HomeScene : MonoBehaviour
         _inputActions.Disable();
         settingBtn.onClick.RemoveListener(HandleShowSettings);
         languageBtn.onClick.RemoveListener(HandleShowLanguage);
+        musicBtn.onClick.RemoveListener(HandleMusicBtnClicked);
+        soundEffectBtn.onClick.RemoveListener(HandleSfxBtnClicked);
         foreach (var exit in exitBtns)
             exit.onClick.RemoveListener(HandleExit);
         if (_homeUI != null)
@@ -76,7 +85,11 @@ public class HomeScene : MonoBehaviour
         _controller = Locator.Get<IController>();
         _homeUI = Locator.Get<IHomeUI>();
         _uiManager = Locator.Get<IGamePlayUI>();
+        _soundManager = Locator.Get<ISoundManager>();
         _playerData = _controller.GetPlayerData();
+
+        //sound
+        Locator.Get<ISoundManager>().PlayMusic(MusicId.HomeTheme);
 
         _homeUI.OnSnappedAt += HandleSnapped;
         greenBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
@@ -90,8 +103,25 @@ public class HomeScene : MonoBehaviour
         HandleSnapped(_playerData.CurrentLevelId);
     }
 
+    private void HandleMusicBtnClicked()
+    {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
+        var disable = musicBtn.transform.Find("Diable").gameObject;
+        disable.SetActive(!disable.activeInHierarchy);
+        _soundManager.SetMusicMuted(!_soundManager.IsMuteMusic);
+    }
+
+    private void HandleSfxBtnClicked()
+    {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
+        var disable = soundEffectBtn.transform.Find("Diable").gameObject;
+        disable.SetActive(!disable.activeInHierarchy);
+        _soundManager.SetSfxMuted(!_soundManager.IsMuteSoundEffect);
+    }
+
     private void HandleExit()
     {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         if (_isLangugePopup)
         {
             _uiManager.JumpOutAnimation(languagePopup);
@@ -106,6 +136,7 @@ public class HomeScene : MonoBehaviour
 
     private void HandleShowSettings()
     {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         blackBg.SetActive(true);
         _uiManager.JumpInAnimation(settingsPopup);
     }
@@ -113,6 +144,7 @@ public class HomeScene : MonoBehaviour
     private void HandleShowLanguage()
     {
         //_uiManager.JumpOutAnimation(settingsPopup);
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         _uiManager.JumpInAnimation(languagePopup);
         _isLangugePopup = true;
     }
@@ -234,9 +266,11 @@ public class HomeScene : MonoBehaviour
 
     private void HandleHomeBtnClicked()
     {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         var levelData = GetLevelDataAt(_currentIndex);
         _controller.LoadBoardData(levelData.BoardData);
         DG.Tweening.DOTween.KillAll();
+        Locator.Get<ISoundManager>().StopMusic();
         SceneManager.LoadSceneAsync("Transition");
     }
     

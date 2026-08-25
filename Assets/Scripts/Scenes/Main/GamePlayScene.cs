@@ -1,5 +1,6 @@
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
+using Assets.Scripts.Sound;
 using Assets.Scripts.UI;
 using Assets.Scripts.Ultility;
 using Assets.Scripts.Utility;
@@ -52,6 +53,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private IController _controller;
     private IGamePlayUI _uiManager;
+    //private ISoundManager _soundManager;
 
     //private IArrowAssember _arrowAssember;
     private InputSystem_Actions _inputActions;
@@ -74,6 +76,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         _controller = Locator.Get<IController>();
         _uiManager = Locator.Get<IGamePlayUI>();
+        //_soundManager = Locator.Get<ISoundManager>();
 
         //_arrowAssember = new ArrowAssembler();
         _inputActions = new InputSystem_Actions();
@@ -97,6 +100,9 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         popUpManager.Init(_controller, this);
         cameraModifier.Init(this, _boardWidth, _boardHeight, spacing);
         cameraModifier.FitCamera();
+
+        //sound
+        Locator.Get<ISoundManager>().PlayMusic(MusicId.GamePlayTheme);
         //Locator.Register<ICamera>(cameraModifier);
 
         //_uiManager.ShowUI(boosterBar);

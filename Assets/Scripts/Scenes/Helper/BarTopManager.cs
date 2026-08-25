@@ -1,5 +1,6 @@
 using Assets.Scripts.Boosters;
 using Assets.Scripts.CoreLogic;
+using Assets.Scripts.Sound;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
 using System;
@@ -46,6 +47,7 @@ public class BarTopManager : MonoBehaviour
     private IController _controller;
     private IGamePlayUI _uiManager;
     private IBoostersManager _boostersManager;
+    private ISoundManager _soundManager;
     private bool _isRestartConfirmed = false;
     private bool _isQuitConfirmed; 
 
@@ -58,6 +60,8 @@ public class BarTopManager : MonoBehaviour
         quitBtn1.onClick.AddListener(HandleQuitRequest);
         quitBtn2.onClick.AddListener(HandleQuitConfirm);
         quitBtn3.onClick.AddListener(HandleQuit);
+        musicBtn.onClick.AddListener(HandleMusicBtnClicked);
+        soundEffectBtn.onClick.AddListener(HandleSfxBtnClicked);
         foreach (var resume in resumeBtn)
             resume.onClick.AddListener(HandleResume);
         foreach (var exit in popupTurnOffBtn)
@@ -68,6 +72,7 @@ public class BarTopManager : MonoBehaviour
     {
         _controller = Locator.Get<IController>();
         _uiManager = Locator.Get<IGamePlayUI>();
+        _soundManager = Locator.Get<ISoundManager>();
         _boostersManager = Locator.Get<IBoostersManager>();
         _controller.OnLoseHeart += HandleLoseHeart;
         _controller.OnReset += HandleReset;
@@ -88,6 +93,8 @@ public class BarTopManager : MonoBehaviour
         quitBtn1.onClick.RemoveListener(HandleQuitRequest);
         quitBtn2.onClick.RemoveListener(HandleQuitConfirm);
         quitBtn3.onClick.RemoveListener(HandleQuit);
+        musicBtn.onClick.RemoveListener(HandleMusicBtnClicked);
+        soundEffectBtn.onClick.RemoveListener(HandleSfxBtnClicked);
         foreach (var resume in resumeBtn)
             resume.onClick.RemoveListener(HandleResume);
         foreach (var exit in popupTurnOffBtn)
@@ -107,6 +114,7 @@ public class BarTopManager : MonoBehaviour
 
     private void HandlePauseClicked()
     {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         _uiManager.JumpInAnimation(pausePopup);
         _controller.BlockInteraction();
         blackBg.SetActive(true);
@@ -114,6 +122,7 @@ public class BarTopManager : MonoBehaviour
 
     private void HandleResume()
     {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         if (pausePopup.activeInHierarchy)
             _uiManager.JumpOutAnimation(pausePopup);
         if (restartPopup.activeInHierarchy)
@@ -128,27 +137,45 @@ public class BarTopManager : MonoBehaviour
         blackBg.SetActive(false);
     }
 
+    private void HandleMusicBtnClicked()
+    {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
+        var disable = musicBtn.transform.Find("Disable").gameObject;
+        disable.SetActive(!disable.activeInHierarchy);
+        _soundManager.SetMusicMuted(!_soundManager.IsMuteMusic);
+    }
+
+    private void HandleSfxBtnClicked()
+    {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
+        var disable = soundEffectBtn.transform.Find("Disable").gameObject;
+        disable.SetActive(!disable.activeInHierarchy);
+        _soundManager.SetSfxMuted(!_soundManager.IsMuteSoundEffect);
+    }
+
     private void HandlePlayAgainRequest()
     {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         _uiManager.JumpOutAnimation(pausePopup);
         _uiManager.JumpInAnimation(restartConfirmPopup);
     }
 
     private void HandlePlayAgainConfirm()
     {
-        //restartPopup.SetActive(true);
-        //restartConfirmPopup.SetActive(false);
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         _uiManager.JumpOutAnimation(restartConfirmPopup);
         _uiManager.JumpInAnimation(restartPopup);
-        
+
     }
 
     private void HandlePlayAgain()
     {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         //_uiManager.JumpOutAnimation(restartPopup);
         blackBg.SetActive(false);
         _uiManager.JumpOutAnimation(restartPopup, () =>
         {
+            Locator.Get<ISoundManager>().StopMusic();
             TransitionScene.NextSceneOverride = "GamePlay";
             SceneManager.LoadSceneAsync("Transition");
         });
@@ -156,24 +183,25 @@ public class BarTopManager : MonoBehaviour
 
     private void HandleQuitRequest()
     {
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         _uiManager.JumpOutAnimation(pausePopup);
         _uiManager.JumpInAnimation(quitConfirmPopup);
     }
 
     private void HandleQuitConfirm()
     {
-        //quitPopup.SetActive(true);
-        //quitConfirmPopup.SetActive(false);
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         _uiManager.JumpOutAnimation(quitConfirmPopup);
         _uiManager.JumpInAnimation(quitPopup);
     }
 
     private void HandleQuit()
     {
-        //_uiManager.JumpOutAnimation(quitPopup);
+        _soundManager.PlaySfx(SfxId.ButtonClick);
         blackBg.SetActive(false);
         _uiManager.JumpOutAnimation(quitPopup, () =>
         {
+            Locator.Get<ISoundManager>().StopMusic();
             TransitionScene.NextSceneOverride = "Home";
             SceneManager.LoadSceneAsync("Transition");
         });
