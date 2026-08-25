@@ -14,11 +14,20 @@ public class TransitionScene : MonoBehaviour
     public float animationTimeout = 3f;
 
     private IGamePlayUI _uiManager;
+    public static string NextSceneOverride = null;
 
     private async UniTaskVoid Start()
     {
         var token = this.GetCancellationTokenOnDestroy();
-        var op = SceneManager.LoadSceneAsync(nextSceneName);
+
+        string targetSceneName = nextSceneName;
+        if (!string.IsNullOrEmpty(NextSceneOverride))
+        {
+            targetSceneName = NextSceneOverride;
+            NextSceneOverride = null;
+        }
+
+        var op = SceneManager.LoadSceneAsync(targetSceneName);
         op.allowSceneActivation = false;
 
         _uiManager = Locator.Get<IGamePlayUI>();

@@ -149,6 +149,7 @@ public class BarTopManager : MonoBehaviour
         blackBg.SetActive(false);
         _uiManager.JumpOutAnimation(restartPopup, () =>
         {
+            TransitionScene.NextSceneOverride = "GamePlay";
             SceneManager.LoadSceneAsync("Transition");
         });
     }
@@ -173,7 +174,8 @@ public class BarTopManager : MonoBehaviour
         blackBg.SetActive(false);
         _uiManager.JumpOutAnimation(quitPopup, () =>
         {
-            SceneManager.LoadSceneAsync("Home");
+            TransitionScene.NextSceneOverride = "Home";
+            SceneManager.LoadSceneAsync("Transition");
         });
     }
 
