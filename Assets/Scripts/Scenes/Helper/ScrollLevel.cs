@@ -21,6 +21,8 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
     public float snapDuration = 0.3f;
     public float velocityThreshold = 20f;
 
+    private const string SnapPointName = "SnapPoint";
+
     private Coroutine _snapCoroutine;
     private PlayerData _playerData;
     private IController _controller;
@@ -69,16 +71,17 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
                 _ => greenPodium,
             };
 
-            
             if (levelData[i].LevelId == _playerData.CurrentLevelId)
                 currentPrefab = currentPodium;
-                
 
             var newLevelItem = Instantiate(currentPrefab, contentTransform);
             newLevelItem.name = "Level_" + (i + 1);
             newLevelItem.GetComponentInChildren<Button>();
-            
-            _homeUI.RegisterItem(levelData[i].LevelId, newLevelItem.GetComponent<RectTransform>());
+
+            // Dùng SnapPoint làm mốc snap thay vì root RectTransform,
+            // để không phụ thuộc anchor/pivot/stretch của item.
+            RectTransform snapAnchor = FindSnapPoint(newLevelItem.transform);
+            _homeUI.RegisterItem(levelData[i].LevelId, snapAnchor);
 
             var text = newLevelItem.GetComponentInChildren<TextMeshProUGUI>();
             text.text = levelData[i].LevelId.ToString();
@@ -97,5 +100,15 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
                 fillStars[k].enabled = false;
             }
         }
+    }
+
+    private RectTransform FindSnapPoint(Transform root)
+    {
+        var found = root.Find(SnapPointName) as RectTransform;
+        if (found != null)
+            return found;
+
+        Debug.LogWarning($"[SnapHandler] Prefab '{root.name}' thiếu child '{SnapPointName}', tạm dùng root làm điểm snap (có thể bị lệch).");
+        return root.GetComponent<RectTransform>();
     }
 }
