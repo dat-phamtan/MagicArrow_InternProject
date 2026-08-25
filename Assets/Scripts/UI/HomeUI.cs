@@ -48,6 +48,7 @@ namespace Assets.Scripts.UI
         public void ClearItem()
         {
             _items.Clear();
+            _itemsIndices.Clear();
         }
 
         public IEnumerator Snap()

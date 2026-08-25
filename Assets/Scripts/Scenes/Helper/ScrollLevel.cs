@@ -78,10 +78,9 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
             newLevelItem.name = "Level_" + (i + 1);
             newLevelItem.GetComponentInChildren<Button>();
 
-            // Dùng SnapPoint làm mốc snap thay vì root RectTransform,
-            // để không phụ thuộc anchor/pivot/stretch của item.
-            RectTransform snapAnchor = FindSnapPoint(newLevelItem.transform);
-            _homeUI.RegisterItem(levelData[i].LevelId, snapAnchor);
+            //RectTransform snapAnchor = FindSnapPoint(newLevelItem.transform);
+            //_homeUI.RegisterItem(levelData[i].LevelId, snapAnchor);
+            _homeUI.RegisterItem(levelData[i].LevelId, newLevelItem.GetComponent<RectTransform>());
 
             var text = newLevelItem.GetComponentInChildren<TextMeshProUGUI>();
             text.text = levelData[i].LevelId.ToString();
