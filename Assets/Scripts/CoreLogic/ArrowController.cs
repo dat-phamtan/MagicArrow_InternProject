@@ -262,6 +262,16 @@ namespace Assets.Scripts.CoreLogic
             LoadMatrixes();
             CurveCorrection();
             RegisterAction();
+            ResetRuntimeState();
+        }
+
+        private void ResetRuntimeState()
+        {
+            _isBgInteractBlock = false;
+            _isWaitingForEraserBooster = false;
+            _heart = 3;
+            _numAnimationSuccess = 0;
+            _numAnimationFail = 0;
         }
 
         //temp
