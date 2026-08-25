@@ -78,9 +78,9 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
             newLevelItem.name = "Level_" + (i + 1);
             newLevelItem.GetComponentInChildren<Button>();
 
-            //RectTransform snapAnchor = FindSnapPoint(newLevelItem.transform);
-            //_homeUI.RegisterItem(levelData[i].LevelId, snapAnchor);
-            _homeUI.RegisterItem(levelData[i].LevelId, newLevelItem.GetComponent<RectTransform>());
+            RectTransform snapAnchor = FindSnapPoint(newLevelItem.transform);
+            _homeUI.RegisterItem(levelData[i].LevelId, snapAnchor);
+            //_homeUI.RegisterItem(levelData[i].LevelId, newLevelItem.GetComponent<RectTransform>());
 
             var text = newLevelItem.GetComponentInChildren<TextMeshProUGUI>();
             text.text = levelData[i].LevelId.ToString();
