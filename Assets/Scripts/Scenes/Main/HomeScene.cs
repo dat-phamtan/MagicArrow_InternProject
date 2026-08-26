@@ -101,6 +101,15 @@ public class HomeScene : MonoBehaviour
         heartRegenTime.text = _playerData.RegenHour.ToString() + ":" + _playerData.RegenMinute.ToString();
 
         HandleSnapped(_playerData.CurrentLevelId);
+        HandleSettingsInit();
+    }
+
+    private void HandleSettingsInit()
+    {
+        if (_soundManager.IsMuteMusic)
+            musicBtn.transform.Find("Diable").gameObject.SetActive(true);
+        if (_soundManager.IsMuteSoundEffect)
+            soundEffectBtn.transform.Find("Diable").gameObject.SetActive(true);
     }
 
     private void HandleMusicBtnClicked()

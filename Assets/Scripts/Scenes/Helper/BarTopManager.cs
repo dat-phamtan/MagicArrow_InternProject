@@ -81,7 +81,7 @@ public class BarTopManager : MonoBehaviour
         _boostersManager.OnBoosterBusyChanged += HandleBusyChanged;
         PositionInit();
         HandleShowBarTop();
-        
+        HandleSettingsInit();
     }
 
     private void OnDisable()
@@ -110,6 +110,14 @@ public class BarTopManager : MonoBehaviour
 
         if (_boostersManager != null)
             _boostersManager.OnBoosterBusyChanged -= HandleBusyChanged;
+    }
+
+    private void HandleSettingsInit()
+    {
+        if (_soundManager.IsMuteMusic)
+            musicBtn.transform.Find("Disable").gameObject.SetActive(true);
+        if (_soundManager.IsMuteSoundEffect)
+            soundEffectBtn.transform.Find("Disable").gameObject.SetActive(true);
     }
 
     private void HandlePauseClicked()

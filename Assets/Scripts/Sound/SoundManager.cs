@@ -3,12 +3,8 @@ using Assets.Scripts.Data;
 using Assets.Scripts.IO;
 using Assets.Scripts.Sound;
 using Assets.Scripts.Utility;
-using NUnit.Framework;
-using NUnit.Framework.Internal;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -48,6 +44,11 @@ public class SoundManager : MonoBehaviour, ISoundManager
         BuildDictionary();
         BuildSfxPool();
         BuildMusicSources();
+    }
+
+    private void OnDisable()
+    {
+        SaveSoundSetting();
     }
 
     //INIT
@@ -205,8 +206,7 @@ public class SoundManager : MonoBehaviour, ISoundManager
     public void SetMusicMuted(bool isMuted)
     {
         IsMuteMusic = isMuted;
-        _activeMusicSource.volume = isMuted ? 0f : 1f;  
-        
+        _activeMusicSource.volume = isMuted ? 0f : 1f;    
     }
 
     public void SetSfxMuted(bool isMuted)
@@ -223,8 +223,6 @@ public class SoundManager : MonoBehaviour, ISoundManager
         playerData.Setting.IsMuteSoundEffect = IsMuteSoundEffect;
         _storage.Save("PlayerData", playerData);
     }
-
-
 
     
 }
