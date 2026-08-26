@@ -1,5 +1,6 @@
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
+using Assets.Scripts.IO;
 using Assets.Scripts.Sound;
 using Assets.Scripts.UI;
 using Assets.Scripts.Ultility;
@@ -58,6 +59,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private List<Vector2> _arrowPosOut;
 
     //lose
+    private const int StarCost = 420;
+    private const int HeartCost = 450;
     public GameObject lose1Popup;
     public Button starAdBtn1;
     public Button starAdBtn2;
@@ -183,10 +186,11 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnVictory -= PlayWin1Animation;
         next.onClick.RemoveListener(HandleNextLevel);
         watchAd.onClick.RemoveListener(HandleWatchAd);
-        foreach (var btn in starAdBtn)
-            btn.onClick.RemoveListener(HandleAdStar);
-        foreach (var btn in starBuyBtn)
-            btn.onClick.RemoveListener(HandleBuyStar);
+
+        starAdBtn1.onClick.RemoveListener(HandleAdStar1);
+        starAdBtn2.onClick.RemoveListener(HandleAdStar2);
+        starBuyBtn1.onClick.RemoveListener(HandleBuyStar1);
+        starBuyBtn2.onClick.RemoveListener(HandleBuyStar2);
         heartAdBtn.onClick.RemoveListener(HandleAdHeart);
         heartBuyBtn.onClick.RemoveListener(HandleBuyHeart);
         retryBtn.onClick.RemoveListener(HandleRetry);
@@ -199,57 +203,99 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void HandleMoveLoseConfirm()
     {
-        //turn on the lose2Popup and turn off the lose1Popup
+        _uiManager.JumpOutAnimation(lose1Popup);
+        _uiManager.JumpInAnimation(lose2Popup);
     }
 
     private void HandleMoveLoseFail()
     {
-        //turn on the lose3Popup and turn off the lose2Popup
+        _uiManager.JumpOutAnimation(lose2Popup);
+        _uiManager.JumpInAnimation(lose3Popup);
     }
 
     private void HandleBackHome()
     {
-        //turn off the lose3Popup and back to HomeScene
+        _uiManager.JumpOutAnimation(lose3Popup, () => GoToScene("Home"));
     }
 
     private void HandleMoveBackLoseFail()
     {
-        //turn off the lose4Popup
+        _uiManager.JumpOutAnimation(lose4Popup);
     }
 
-    private void HandleAdStar1()
+    private void HandleAdStar1() => ContinueAfterAd(lose1Popup);
+    private void HandleAdStar2() => ContinueAfterAd(lose2Popup);
+
+    private void ContinueAfterAd(GameObject popup)
     {
-        //get back a star and continue playing (turn off lose1Popup)
+        _controller.RestoreHeart(1);
+        _uiManager.JumpOutAnimation(popup);
     }
 
-    private void HandleAdStar2()
-    {
-        //get back a star and continue playing (turn off lose2Popup)
-    }
+    private void HandleBuyStar1() => BuyContinue(lose1Popup);
+    private void HandleBuyStar2() => BuyContinue(lose2Popup);
 
-    private void HandleBuyStar1()
+    private void BuyContinue(GameObject popup)
     {
-        //get back 3 stars (if current gold greater than 420), minus 420 and continue plaing (turn off lose1Popup)
-    }
+        if (!TrySpendGold(StarCost))
+            return;
 
-    private void HandleBuyStar2()
-    {
-        //get back 3 stars (if current gold greater than 420), minus 420 and continue plaing (turn off lose2Popup)
+        _controller.RestoreHeart(3);
+        _uiManager.JumpOutAnimation(popup);
     }
 
     private void HandleAdHeart()
     {
-        //get a heart and turn back to lose3Popup
+        var data = GetPlayerData();
+        data.Heart++;
+        SavePlayerData();
     }
 
     private void HandleBuyHeart()
     {
-        //get a heart (if current gold greater than 450), minus 450 and back to lose3Popup
+        if (!TrySpendGold(HeartCost))
+            return;
+
+        var data = GetPlayerData();
+        data.Heart++;
+        SavePlayerData();
     }
 
     private void HandleRetry()
     {
-        //lose a heart and turn off the lose3Popup (if the heart = 0, turn on lose4Popup but not turn off the lose3Popup)
+        var data = GetPlayerData();
+        if (data.Heart <= 0)
+        {
+            _uiManager.JumpInAnimation(lose4Popup);
+            return; 
+        }
+
+        data.Heart--;
+        SavePlayerData();
+        _uiManager.JumpOutAnimation(lose3Popup, () => GoToScene("GamePlay"));
+    }
+
+    private void HandleNextLevel()
+    {
+        var data = GetPlayerData();
+        int nextLevelId = _controller.GetCurrentLevelIndex() + 1;
+        var nextLevel = Array.Find(data.CurrentLevelsData, l => l.LevelId == nextLevelId);
+
+        if (nextLevel == null)
+        {
+            GoToScene("Home"); 
+        }
+
+        data.CurrentLevelId = nextLevelId;
+        SavePlayerData();
+        _controller.SetCurrentLevelIndex(nextLevelId);
+        _controller.LoadBoardData(nextLevel.BoardData);
+        GoToScene("GamePlay");
+    }
+
+    private void HandleWatchAd()
+    {
+        watchAd.interactable = false;
     }
 
     private void Update()
@@ -319,7 +365,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         {
             while (_controller.GetFailAnimationNum() > 0)
                 yield return null;
-            OnTurnPopupOn?.Invoke("DEFEAT");
+            //OnTurnPopupOn?.Invoke("DEFEAT");
+            ShowLoseNotifcation();
         }
     }
 
@@ -625,20 +672,41 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             _uiManager.JumpInAnimation(rewards[i]);
     }
 
-    private void HandleNextLevel()
-    {
-
-    }
-
-    private void HandleWatchAd()
-    {
-
-    }
 
     //LOSE HANDLE
     private void ShowLoseNotifcation()
     {
         _uiManager.JumpInAnimation(lose1Popup);
+    }
+
+    //HELPER
+    private PlayerData GetPlayerData()
+    {
+        return _controller.GetPlayerData();
+    }
+
+    private void SavePlayerData()
+    {
+        Locator.Get<IStorage>().Save("PlayerData", GetPlayerData());
+    }
+
+    private bool TrySpendGold(int amount)
+    {
+        var data = GetPlayerData();
+        if (data.Gold < amount)
+            return false;
+
+        data.Gold -= amount;
+        SavePlayerData();
+        return true;
+    }
+
+    private void GoToScene(string sceneName)
+    {
+        DG.Tweening.DOTween.KillAll();
+        Locator.Get<ISoundManager>().StopMusic();
+        TransitionScene.NextSceneOverride = sceneName;
+        UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Transition");
     }
 
 }

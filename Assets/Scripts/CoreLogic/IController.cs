@@ -27,7 +27,8 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnHideBoosters;
         public event Action OnShowBoosters;
         public event Action OnHideEraserPopup;
-        public event Action OnVictory;  
+        public event Action OnVictory;
+        public event Action OnHeartRestored;
 
 
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager);
@@ -61,5 +62,6 @@ namespace Assets.Scripts.CoreLogic
         public void LoadPlayerData();
         public void SetCurrentLevelIndex(int currentLvlIndex);
         public int GetCurrentLevelIndex();
+        public void RestoreHeart(int amount = 1);
     }
 }

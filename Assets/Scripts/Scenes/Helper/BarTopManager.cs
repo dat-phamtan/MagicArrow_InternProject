@@ -78,6 +78,7 @@ public class BarTopManager : MonoBehaviour
         _controller.OnReset += HandleReset;
         _controller.OnShowBarTop += HandleShowBarTop;
         _controller.OnHideBarTop += HandleHideBarTop;
+        _controller.OnHeartRestored += HandleHeartRestored;
         _boostersManager.OnBoosterBusyChanged += HandleBusyChanged;
         PositionInit();
         HandleShowBarTop();
@@ -106,10 +107,17 @@ public class BarTopManager : MonoBehaviour
             _controller.OnReset -= HandleReset;
             _controller.OnShowBarTop -= HandleShowBarTop;
             _controller.OnHideBarTop -= HandleHideBarTop;
+            _controller.OnHeartRestored -= HandleHeartRestored;
         }
 
         if (_boostersManager != null)
             _boostersManager.OnBoosterBusyChanged -= HandleBusyChanged;
+    }
+    private void HandleHeartRestored()
+    {
+        numHeart = _controller.GetHeart();
+        for (int i = 0; i < stars.Length; i++)
+            stars[i].SetActive(i < numHeart);
     }
 
     private void HandleSettingsInit()

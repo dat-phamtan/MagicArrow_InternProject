@@ -60,6 +60,7 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnShowBoosters;
         public event Action OnHideEraserPopup;
         public event Action OnVictory;
+        public event Action OnHeartRestored;
 
         // implement interface
         public ArrowController(IConfig config, IStorage storage, IInput input, float spacing)
@@ -258,7 +259,13 @@ namespace Assets.Scripts.CoreLogic
         {
             return _currentLvl;
         }
-
+        public void RestoreHeart(int amount = 1)
+        {
+            _heart = Mathf.Min(_heart + amount, 3);
+            _isBgInteractBlock = false;
+            OnTurnPopupOff?.Invoke();
+            OnHeartRestored?.Invoke();
+        }
 
 
 
