@@ -277,6 +277,7 @@ public class HomeScene : MonoBehaviour
     {
         _soundManager.PlaySfx(SfxId.ButtonClick);
         var levelData = GetLevelDataAt(_currentIndex);
+        _controller.SetCurrentLevelIndex(_currentIndex);
         _controller.LoadBoardData(levelData.BoardData);
         DG.Tweening.DOTween.KillAll();
         Locator.Get<ISoundManager>().StopMusic();

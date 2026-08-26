@@ -7,6 +7,7 @@ using Assets.Scripts.Utility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -30,14 +31,24 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public GameObject tailPrefab;
     public GameObject dotPrefab;
 
-    //public GameObject magnifier;
-    //public GameObject eraser;
-
-
+    //border glow
     public Image glowHit;
     public float fadeInDuration = 0.05f; 
     public float waitDuration = 0.1f;     
     public float fadeOutDuration = 0.05f;
+
+    //win
+    public int arrowDecPos = 200;
+    public GameObject win1Panel;
+    public GameObject dataLabel;
+    public GameObject[] arrows;
+    public TextMeshProUGUI level;
+
+    public GameObject win2Panel;
+
+    private List<Vector2> _arrowPos;
+    
+
     private bool _isGlowing = false;
     private Coroutine _glowing;
 
@@ -49,13 +60,10 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private Vector2 _currentPos;
     private int _boardWidth;
     private int _boardHeight;
-    //private Tile _generatedCirleTile;
 
     private IController _controller;
     private IGamePlayUI _uiManager;
-    //private ISoundManager _soundManager;
 
-    //private IArrowAssember _arrowAssember;
     private InputSystem_Actions _inputActions;
 
     private BoardData _configData;
@@ -76,7 +84,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         _controller = Locator.Get<IController>();
         _uiManager = Locator.Get<IGamePlayUI>();
-        //_soundManager = Locator.Get<ISoundManager>();
 
         //_arrowAssember = new ArrowAssembler();
         _inputActions = new InputSystem_Actions();
@@ -85,6 +92,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _arrowPaths = new Dictionary<int, Vector3[]>();
         _curvedPath = new Dictionary<int, Vector3[]>();
         _cumulativeLength = new Dictionary<int, float[]>();
+        _arrowPos = new List<Vector2>();
     }
 
     void Start()
@@ -103,36 +111,35 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
         //sound
         Locator.Get<ISoundManager>().PlayMusic(MusicId.GamePlayTheme);
-        //Locator.Register<ICamera>(cameraModifier);
 
-        //_uiManager.ShowUI(boosterBar);
+        //win
+        ArrowDecorationInit();
+        LoadLevelData();
     }
 
     private void OnEnable()
     {
         _inputActions.Enable();
         _inputActions.UI.Tap.performed += HandlePlayZoneClicked;
-        //_inputActions.UI.Touch2Contact.performed += HandlePlayZoneClicked;
-
         _controller.OnMoveArrowSuccess += HandleMoveSuccess;
         _controller.OnMoveArrowFail += HandleMoveFail;
         _controller.OnEraseArrowAt += HandleEraseArrowAt;
         _controller.OnRerenderBoard += BoardInit;
         _controller.OnTurnPopupOn += TurnPopUp;
         _controller.OnLoseHeart += GlowHitAnimation;
+        _controller.OnVictory += PlayWin1Animation;
     }
 
     private void OnDisable()
     {
         _inputActions.UI.Tap.performed -= HandlePlayZoneClicked;
-        //_inputActions.UI.Touch2Contact.performed -= HandlePlayZoneClicked;
-
         _controller.OnMoveArrowSuccess -= HandleMoveSuccess;
         _controller.OnMoveArrowFail -= HandleMoveFail;
         _controller.OnEraseArrowAt -= HandleEraseArrowAt;
         _controller.OnRerenderBoard -= BoardInit;
         _controller.OnTurnPopupOn -= TurnPopUp;
         _controller.OnLoseHeart -= GlowHitAnimation;
+        _controller.OnVictory -= PlayWin1Animation;
         _inputActions.Disable();
     }
 
@@ -189,7 +196,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             previousPinchDistance = 0f;
         }
     }
-
 
     private IEnumerator WaitForAllArrowCoroutine(bool isWin)
     {
@@ -449,6 +455,39 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         OnCollidedAnimation?.Invoke(collidedArrowRoot);
     }
 
+    //WIN HANDLE
+    private void ArrowDecorationInit()
+    {
+        _arrowPos.Add(new Vector2(0, -arrowDecPos));
+        _arrowPos.Add(new Vector2(arrowDecPos, arrowDecPos));
+        _arrowPos.Add(new Vector2(0, -arrowDecPos));
+        _arrowPos.Add(new Vector2(-arrowDecPos, arrowDecPos));
+    }
 
+    private void LoadLevelData()
+    {
+        var levelData = _controller.GetCurrentLevelIndex();
+        level.text = "Level " + levelData.ToString();
+    }
+
+    private void PlayWin1Animation()
+    {
+        win1Panel.SetActive(true);
+        _uiManager.JumpInAnimation(dataLabel);
+        for (int i = 0; i < arrows.Length; i++)
+            _uiManager.MoveInAnimation(arrows[i], _arrowPos[i]);
+        for (int i = 0;i < arrows.Length; i++)
+            _uiManager.MoveOutAnimation(arrows[i], _arrowPos[i]);
+        _uiManager.JumpOutAnimation(dataLabel, () =>
+        {
+            PlayWin2Animation();
+        });
+    }
+
+    private void PlayWin2Animation()
+    {
+        win1Panel.SetActive(false);
+        win2Panel.SetActive(true);
+    }
 }
 

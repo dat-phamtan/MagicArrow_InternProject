@@ -45,6 +45,16 @@ public class SoundManager : MonoBehaviour, ISoundManager
         BuildSfxPool();
         BuildMusicSources();
     }
+    //private void OnApplicationPause(bool pauseStatus)
+    //{
+    //    if (pauseStatus)
+    //        SaveSoundSetting();
+    //}
+
+    //private void OnApplicationQuit()
+    //{
+    //    SaveSoundSetting();
+    //}
 
     private void OnDisable()
     {
@@ -68,7 +78,8 @@ public class SoundManager : MonoBehaviour, ISoundManager
         //controller.OnMoveArrowSuccess +=
         //controller.OnMoveArrowFail +=
         //controller.OnLoseHeart +=
-        //controller.OnTurnPopupOn +=
+        //controller.
+        //+=
     }
     
     private void BuildDictionary()
@@ -206,23 +217,29 @@ public class SoundManager : MonoBehaviour, ISoundManager
     public void SetMusicMuted(bool isMuted)
     {
         IsMuteMusic = isMuted;
-        _activeMusicSource.volume = isMuted ? 0f : 1f;    
+        _activeMusicSource.volume = isMuted ? 0f : 1f;   
+        //SaveSoundSetting();
     }
 
     public void SetSfxMuted(bool isMuted)
     {
         IsMuteSoundEffect = isMuted;
+        //SaveSoundSetting();
         
     }
 
     //SAVE SOUND SETTING
     private void SaveSoundSetting()
     {
+        if (_storage == null)
+            return;
+
         var playerData = _storage.Load<PlayerData>("PlayerData");
         playerData.Setting.IsMuteMusic = IsMuteMusic;
         playerData.Setting.IsMuteSoundEffect = IsMuteSoundEffect;
         _storage.Save("PlayerData", playerData);
     }
+
 
     
 }

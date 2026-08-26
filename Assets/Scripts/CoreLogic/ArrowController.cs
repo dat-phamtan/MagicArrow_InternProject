@@ -41,6 +41,7 @@ namespace Assets.Scripts.CoreLogic
         private int _heart = 3;
         private int _numAnimationSuccess = 0;
         private int _numAnimationFail = 0;
+        private int _currentLvl;
 
 
         public event Action<int> OnMoveArrowSuccess;
@@ -58,6 +59,7 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnHideBoosters;
         public event Action OnShowBoosters;
         public event Action OnHideEraserPopup;
+        public event Action OnVictory;
 
         // implement interface
         public ArrowController(IConfig config, IStorage storage, IInput input, float spacing)
@@ -247,6 +249,14 @@ namespace Assets.Scripts.CoreLogic
         public void LoadPlayerData()
         {
             _playerData = _storage.Load<PlayerData>("PlayerData");
+        }
+        public void SetCurrentLevelIndex(int currentLvlIndex)
+        {
+            _currentLvl = currentLvlIndex;
+        }
+        public int GetCurrentLevelIndex()
+        {
+            return _currentLvl;
         }
 
 
@@ -615,7 +625,7 @@ namespace Assets.Scripts.CoreLogic
         {
             Debug.Log("VICTORY!");
             _isBgInteractBlock = true;
-            OnTurnPopupOn?.Invoke(true);
+            OnVictory?.Invoke();
         }
 
         private void HandleLose()

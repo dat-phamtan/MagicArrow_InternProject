@@ -2,6 +2,7 @@ using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Scenes.Helper;
 using Assets.Scripts.UI;
 using System;
+using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -11,11 +12,23 @@ public class PopUpManager : MonoBehaviour, IPopUpManager
 {
     public GameObject popupPannel;
     public GameObject blackBg;
-    //public GameObject
     public Button button1;
     public TextMeshProUGUI result;
+
+    public int arrowDecPos = 200;
+    public GameObject dataLabel;
+    public GameObject[] arrows;
+    public TextMeshProUGUI level;
+
+    
+    public GameObject winUI2;
+
+
+    private IGamePlayUI _gamePlayUI;
     private IController _controller;
-    public IEventHandler _eventHandler;
+    private IEventHandler _eventHandler;
+    private List<Vector2> arrowPos;
+
     public event Action OnPlayAgain;
 
     private void OnDisable()

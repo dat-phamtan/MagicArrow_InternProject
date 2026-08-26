@@ -27,7 +27,8 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnHideBoosters;
         public event Action OnShowBoosters;
         public event Action OnHideEraserPopup;
-        
+        public event Action OnVictory;
+
 
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager);
         public List<int> GetArrowMatrix();
@@ -58,5 +59,7 @@ namespace Assets.Scripts.CoreLogic
         public void LoadBoardData(BoardData boardData);
         public PlayerData GetPlayerData();
         public void LoadPlayerData();
+        public void SetCurrentLevelIndex(int currentLvlIndex);
+        public int GetCurrentLevelIndex();
     }
 }
