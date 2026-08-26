@@ -11,6 +11,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Image))]
@@ -58,9 +59,20 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     //lose
     public GameObject lose1Popup;
+    public Button starAdBtn1;
+    public Button starAdBtn2;
+    public Button starBuyBtn1;
+    public Button starBuyBtn2;
     public GameObject lose2Popup;
+    public Button heartAdBtn;
+    public Button heartBuyBtn;
     public GameObject lose3Popup;
+    public Button retryBtn;
     public GameObject lose4Popup;
+    public Button exit1;
+    public Button exit2;
+    public Button exit3;
+    public Button exit4;
     
     //glowing border
     private bool _isGlowing = false;
@@ -145,6 +157,18 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnVictory += PlayWin1Animation;
         next.onClick.AddListener(HandleNextLevel);
         watchAd.onClick.AddListener(HandleWatchAd);
+
+        starAdBtn1.onClick.AddListener(HandleAdStar1);
+        starAdBtn2.onClick.AddListener(HandleAdStar2);
+        starBuyBtn1.onClick.AddListener(HandleBuyStar1);
+        starBuyBtn2.onClick.AddListener(HandleBuyStar2);
+        heartAdBtn.onClick.AddListener(HandleAdHeart);
+        heartBuyBtn.onClick.AddListener(HandleBuyHeart);
+        retryBtn.onClick.AddListener(HandleRetry);
+        exit1.onClick.AddListener(HandleMoveLoseConfirm);
+        exit2.onClick.AddListener(HandleMoveLoseFail);
+        exit3.onClick.AddListener(HandleBackHome);
+        exit4.onClick.AddListener(HandleMoveLoseFail);
     }
 
     private void OnDisable()
@@ -159,7 +183,73 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnVictory -= PlayWin1Animation;
         next.onClick.RemoveListener(HandleNextLevel);
         watchAd.onClick.RemoveListener(HandleWatchAd);
+        foreach (var btn in starAdBtn)
+            btn.onClick.RemoveListener(HandleAdStar);
+        foreach (var btn in starBuyBtn)
+            btn.onClick.RemoveListener(HandleBuyStar);
+        heartAdBtn.onClick.RemoveListener(HandleAdHeart);
+        heartBuyBtn.onClick.RemoveListener(HandleBuyHeart);
+        retryBtn.onClick.RemoveListener(HandleRetry);
+        exit1.onClick.RemoveListener(HandleMoveLoseConfirm);
+        exit2.onClick.RemoveListener(HandleMoveLoseFail);
+        exit3.onClick.RemoveListener(HandleBackHome);
+        exit4.onClick.RemoveListener(HandleMoveLoseFail);
         _inputActions.Disable();
+    }
+
+    private void HandleMoveLoseConfirm()
+    {
+        //turn on the lose2Popup and turn off the lose1Popup
+    }
+
+    private void HandleMoveLoseFail()
+    {
+        //turn on the lose3Popup and turn off the lose2Popup
+    }
+
+    private void HandleBackHome()
+    {
+        //turn off the lose3Popup and back to HomeScene
+    }
+
+    private void HandleMoveBackLoseFail()
+    {
+        //turn off the lose4Popup
+    }
+
+    private void HandleAdStar1()
+    {
+        //get back a star and continue playing (turn off lose1Popup)
+    }
+
+    private void HandleAdStar2()
+    {
+        //get back a star and continue playing (turn off lose2Popup)
+    }
+
+    private void HandleBuyStar1()
+    {
+        //get back 3 stars (if current gold greater than 420), minus 420 and continue plaing (turn off lose1Popup)
+    }
+
+    private void HandleBuyStar2()
+    {
+        //get back 3 stars (if current gold greater than 420), minus 420 and continue plaing (turn off lose2Popup)
+    }
+
+    private void HandleAdHeart()
+    {
+        //get a heart and turn back to lose3Popup
+    }
+
+    private void HandleBuyHeart()
+    {
+        //get a heart (if current gold greater than 450), minus 450 and back to lose3Popup
+    }
+
+    private void HandleRetry()
+    {
+        //lose a heart and turn off the lose3Popup (if the heart = 0, turn on lose4Popup but not turn off the lose3Popup)
     }
 
     private void Update()
