@@ -27,7 +27,7 @@ namespace Assets.Scripts.CoreLogic
         public event Action OnHideBoosters;
         public event Action OnShowBoosters;
         public event Action OnHideEraserPopup;
-        public event Action OnVictory;
+        public event Action OnVictory;  
 
 
         public void Init(IEventHandler eventHandler, IPopUpManager popupManager);

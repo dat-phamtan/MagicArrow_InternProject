@@ -625,7 +625,7 @@ namespace Assets.Scripts.CoreLogic
         {
             Debug.Log("VICTORY!");
             _isBgInteractBlock = true;
-            OnVictory?.Invoke();
+            OnTurnPopupOn?.Invoke(true);
         }
 
         private void HandleLose()

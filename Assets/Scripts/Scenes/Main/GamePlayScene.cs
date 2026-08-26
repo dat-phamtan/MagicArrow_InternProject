@@ -203,7 +203,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         {
             while (_controller.GetSuccessAnimationNum() > 0)
                 yield return null;
-            OnTurnPopupOn?.Invoke("VICTORY");
+            //OnTurnPopupOn?.Invoke("VICTORY");
+            PlayWin1Animation();
         }
         else
         {
