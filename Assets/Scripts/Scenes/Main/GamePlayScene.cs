@@ -38,17 +38,31 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public float fadeOutDuration = 0.05f;
 
     //win
+    public float barsAnimation = 0.5f;
     public int arrowDecPos = 200;
+    public int arrowDecPosOut = 600;
     public GameObject win1Panel;
     public GameObject dataLabel;
     public GameObject[] arrows;
-    public TextMeshProUGUI level;
+    public TextMeshProUGUI win1Level;
 
     public GameObject win2Panel;
+    public GameObject[] stars;
+    public GameObject[] rewards;
+    public TextMeshProUGUI win2Level;
+    public Button next;
+    public Button watchAd;
 
     private List<Vector2> _arrowPos;
-    
+    private List<Vector2> _arrowPosOut;
 
+    //lose
+    public GameObject lose1Popup;
+    public GameObject lose2Popup;
+    public GameObject lose3Popup;
+    public GameObject lose4Popup;
+    
+    //glowing border
     private bool _isGlowing = false;
     private Coroutine _glowing;
 
@@ -93,6 +107,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _curvedPath = new Dictionary<int, Vector3[]>();
         _cumulativeLength = new Dictionary<int, float[]>();
         _arrowPos = new List<Vector2>();
+        _arrowPosOut = new List<Vector2>();
     }
 
     void Start()
@@ -128,6 +143,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnTurnPopupOn += TurnPopUp;
         _controller.OnLoseHeart += GlowHitAnimation;
         _controller.OnVictory += PlayWin1Animation;
+        next.onClick.AddListener(HandleNextLevel);
+        watchAd.onClick.AddListener(HandleWatchAd);
     }
 
     private void OnDisable()
@@ -140,6 +157,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.OnTurnPopupOn -= TurnPopUp;
         _controller.OnLoseHeart -= GlowHitAnimation;
         _controller.OnVictory -= PlayWin1Animation;
+        next.onClick.RemoveListener(HandleNextLevel);
+        watchAd.onClick.RemoveListener(HandleWatchAd);
         _inputActions.Disable();
     }
 
@@ -463,32 +482,74 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _arrowPos.Add(new Vector2(arrowDecPos, arrowDecPos));
         _arrowPos.Add(new Vector2(0, -arrowDecPos));
         _arrowPos.Add(new Vector2(-arrowDecPos, arrowDecPos));
+
+        _arrowPosOut.Add(new Vector2(-arrowDecPosOut, -arrowDecPos - arrowDecPosOut));
+        _arrowPosOut.Add(new Vector2(arrowDecPos - arrowDecPosOut, arrowDecPos - arrowDecPosOut));
+        _arrowPosOut.Add(new Vector2(arrowDecPosOut, -arrowDecPos - arrowDecPosOut));
+        _arrowPosOut.Add(new Vector2(-arrowDecPos + arrowDecPosOut, arrowDecPos - arrowDecPosOut));
     }
 
     private void LoadLevelData()
     {
         var levelData = _controller.GetCurrentLevelIndex();
-        level.text = "Level " + levelData.ToString();
+        win1Level.text = "Level " + levelData.ToString();
     }
 
     private void PlayWin1Animation()
     {
         win1Panel.SetActive(true);
+        StartCoroutine(PlayWin1Sequence());
+    }
+
+    private IEnumerator PlayWin1Sequence()
+    {
         _uiManager.JumpInAnimation(dataLabel);
         for (int i = 0; i < arrows.Length; i++)
             _uiManager.MoveInAnimation(arrows[i], _arrowPos[i]);
-        for (int i = 0;i < arrows.Length; i++)
-            _uiManager.MoveOutAnimation(arrows[i], _arrowPos[i]);
-        _uiManager.JumpOutAnimation(dataLabel, () =>
-        {
-            PlayWin2Animation();
-        });
+
+        yield return new WaitForSeconds(barsAnimation); 
+
+        for (int i = 0; i < arrows.Length; i++)
+            _uiManager.MoveOutAnimation(arrows[i], _arrowPosOut[i]); 
+
+        //yield return new WaitForSeconds(barsAnimation);
+
+        _uiManager.JumpOutAnimation(dataLabel, () => PlayWin2Animation());
     }
 
     private void PlayWin2Animation()
     {
+        var levelData = _controller.GetCurrentLevelIndex();
+        win2Level.text = "Level " + levelData.ToString();
         win1Panel.SetActive(false);
         win2Panel.SetActive(true);
+        StartCoroutine (PlayWin2Sequence());
     }
+
+    private IEnumerator PlayWin2Sequence()
+    {
+        for (int i = 0; i < _controller.GetHeart(); i++)
+            _uiManager.JumpInAnimation(stars[i]);
+        yield return new WaitForSeconds(barsAnimation);
+        for (int i = 0; i < rewards.Length; i++)
+            _uiManager.JumpInAnimation(rewards[i]);
+    }
+
+    private void HandleNextLevel()
+    {
+
+    }
+
+    private void HandleWatchAd()
+    {
+
+    }
+
+    //LOSE HANDLE
+    private void ShowLoseNotifcation()
+    {
+        _uiManager.JumpInAnimation(lose1Popup);
+    }
+
 }
 
