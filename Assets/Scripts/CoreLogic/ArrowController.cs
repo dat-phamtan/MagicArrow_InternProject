@@ -652,7 +652,7 @@ namespace Assets.Scripts.CoreLogic
             if (completedLevel == null)
                 return;
 
-            completedLevel.LevelState = LevelState.COMPLETED;
+            completedLevel.LevelState = (_heart < 3) ? LevelState.NOTCOMLETED : LevelState.COMPLETED;
 
             int starsEarned = Mathf.Clamp(_heart, 0, 3);
             if (starsEarned > completedLevel.Star)
