@@ -632,6 +632,7 @@ namespace Assets.Scripts.CoreLogic
         {
             Debug.Log("VICTORY!");
             _isBgInteractBlock = true;
+            SaveWinResult();
             OnTurnPopupOn?.Invoke(true);
         }
 
@@ -640,6 +641,27 @@ namespace Assets.Scripts.CoreLogic
             Debug.Log("DEFEAT");
             _isBgInteractBlock = true;
             OnTurnPopupOn?.Invoke(false);
+        }
+
+        private void SaveWinResult()
+        {
+            if (_playerData == null || _playerData.CurrentLevelsData == null)
+                return;
+
+            var completedLevel = Array.Find(_playerData.CurrentLevelsData, l => l.LevelId == _currentLvl);
+            if (completedLevel == null)
+                return;
+
+            completedLevel.LevelState = LevelState.COMPLETED;
+
+            int starsEarned = Mathf.Clamp(_heart, 0, 3);
+            if (starsEarned > completedLevel.Star)
+                completedLevel.Star = starsEarned;
+
+            if (_playerData.CurrentLevelId == _currentLvl)
+                _playerData.CurrentLevelId = _currentLvl + 1;
+
+            _storage.Save("PlayerData", _playerData);
         }
 
         private Direction GetDirection(Position prePos, Position currentPos)

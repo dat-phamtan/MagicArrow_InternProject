@@ -1,5 +1,6 @@
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
+using Assets.Scripts.HeartManager;
 using Assets.Scripts.Sound;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
@@ -46,6 +47,7 @@ public class HomeScene : MonoBehaviour
     private IHomeUI _homeUI;
     private IGamePlayUI _uiManager;
     private ISoundManager _soundManager;
+    private IHeartManager _heartManager;
     private PlayerData _playerData;
     private int _currentIndex = -1;
     private bool _isLangugePopup = false;
@@ -78,6 +80,8 @@ public class HomeScene : MonoBehaviour
             exit.onClick.RemoveListener(HandleExit);
         if (_homeUI != null)
             _homeUI.OnSnappedAt -= HandleSnapped;
+        if (_heartManager != null)
+            _heartManager.OnHeartRestored -= HandleHeartRestored;
     }
 
     public void Start()
@@ -86,8 +90,11 @@ public class HomeScene : MonoBehaviour
         _homeUI = Locator.Get<IHomeUI>();
         _uiManager = Locator.Get<IGamePlayUI>();
         _soundManager = Locator.Get<ISoundManager>();
+        _heartManager = Locator.Get<IHeartManager>();
         _playerData = _controller.GetPlayerData();
 
+        //heart
+        _heartManager.OnHeartRestored += HandleHeartRestored;
         //sound
         Locator.Get<ISoundManager>().PlayMusic(MusicId.HomeTheme);
 
@@ -102,6 +109,28 @@ public class HomeScene : MonoBehaviour
 
         HandleSnapped(_playerData.CurrentLevelId);
         HandleSettingsInit();
+    }
+
+    private void Update()
+    {
+        UpdateHeartRegenDisplay();
+    }
+
+    private void HandleHeartRestored()
+    {
+        heartValue.text = _playerData.Heart.ToString();
+    }
+
+    private void UpdateHeartRegenDisplay()
+    {
+        if (_playerData.Heart >= 3)
+        {
+            heartRegenTime.text = "Full";
+            return;
+        }
+
+        var remaining = _heartManager.GetTimeUntilNextHeart();
+        heartRegenTime.text = $"{(int)remaining.TotalMinutes:00}:{remaining.Seconds:00}";
     }
 
     private void HandleSettingsInit()

@@ -10,6 +10,7 @@ namespace Assets.Scripts.Data
         public int Heart { get; set; }
         public int RegenHour { get; set; }
         public int RegenMinute { get; set; }
+        public DateTime NextHeartRegenTime { get; set; }
         public int Star { get; set; }
         public int CurrentLevelId { get; set; }
         public int NumMagnifier { get; set; }

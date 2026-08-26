@@ -171,7 +171,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         exit1.onClick.AddListener(HandleMoveLoseConfirm);
         exit2.onClick.AddListener(HandleMoveLoseFail);
         exit3.onClick.AddListener(HandleBackHome);
-        exit4.onClick.AddListener(HandleMoveLoseFail);
+        exit4.onClick.AddListener(HandleMoveBackLoseFail);
     }
 
     private void OnDisable()
@@ -197,7 +197,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         exit1.onClick.RemoveListener(HandleMoveLoseConfirm);
         exit2.onClick.RemoveListener(HandleMoveLoseFail);
         exit3.onClick.RemoveListener(HandleBackHome);
-        exit4.onClick.RemoveListener(HandleMoveLoseFail);
+        exit4.onClick.RemoveListener(HandleMoveBackLoseFail);
         _inputActions.Disable();
     }
 
@@ -232,8 +232,15 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _uiManager.JumpOutAnimation(popup);
     }
 
-    private void HandleBuyStar1() => BuyContinue(lose1Popup);
-    private void HandleBuyStar2() => BuyContinue(lose2Popup);
+    private void HandleBuyStar1()
+    {
+        BuyContinue(lose1Popup);
+    }
+
+    private void HandleBuyStar2()
+    {
+        BuyContinue(lose2Popup);
+    }
 
     private void BuyContinue(GameObject popup)
     {

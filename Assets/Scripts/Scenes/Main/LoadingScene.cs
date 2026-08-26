@@ -13,6 +13,7 @@ using System.Threading;
 using UnityEngine.SceneManagement;
 using Assets.Scripts.Ultility;
 using Assets.Scripts.Sound;
+using Assets.Scripts.HeartManager;
 
 public class LoadingScene : MonoBehaviour
 {
@@ -48,6 +49,7 @@ public class LoadingScene : MonoBehaviour
         await LoadPlayerData();
         await UniTask.SwitchToMainThread();
         SoundDataInit();
+        HeartManagerInit();
 
         var op = SceneManager.LoadSceneAsync("Home");
         op.allowSceneActivation = false;
@@ -110,6 +112,16 @@ public class LoadingScene : MonoBehaviour
         soundManager.BindingEvents(controller);
     }
 
+    private void HeartManagerInit()
+    {
+        var heartRegenManager = Locator.Get<IHeartManager>();
+        heartRegenManager.Init();
+
+        var tickerObj = new GameObject("HeartTicker");
+        tickerObj.AddComponent<HeartTicker>();
+        DontDestroyOnLoad(tickerObj);
+    }
+
     private void ServicesInit()
     {
         IStorage storage = new LocalStorage();
@@ -119,6 +131,7 @@ public class LoadingScene : MonoBehaviour
         IGamePlayUI uiManager = new GamePlayUI(controller, input, boardSpacing);
         IBoostersManager boosterManager = new BoostersManager(controller);
         IHomeUI homeUI = new HomeUI();
+        IHeartManager heartManager = new HeartManager(controller, storage);
         //ICamera camera = new Cam
 
         Locator.Register(storage);
@@ -128,5 +141,6 @@ public class LoadingScene : MonoBehaviour
         Locator.Register(uiManager);
         Locator.Register(boosterManager);
         Locator.Register(homeUI);
+        Locator.Register(heartManager);
     }
 }
