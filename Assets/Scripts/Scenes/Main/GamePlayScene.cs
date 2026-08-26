@@ -290,7 +290,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
         if (nextLevel == null)
         {
-            GoToScene("Home"); 
+            GoToScene("Home");
         }
 
         data.CurrentLevelId = nextLevelId;

@@ -94,7 +94,8 @@ public class SnapHandler : MonoBehaviour, IEndDragHandler
                 if (stars[j].CompareTag("FillStar"))
                     fillStars.Add(stars[j]);
 
-            for (int k = 0; k < maxNumStar - levelData[i].Star; k++)
+            int starsToHide = Mathf.Clamp(maxNumStar - levelData[i].Star, 0, fillStars.Count);
+            for (int k = 0; k < starsToHide; k++)
             {
                 fillStars[k].enabled = false;
             }
