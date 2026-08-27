@@ -40,13 +40,14 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public float fadeOutDuration = 0.05f;
 
     //win
-    public float barsAnimation = 0.5f;
+    public float barsAnimation = 0.1f;
     public int arrowDecPos = 200;
     public int arrowDecPosOut = 600;
     public GameObject win1Panel;
     public GameObject dataLabel;
     public GameObject[] arrows;
     public TextMeshProUGUI win1Level;
+    public TextMeshProUGUI win2Gold;
 
     public GameObject win2Panel;
     public GameObject[] stars;
@@ -286,21 +287,6 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void HandleNextLevel()
     {
-        //var data = GetPlayerData();
-        //int nextLevelId = _controller.GetCurrentLevelIndex() + 1;
-        //var nextLevel = Array.Find(data.CurrentLevelsData, l => l.LevelId == nextLevelId);
-
-        //if (nextLevel == null)
-        //{
-        //    GoToScene("Home");
-        //    return;
-        //}
-
-        ////data.CurrentLevelId = nextLevelId;
-        //SavePlayerData();
-        //_controller.SetCurrentLevelIndex(nextLevelId);
-        //_controller.LoadBoardData(nextLevel.BoardData);
-        //GoToScene("GamePlay");
         GoToScene("Home");
     }
 
@@ -670,6 +656,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         var levelData = _controller.GetCurrentLevelIndex();
         win2Level.text = "Level " + levelData.ToString();
+        win2Gold.text = _controller.GetPlayerData().Gold.ToString();
         win1Panel.SetActive(false);
         win2Panel.SetActive(true);
         StartCoroutine (PlayWin2Sequence());
