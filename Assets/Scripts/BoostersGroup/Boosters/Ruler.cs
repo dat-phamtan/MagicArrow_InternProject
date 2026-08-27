@@ -77,7 +77,7 @@ namespace Assets.Scripts.BoostersGroup.Boosters
             for (int i = 0; i < arrows.Length; i++)
             {
                 var arrowIndices = arrows[i].ArrowIndices;
-                if (!controller.IsArrowExisted(arrowIndices[0]))
+                if (!controller.IsArrowActive(arrowIndices[0]))
                     continue;
                 Debug.Log(i);
                 var direction = controller.GetDirectionAtBoardIndex(arrowIndices[0]);

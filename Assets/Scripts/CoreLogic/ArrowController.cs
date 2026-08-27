@@ -137,7 +137,7 @@ namespace Assets.Scripts.CoreLogic
         {
             return _spacing;
         }
-        public bool IsOccupiedCell(int boardIndex)
+        public bool IsOccupied(int boardIndex)
         {
             return _boardMatrix[boardIndex] != -1 && _boardMatrixCheck[boardIndex];
         }
@@ -145,7 +145,7 @@ namespace Assets.Scripts.CoreLogic
         {
             return _isBgInteractBlock;
         }
-        public bool IsArrowExisted(int boardIndex)
+        public bool IsArrowActive(int boardIndex)
         {
             return _boardMatrixCheck[boardIndex];
         }
@@ -247,9 +247,9 @@ namespace Assets.Scripts.CoreLogic
         {
             return _playerData;
         }
-        public void LoadPlayerData()
+        public void LoadPlayerData(PlayerData playerData)
         {
-            _playerData = _storage.Load<PlayerData>("PlayerData");
+            _playerData = playerData;
         }
         public void SetCurrentLevelIndex(int currentLvlIndex)
         {

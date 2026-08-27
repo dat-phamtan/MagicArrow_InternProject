@@ -77,7 +77,7 @@ namespace Assets.Scripts.Input
                         continue;
 
                     int boardIndex = x + y * _width;
-                    if (!controller.IsOccupiedCell(boardIndex))
+                    if (!controller.IsOccupied(boardIndex))
                         continue;
 
                     float dx = fCellPos.Xf - x;

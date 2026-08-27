@@ -44,9 +44,9 @@ namespace Assets.Scripts.CoreLogic
         public int GetFailAnimationNum();
         public int GetHeart();
         public float GetSpacing(); 
-        public bool IsOccupiedCell(int boardIndex);
+        public bool IsOccupied(int boardIndex);
         public bool IsBgInteractionBlocked();
-        public bool IsArrowExisted(int boardIndex);
+        public bool IsArrowActive(int boardIndex);
         public List<int> GetNextCells(int yArrowHead, int xArrowHead, Direction direction);
         public int GetMovableArrowPosAndDir(out Direction direction);
         public void MoveSomeArrow(int numArrows);
@@ -59,7 +59,7 @@ namespace Assets.Scripts.CoreLogic
         public bool IsEraserModeTrue();
         public void LoadBoardData(BoardData boardData);
         public PlayerData GetPlayerData();
-        public void LoadPlayerData();
+        public void LoadPlayerData(PlayerData playerData);
         public void SetCurrentLevelIndex(int currentLvlIndex);
         public int GetCurrentLevelIndex();
         public void RestoreHeart(int amount = 1);

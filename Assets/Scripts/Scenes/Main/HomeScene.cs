@@ -96,28 +96,29 @@ public class HomeScene : MonoBehaviour
         _playerData = _controller.GetPlayerData();
 
         CapCurrentLevelId();
+        TopBarDataInit();
+        HandleSettingsInit();
+        HandleSnapped(_playerData.CurrentLevelId);
 
-        //heart
         _heartManager.OnHeartRestored += HandleHeartRestored;
-        //sound
-        Locator.Get<ISoundManager>().PlayMusic(MusicId.HomeTheme);
-
         _homeUI.OnSnappedAt += HandleSnapped;
         greenBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
         orangeBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
 
-        coinValue.text = _playerData.Gold.ToString();
-        heartValue.text = _playerData.Heart.ToString();
-        starValue.text = _playerData.Star.ToString();
-        heartRegenTime.text = _playerData.RegenHour.ToString() + ":" + _playerData.RegenMinute.ToString();
-
-        HandleSnapped(_playerData.CurrentLevelId);
-        HandleSettingsInit();
+        Locator.Get<ISoundManager>().PlayMusic(MusicId.HomeTheme);
     }
 
     private void Update()
     {
         UpdateHeartRegenDisplay();
+    }
+
+    private void TopBarDataInit()
+    {
+        coinValue.text = _playerData.Gold.ToString();
+        heartValue.text = _playerData.Heart.ToString();
+        starValue.text = _playerData.Star.ToString();
+        heartRegenTime.text = _playerData.RegenHour.ToString() + ":" + _playerData.RegenMinute.ToString();
     }
 
     private void HandleHeartRestored()

@@ -56,8 +56,6 @@ public class LoadingScene : MonoBehaviour
         while (op.progress < maximumFakeLoading)
             await UniTask.Yield(PlayerLoopTiming.Update, token);
 
-
-        //await UniTask.Delay(2000, cancellationToken: token);
         _isLoadCompleted = true;
         while (slider.value < maximumFakeLoading)
             await UniTask.Yield(PlayerLoopTiming.Update, token);
@@ -98,8 +96,9 @@ public class LoadingScene : MonoBehaviour
 
     private async UniTask LoadPlayerData()
     {
+        var loader = Locator.Get<IConfig>();
         var controller = Locator.Get<IController>();
-        controller.LoadPlayerData();
+        controller.LoadPlayerData(loader.LoadPlayerData());
     }
 
     private void SoundDataInit()
@@ -132,7 +131,6 @@ public class LoadingScene : MonoBehaviour
         IBoostersManager boosterManager = new BoostersManager(controller);
         IHomeUI homeUI = new HomeUI();
         IHeartManager heartManager = new HeartManager(controller, storage);
-        //ICamera camera = new Cam
 
         Locator.Register(storage);
         Locator.Register(config);

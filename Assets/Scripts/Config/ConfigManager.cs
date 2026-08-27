@@ -15,9 +15,9 @@ namespace Assets.Scripts.Config
             _storage = storage;
         }
 
-        public BoardData Load()
+        public PlayerData LoadPlayerData()
         {
-            return _storage.Load<BoardData>("Config.json") ?? CreateComplexMockConfig();
+            return _storage.Load<PlayerData>("PlayerData");
         }
 
  
