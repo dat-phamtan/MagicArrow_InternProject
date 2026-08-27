@@ -74,6 +74,9 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public GameObject lose3Popup;
     public Button retryBtn;
     public GameObject lose4Popup;
+    public TextMeshProUGUI live;
+    public TextMeshProUGUI regenTime;
+
     public Button exit1;
     public Button exit2;
     public Button exit3;
