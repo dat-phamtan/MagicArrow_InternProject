@@ -130,6 +130,8 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         _controller.Init(this, popUpManager);
         _uiManager.Init(this);
 
+        SpendHeartOnEnter();
+
         _configData = _controller.GetConfigData();
         _boardWidth = _configData.BoardWidth;
         _boardHeight = _configData.BoardHeight;
@@ -284,21 +286,22 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void HandleNextLevel()
     {
-        var data = GetPlayerData();
-        int nextLevelId = _controller.GetCurrentLevelIndex() + 1;
-        var nextLevel = Array.Find(data.CurrentLevelsData, l => l.LevelId == nextLevelId);
+        //var data = GetPlayerData();
+        //int nextLevelId = _controller.GetCurrentLevelIndex() + 1;
+        //var nextLevel = Array.Find(data.CurrentLevelsData, l => l.LevelId == nextLevelId);
 
-        if (nextLevel == null)
-        {
-            GoToScene("Home");
-            return;
-        }
+        //if (nextLevel == null)
+        //{
+        //    GoToScene("Home");
+        //    return;
+        //}
 
-        //data.CurrentLevelId = nextLevelId;
-        SavePlayerData();
-        _controller.SetCurrentLevelIndex(nextLevelId);
-        _controller.LoadBoardData(nextLevel.BoardData);
-        GoToScene("GamePlay");
+        ////data.CurrentLevelId = nextLevelId;
+        //SavePlayerData();
+        //_controller.SetCurrentLevelIndex(nextLevelId);
+        //_controller.LoadBoardData(nextLevel.BoardData);
+        //GoToScene("GamePlay");
+        GoToScene("Home");
     }
 
     private void HandleWatchAd()
@@ -642,6 +645,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
 
     private void PlayWin1Animation()
     {
+        RestoreHeartOnWin();
         win1Panel.SetActive(true);
         StartCoroutine(PlayWin1Sequence());
     }
@@ -715,6 +719,20 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         Locator.Get<ISoundManager>().StopMusic();
         TransitionScene.NextSceneOverride = sceneName;
         UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Transition");
+    }
+
+    private void SpendHeartOnEnter()
+    {
+        var data = GetPlayerData();
+        data.Heart = Mathf.Max(data.Heart - 1, 0);
+        SavePlayerData();
+    }
+
+    private void RestoreHeartOnWin()
+    {
+        var data = GetPlayerData();
+        data.Heart++;
+        SavePlayerData();
     }
 
 }
