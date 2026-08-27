@@ -1,10 +1,12 @@
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
 using Assets.Scripts.HeartManager;
+using Assets.Scripts.IO;
 using Assets.Scripts.Sound;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;
 using System;
+using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -93,6 +95,8 @@ public class HomeScene : MonoBehaviour
         _heartManager = Locator.Get<IHeartManager>();
         _playerData = _controller.GetPlayerData();
 
+        CapCurrentLevelId();
+
         //heart
         _heartManager.OnHeartRestored += HandleHeartRestored;
         //sound
@@ -131,6 +135,20 @@ public class HomeScene : MonoBehaviour
 
         var remaining = _heartManager.GetTimeUntilNextHeart();
         heartRegenTime.text = $"{(int)remaining.TotalMinutes:00}:{remaining.Seconds:00}";
+    }
+
+    private void CapCurrentLevelId()
+    {
+        if (_playerData?.CurrentLevelsData == null || _playerData.CurrentLevelsData.Length == 0)
+            return;
+
+        int maxLevelId = _playerData.CurrentLevelsData.Max(l => l.LevelId);
+
+        if (_playerData.CurrentLevelId > maxLevelId)
+        {
+            _playerData.CurrentLevelId = maxLevelId;
+            Locator.Get<IStorage>().Save("PlayerData", _playerData);
+        }
     }
 
     private void HandleSettingsInit()
