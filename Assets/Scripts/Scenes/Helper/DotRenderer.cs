@@ -62,6 +62,9 @@ public class DotRenderer : MonoBehaviour
         var cellList = _controller.GetNextCells(interactdArrow.YArrowHead, interactdArrow.XArrowHead, _controller.GetDirectionAtBoardIndex(interactdArrow.ArrowIndices[0]));
         for (int i = 0; i < cellList.Count; i++)
         {
+            if (_controller.GetConfigIndexAt(cellList[i]) == -1)
+                continue;
+
             var worldPos = PositionConverter.IndexToWorldPos(cellList[i], width, height, spacing);
             var intWorldPos = new Vector3Int(Mathf.FloorToInt(worldPos.x), Mathf.FloorToInt(worldPos.y), Mathf.FloorToInt(worldPos.z));
             var offset = worldPos - intWorldPos;

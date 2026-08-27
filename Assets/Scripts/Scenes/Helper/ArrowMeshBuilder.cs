@@ -129,7 +129,7 @@ public class ArrowMeshBuilder : MonoBehaviour
             _bodyTris.Add(bottomRight);
         }
 
-        // mesh (3 submesh)
+        //3 submesh
         _mesh.Clear();
         _mesh.SetVertices(_verticles);
         _mesh.SetUVs(0, _uvs);

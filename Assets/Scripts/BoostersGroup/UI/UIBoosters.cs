@@ -67,6 +67,7 @@ public class UIBooster : MonoBehaviour, IBoosterAction
         eraser.onClick.AddListener(HandleEraserOnClicked);
         wand.onClick.AddListener(() => OnBoosterClicked?.Invoke(_wandBooster));
         ruler.onClick.AddListener(() => OnBoosterClicked?.Invoke(_rulerBooster));
+
         eraserPopupExit.onClick.AddListener(HandleExit);
     }
 

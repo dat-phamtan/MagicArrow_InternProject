@@ -1,5 +1,6 @@
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
+using Assets.Scripts.HeartManager;
 using Assets.Scripts.IO;
 using Assets.Scripts.Sound;
 using Assets.Scripts.UI;
@@ -94,9 +95,11 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private Vector2 _currentPos;
     private int _boardWidth;
     private int _boardHeight;
+    private const int MaxPlayerHeart = 5;
 
     private IController _controller;
     private IGamePlayUI _uiManager;
+    private IHeartManager _heartManager;
 
     private InputSystem_Actions _inputActions;
 
@@ -118,6 +121,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     {
         _controller = Locator.Get<IController>();
         _uiManager = Locator.Get<IGamePlayUI>();
+        _heartManager = Locator.Get<IHeartManager>();
 
         //_arrowAssember = new ArrowAssembler();
         _inputActions = new InputSystem_Actions();
@@ -261,8 +265,9 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private void HandleAdHeart()
     {
         var data = GetPlayerData();
-        data.Heart++;
+        data.Heart = Mathf.Min(data.Heart + 1, MaxPlayerHeart);
         SavePlayerData();
+        _uiManager.JumpOutAnimation(lose3Popup, () => GoToScene("GamePlay"));
     }
 
     private void HandleBuyHeart()
@@ -271,8 +276,9 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             return;
 
         var data = GetPlayerData();
-        data.Heart++;
+        data.Heart = Mathf.Min(data.Heart + 1, MaxPlayerHeart);
         SavePlayerData();
+        _uiManager.JumpOutAnimation(lose3Popup, () => GoToScene("GamePlay"));
     }
 
     private void HandleRetry()
@@ -324,8 +330,25 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
             {
                 OnDisableCameraCenter?.Invoke();
             }
-                
         }
+
+        if (lose4Popup.activeInHierarchy)
+            UpdateHeartInfo();
+    }
+
+    private void UpdateHeartInfo()
+    {
+        var data = GetPlayerData();
+        live.text = data.Heart.ToString();
+
+        if (data.Heart >= MaxPlayerHeart)
+        {
+            regenTime.text = "Full";
+            return;
+        }
+
+        var remaining = _heartManager.GetTimeUntilNextHeart();
+        regenTime.text = $"{(int)remaining.TotalMinutes:00}:{remaining.Seconds:00}";
     }
 
     private bool IsSecondTouched()

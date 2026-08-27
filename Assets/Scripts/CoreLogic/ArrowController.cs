@@ -38,7 +38,8 @@ namespace Assets.Scripts.CoreLogic
         private float _spacing;
         private bool _isBgInteractBlock = false;
         private bool _isWaitingForEraserBooster = false;
-        private int _heart = 3;
+        private const int MAX_HEART = 3;   
+        private int _heart = MAX_HEART;
         private int _numAnimationSuccess = 0;
         private int _numAnimationFail = 0;
         private int _currentLvl;
@@ -261,7 +262,7 @@ namespace Assets.Scripts.CoreLogic
         }
         public void RestoreHeart(int amount = 1)
         {
-            _heart = Mathf.Min(_heart + amount, 3);
+            _heart = Mathf.Min(_heart + amount, MAX_HEART);
             _isBgInteractBlock = false;
             OnTurnPopupOff?.Invoke();
             OnHeartRestored?.Invoke();
@@ -286,7 +287,8 @@ namespace Assets.Scripts.CoreLogic
         {
             _isBgInteractBlock = false;
             _isWaitingForEraserBooster = false;
-            _heart = 3;
+            _heart = MAX_HEART;
+
             _numAnimationSuccess = 0;
             _numAnimationFail = 0;
         }
@@ -298,7 +300,7 @@ namespace Assets.Scripts.CoreLogic
             _boardMatrixCheck = Enumerable.Repeat(false, boardSize).ToList();
             _isFirstMoveFail = Enumerable.Repeat(true, _configData.Arrows.Length).ToList();
             _isAnimated = Enumerable.Repeat(false, boardSize).ToList();
-            _heart = 3;
+            _heart = MAX_HEART;
             _numAnimationSuccess = 0;
             _numAnimationFail = 0;
             //_isWaitingForEraserBooster = false;
@@ -656,7 +658,7 @@ namespace Assets.Scripts.CoreLogic
             if (completedLevel.LevelState != LevelState.COMPLETED)
                 completedLevel.LevelState = newState;
 
-            int starsEarned = Mathf.Clamp(_heart, 0, 3);
+            int starsEarned = Mathf.Clamp(_heart, 0, MAX_HEART);
             if (starsEarned > completedLevel.Star)
                 completedLevel.Star = starsEarned;
 
