@@ -26,7 +26,7 @@ public class TransitionScene : MonoBehaviour
             targetSceneName = NextSceneOverride;
             NextSceneOverride = null;
         }
-
+        DG.Tweening.DOTween.KillAll();
         var op = SceneManager.LoadSceneAsync(targetSceneName);
         op.allowSceneActivation = false;
 

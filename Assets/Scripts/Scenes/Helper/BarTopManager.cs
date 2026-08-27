@@ -191,6 +191,7 @@ public class BarTopManager : MonoBehaviour
         blackBg.SetActive(false);
         _uiManager.JumpOutAnimation(restartPopup, () =>
         {
+            DG.Tweening.DOTween.KillAll();
             Locator.Get<ISoundManager>().StopMusic();
             TransitionScene.NextSceneOverride = "GamePlay";
             SceneManager.LoadSceneAsync("Transition");
@@ -217,9 +218,11 @@ public class BarTopManager : MonoBehaviour
         blackBg.SetActive(false);
         _uiManager.JumpOutAnimation(quitPopup, () =>
         {
+            DG.Tweening.DOTween.KillAll();
             Locator.Get<ISoundManager>().StopMusic();
             TransitionScene.NextSceneOverride = "Home";
             SceneManager.LoadSceneAsync("Transition");
+            
         });
     }
 
