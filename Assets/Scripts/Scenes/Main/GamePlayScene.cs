@@ -291,9 +291,10 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
         if (nextLevel == null)
         {
             GoToScene("Home");
+            return;
         }
 
-        data.CurrentLevelId = nextLevelId;
+        //data.CurrentLevelId = nextLevelId;
         SavePlayerData();
         _controller.SetCurrentLevelIndex(nextLevelId);
         _controller.LoadBoardData(nextLevel.BoardData);

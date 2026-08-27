@@ -10,7 +10,7 @@ namespace Assets.Scripts.HeartManager
 {
     public class HeartManager : IHeartManager
     {
-        private const int MaxHeart = 3;
+        private const int MaxHeart = 5;
         private static readonly TimeSpan RegenInterval = TimeSpan.FromMinutes(30);
 
         private readonly IController _controller;
