@@ -43,6 +43,7 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     public float barsAnimation = 0.1f;
     public int arrowDecPos = 200;
     public int arrowDecPosOut = 600;
+    public int watchAdGoldReward = 100;
     public GameObject win1Panel;
     public GameObject dataLabel;
     public GameObject[] arrows;
@@ -293,6 +294,18 @@ public class GamePlayScene : MonoBehaviour, IEventHandler
     private void HandleWatchAd()
     {
         watchAd.interactable = false;
+        GrantWatchAdReward();
+    }
+
+    private void GrantWatchAdReward()
+    {
+        var data = GetPlayerData();
+        data.Gold += watchAdGoldReward;
+        SavePlayerData();
+
+        win2Gold.text = data.Gold.ToString(); 
+        watchAd.interactable = true;
+        GoToScene("Home");
     }
 
     private void Update()

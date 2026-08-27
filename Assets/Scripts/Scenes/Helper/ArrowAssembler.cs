@@ -4,6 +4,7 @@ using Assets.Scripts.UI;
 using JetBrains.Annotations;
 using System;
 using System.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,12 +16,22 @@ public class ArrowAssembler : MonoBehaviour
     public Material blackHeadMaterial;
     public Material blackBodyMaterial;
     public Material blackTailMaterial;
+    public Material purpleHeadMaterial;
+    public Material purpleBodyMaterial;
+    public Material purpleTailMaterial;
+    public Material brownHeadMaterial;
+    public Material brownBodyMaterial;
+    public Material brownTailMaterial;
+
 
     public Sprite head;
     public Sprite body;
     public Sprite tail;
+    public int numColor = 3;
 
     public GameObject arrowRayHint;
+    private int _currentIndex = 0;
+    private System.Random _random = new();
     private IEventHandler _eventHandler;
 
 
@@ -35,16 +46,6 @@ public class ArrowAssembler : MonoBehaviour
         //StartCoroutine(PlayCollidedAnimation(@object));
     }
 
-    //private IEnumerator PlayCollidedAnimation(GameObject collidedArrow)
-    //{
-    //    float temp = 3f;
-    //    float time = 0f;
-    //    while (time < temp)
-    //    {
-    //        time += Time.deltaTime;
-
-    //    }
-    //}
 
     public GameObject Build(Arrow arrow, Vector3[] points, float[] cumulativeLength, float spacing, out ArrowMeshBuilder builder)
     {
@@ -56,7 +57,8 @@ public class ArrowAssembler : MonoBehaviour
             return root;
 
         builder = root.AddComponent<ArrowMeshBuilder>();
-        ChangeArrowColor(0, builder);
+
+        SetArrowColor(GetColorIndex(), builder);
 
         builder.bodyThickness = body.rect.height / body.pixelsPerUnit;
         builder.bodyLength = body.rect.width / body.pixelsPerUnit;
@@ -82,19 +84,49 @@ public class ArrowAssembler : MonoBehaviour
         return root;
     }
 
+    private int GetColorIndex()
+    {
+        if (_currentIndex > numColor - 1)
+            _currentIndex = 0;
+        return _currentIndex++;
+    }
+
+    private void SetArrowColor(int index, ArrowMeshBuilder builder)
+    {
+        switch (index)
+        {
+            case 0:
+                builder.bodyMaterial = redBodyMaterial;
+                builder.headMaterial = redHeadMaterial;
+                builder.tailMaterial = redTailMaterial;
+                break;
+            case 1:
+                builder.bodyMaterial = purpleBodyMaterial;
+                builder.headMaterial = purpleHeadMaterial;
+                builder.tailMaterial = purpleTailMaterial;
+                break;
+            case 2:
+                builder.bodyMaterial = brownBodyMaterial;
+                builder.headMaterial = brownHeadMaterial;
+                builder.tailMaterial = brownTailMaterial;
+                break;
+        }
+    }
+
     public void ChangeArrowColor(int colorIndex, ArrowMeshBuilder builder)
     {
-        if (colorIndex == 0)
+        switch (colorIndex)
         {
-            builder.bodyMaterial = redBodyMaterial;
-            builder.headMaterial = redHeadMaterial;
-            builder.tailMaterial = redTailMaterial;
-        }
-        else if (colorIndex == 1)
-        {
-            builder.bodyMaterial = blackBodyMaterial;
-            builder.headMaterial = blackHeadMaterial;
-            builder.tailMaterial = blackTailMaterial;
+            case 0:
+                builder.bodyMaterial = redBodyMaterial;
+                builder.headMaterial = redHeadMaterial;
+                builder.tailMaterial = redTailMaterial;
+                break;
+            case 1:
+                builder.bodyMaterial = blackBodyMaterial;
+                builder.headMaterial = blackHeadMaterial;
+                builder.tailMaterial = blackTailMaterial;
+                break;   
         }
     }
 
