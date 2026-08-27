@@ -98,7 +98,6 @@ public class HomeScene : MonoBehaviour
         CapCurrentLevelId();
         TopBarDataInit();
         HandleSettingsInit();
-        HandleSnapped(_playerData.CurrentLevelId);
 
         _heartManager.OnHeartRestored += HandleHeartRestored;
         _homeUI.OnSnappedAt += HandleSnapped;
@@ -106,6 +105,7 @@ public class HomeScene : MonoBehaviour
         orangeBtn.GetComponentInChildren<Button>().onClick.AddListener(HandleHomeBtnClicked);
 
         Locator.Get<ISoundManager>().PlayMusic(MusicId.HomeTheme);
+        HandleSnapped(_playerData.CurrentLevelId);
     }
 
     private void Update()
