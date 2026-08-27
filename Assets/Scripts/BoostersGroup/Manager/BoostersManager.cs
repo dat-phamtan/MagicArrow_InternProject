@@ -1,11 +1,12 @@
-﻿using Assets.Scripts.CoreLogic;
+﻿using Assets.Scripts.BoostersGroup.Boosters;
+using Assets.Scripts.CoreLogic;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using UnityEngine;
 
-namespace Assets.Scripts.Boosters
+namespace Assets.Scripts.Boosters.BoostersManager
 {
     public class BoostersManager : IBoostersManager
     {

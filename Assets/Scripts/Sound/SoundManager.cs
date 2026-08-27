@@ -45,16 +45,6 @@ public class SoundManager : MonoBehaviour, ISoundManager
         BuildSfxPool();
         BuildMusicSources();
     }
-    //private void OnApplicationPause(bool pauseStatus)
-    //{
-    //    if (pauseStatus)
-    //        SaveSoundSetting();
-    //}
-
-    //private void OnApplicationQuit()
-    //{
-    //    SaveSoundSetting();
-    //}
 
     private void OnDisable()
     {

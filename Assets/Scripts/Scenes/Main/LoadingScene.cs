@@ -1,4 +1,3 @@
-using Assets.Scripts.Boosters;
 using Assets.Scripts.Config;
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Input;
@@ -14,6 +13,7 @@ using UnityEngine.SceneManagement;
 using Assets.Scripts.Ultility;
 using Assets.Scripts.Sound;
 using Assets.Scripts.HeartManager;
+using Assets.Scripts.Boosters.BoostersManager;
 
 public class LoadingScene : MonoBehaviour
 {

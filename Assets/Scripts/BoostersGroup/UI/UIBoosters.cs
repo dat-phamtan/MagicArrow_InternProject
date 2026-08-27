@@ -1,4 +1,6 @@
 using Assets.Scripts.Boosters;
+using Assets.Scripts.Boosters.BoostersManager;
+using Assets.Scripts.BoostersGroup.Boosters;
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.UI;
 using Assets.Scripts.Utility;

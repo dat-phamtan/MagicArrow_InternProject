@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
-namespace Assets.Scripts.Boosters
+namespace Assets.Scripts.BoostersGroup.Boosters
 {
     public class Wand : IBooster
     {

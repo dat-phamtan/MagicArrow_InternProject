@@ -127,7 +127,8 @@ public class HomeScene : MonoBehaviour
 
     private void UpdateHeartRegenDisplay()
     {
-        if (_playerData.Heart >= 3)
+        heartValue.text = _playerData.Heart.ToString();
+        if (_playerData.Heart > 4)
         {
             heartRegenTime.text = "Full";
             return;

@@ -1,4 +1,4 @@
-﻿using Assets.Scripts.Boosters;
+﻿using Assets.Scripts.Boosters.BoostersManager;
 using Assets.Scripts.CoreLogic;
 using Assets.Scripts.Data;
 using Assets.Scripts.Utility;

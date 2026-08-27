@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Assets.Scripts.Boosters
+namespace Assets.Scripts.BoostersGroup.Boosters
 {
     public interface IBooster
     {

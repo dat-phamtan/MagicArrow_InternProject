@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Assets.Scripts.Boosters
+namespace Assets.Scripts.Boosters.BoostersManager
 {
     public interface IBoostersManager
     {

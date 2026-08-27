@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
-namespace Assets.Scripts.Boosters
+namespace Assets.Scripts.BoostersGroup.Boosters
 {
     public class Ruler : IBooster
     {
